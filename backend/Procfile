@@ -1,1 +1,2 @@
-web: gunicorn orchid_backend.wsgi --log-file -
+release: python manage.py migrate --noinput
+web: gunicorn orchid_backend.wsgi --log-file - --bind 0.0.0.0:$PORT
