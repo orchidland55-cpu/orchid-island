@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orchid Island — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07070A;
+    --sidebar-bg: #24272B;
+    --card: #24272B;
+    --card2: #1A1F2E;
+    --border: #4A525A;
+    --text: #F0F4F8;
+    --muted: #B8C5D6;
+    --primary: #004BA8;
+    --primary-light: #3E78B2;
+    --accent: #3E78B2;
+    --green: #27AE60;
+    --red: #E74C3C;
+    --orange: #F39C12;
+    --purple: #8E44AD;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; font-size: 14px; }
+
+  /* Animated background */
+  .bg-orbs {
+    position: fixed; inset: 0; z-index: 0;
+    pointer-events: none;
+  }
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.15;
+    animation: float 8s ease-in-out infinite;
+  }
+  .orb-1 { width: 500px; height: 500px; background: radial-gradient(circle, #004BA8, transparent); top: -100px; right: -100px; animation-delay: 0s; }
+  .orb-2 { width: 400px; height: 400px; background: radial-gradient(circle, #3E78B2, transparent); bottom: -80px; left: 10%; animation-delay: 3s; }
+  .orb-3 { width: 300px; height: 300px; background: radial-gradient(circle, #4A525A, transparent); top: 50%; left: 30%; animation-delay: 5s; }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-30px) scale(1.05); }
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 240px;
+    background: linear-gradient(135deg, #24272B 0%, #07070A 50%, #1A1F2E 100%);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+  }
+  .sidebar-logo {
+    padding: 24px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-icon {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 8px 32px rgba(0,75,168,0.3);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+  .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; }
+  .logo-sub { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+  .nav-section { padding: 16px 12px 8px; }
+  .nav-label { font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; padding: 0 8px; margin-bottom: 6px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 13px;
+    margin-bottom: 2px;
+    position: relative;
+    overflow: hidden;
+  }
+  .nav-item::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0,75,168,0.1), transparent);
+    transition: left 0.5s;
+  }
+  .nav-item:hover::before { left: 100%; }
+  .nav-item:hover { 
+    background: rgba(0,75,168,0.08); 
+    color: var(--text);
+    transform: translateX(5px);
+  }
+  .nav-item.active { 
+    background: linear-gradient(135deg, rgba(0,75,168,0.15), rgba(62,120,178,0.1)); 
+    color: var(--primary-light); 
+    font-weight: 600; 
+    border: 1px solid rgba(0,75,168,0.2);
+    box-shadow: 0 4px 20px rgba(0,75,168,0.2);
+  }
+  .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+  .nav-badge {
+    margin-left: auto;
+    background: var(--red);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 20px;
+  }
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 16px 12px;
+    border-top: 1px solid var(--border);
+  }
+  .user-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  .user-avatar {
+    width: 34px; height: 34px;
+    background: linear-gradient(135deg, var(--primary-light), var(--purple));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .user-name { font-size: 13px; font-weight: 500; }
+  .user-role { font-size: 11px; color: var(--primary-light); }
+
+  /* MAIN */
+  .main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; }
+  .topbar {
+    height: 60px;
+    background: linear-gradient(135deg, #24272B 0%, #1A1F2E 100%);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 28px;
+    position: sticky; top: 0; z-index: 50;
+    backdrop-filter: blur(10px);
+  }
+  .topbar-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; }
+  .topbar-right { display: flex; align-items: center; gap: 16px; }
+  .topbar-date { font-size: 12px; color: var(--muted); }
+  .notif-btn { font-size: 18px; cursor: pointer; position: relative; padding: 8px; border-radius: 8px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+  .notif-btn:hover { background: rgba(0,75,168,0.1); transform: scale(1.05); }
+  .notif-dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background: var(--red); border-radius: 50%; border: 2px solid var(--sidebar); }
+  .notif-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: var(--red);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 20px;
+    min-width: 18px;
+    text-align: center;
+    border: 2px solid var(--sidebar);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .content { padding: 28px; flex: 1; }
+
+  /* KPI CARDS */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .kpi-card {
+    background: linear-gradient(135deg, var(--card), #1A1F2E);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+  }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light), var(--primary));
+    animation: shimmer 2s linear infinite;
+  }
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  .kpi-card:hover { 
+    transform: translateY(-5px) scale(1.02); 
+    box-shadow: 0 20px 60px rgba(0,75,168,0.3); 
+    border-color: var(--primary-light);
+  }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .kpi-card.gold::before { background: linear-gradient(90deg, var(--gold), #E8A030); }
+  .kpi-card.blue::before { background: linear-gradient(90deg, var(--blue), #2563EB); }
+  .kpi-card.green::before { background: linear-gradient(90deg, var(--green), #0EA5E9); }
+  .kpi-card.red::before { background: linear-gradient(90deg, var(--red), var(--orange)); }
+  .kpi-icon { font-size: 28px; margin-bottom: 12px; }
+  .kpi-value { font-family: 'Syne', sans-serif; font-size: 34px; font-weight: 800; line-height: 1; margin-bottom: 6px; }
+  .kpi-label { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .kpi-trend {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 600;
+    padding: 3px 8px; border-radius: 20px;
+  }
+  .kpi-trend.up { background: rgba(34,211,160,0.12); color: var(--green); }
+  .kpi-trend.down { background: rgba(255,87,87,0.12); color: var(--red); }
+
+  /* CHARTS ROW */
+  .charts-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px;
+  }
+  .chart-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px;
+  }
+  .chart-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; }
+  .chart-badge {
+    font-size: 11px; padding: 4px 10px;
+    background: rgba(77,159,255,0.1);
+    color: var(--blue); border-radius: 20px;
+  }
+  /* Bar chart */
+  .bar-chart { display: flex; align-items: flex-end; gap: 10px; height: 130px; }
+  .bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .bars { display: flex; gap: 4px; align-items: flex-end; height: 110px; }
+  .bar {
+    flex: 1;
+    border-radius: 4px 4px 0 0;
+    min-width: 14px;
+    transition: opacity 0.2s;
+    cursor: pointer;
+  }
+  .bar:hover { opacity: 0.8; }
+  .bar-label { font-size: 10px; color: var(--muted); text-align: center; }
+  /* Donut chart */
+  .donut-wrap { display: flex; flex-direction: column; align-items: center; }
+  svg.donut { transform: rotate(-90deg); }
+  .donut-center { text-align: center; margin-top: 16px; }
+  .donut-value { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; }
+  .donut-label { font-size: 12px; color: var(--muted); }
+  .donut-legend { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; width: 100%; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .legend-label { color: var(--muted); flex: 1; }
+  .legend-val { font-weight: 600; }
+
+  /* BOTTOM ROW */
+  .bottom-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .list-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px;
+  }
+  .list-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 16px;
+  }
+  .view-all { font-size: 12px; color: var(--blue); cursor: pointer; }
+  .alert-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .alert-item:last-child { border-bottom: none; }
+  .alert-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .alert-icon.warn { background: rgba(255,150,64,0.15); }
+  .alert-icon.danger { background: rgba(255,87,87,0.15); }
+  .alert-icon.info { background: rgba(77,159,255,0.15); }
+  .alert-icon.success { background: rgba(34,211,160,0.15); }
+  .alert-msg { font-size: 13px; line-height: 1.4; }
+  .alert-time { font-size: 11px; color: var(--muted); margin-top: 3px; }
+  /* Progress items */
+  .progress-item { margin-bottom: 16px; }
+  .progress-header { display: flex; justify-content: space-between; margin-bottom: 6px; }
+  .progress-name { font-size: 13px; font-weight: 500; }
+  .progress-pct { font-size: 12px; color: var(--muted); }
+  .progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
+  .status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 600;
+  }
+  .status-encours { background: rgba(77,159,255,0.1); color: var(--blue); }
+  .status-retard { background: rgba(255,87,87,0.1); color: var(--red); }
+  .status-done { background: rgba(34,211,160,0.1); color: var(--green); }
+</style>
+<script src="../auth_roles.js"></script>
+</head>
+<body>
+<div class="bg-orbs">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div>
+      <div class="logo-text">Orchid Island</div>
+      <div class="logo-sub">REAL ESTATE RH</div>
+    </div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Principal</div>
+    <div class="nav-item active" onclick="navigateTo('dashboard.html')">Tableau de Bord</div>
+    <div class="nav-item" onclick="navigateTo('stagiaires.html')">Stagiaires <span class="nav-badge" id="badgeStagiaires">0</span></div>
+    <div class="nav-item" onclick="navigateTo('projets.html')">Projets</div>
+    <div class="nav-item" onclick="navigateTo('taches.html')">Tâches</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Gestion</div>
+    <div class="nav-item" onclick="navigateTo('pointage_qr.html')">Pointage QR</div>
+    <div class="nav-item" onclick="navigateTo('rapports.html')">Rapports <span class="nav-badge" id="badgeRapports">0</span></div>
+    <div class="nav-item" onclick="navigateTo('alertes.html')">Alertes <span class="nav-badge" id="badgeAlertes">0</span></div>
+  </div>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar" id="userAvatar">Admin</div>
+      <div>
+        <div class="user-name" id="userName">Admin Orchid</div>
+        <div class="user-role" id="userRole">Administrateur</div>
+        <div class="user-email" id="userEmail" style="font-size: 11px; color: var(--muted); margin-top: 2px;">admin@orchid-island.com</div>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="logout()" style="width: 100%; padding: 8px; background: rgba(255,87,87,0.1); border: 1px solid rgba(255,87,87,0.3); border-radius: 6px; color: var(--red); font-size: 12px; cursor: pointer; margin-top: 8px; transition: all 0.2s;">
+      <span class="icon">Logout</span> Déconnexion
+    </button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">Tableau de Bord</div>
+    <div class="topbar-right">
+      <div class="topbar-date" id="currentDate"></div>
+      <div class="notif-btn" onclick="navigateTo('alertes.html')" style="cursor:pointer;position:relative;">
+        🔔
+        <div class="notif-dot" id="notifDot" style="display:none;"></div>
+        <div class="notif-badge" id="notifBadge" style="display:none;">0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- KPI CARDS -->
+    <div class="kpi-grid">
+      <div class="kpi-card gold">
+        <div class="kpi-icon">🎓</div>
+        <div class="kpi-value" id="kpiStagiaires">0</div>
+        <div class="kpi-label">Stagiaires</div>
+        <span class="kpi-trend up">↑ +0 ce mois</span>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-icon">✅</div>
+        <div class="kpi-value" id="kpiActifs">0</div>
+        <div class="kpi-label">Stagiaires Actifs (Présents)</div>
+        <span class="kpi-trend up">↑ Aujourd'hui</span>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-icon">📁</div>
+        <div class="kpi-value" id="kpiProjets">0</div>
+        <div class="kpi-label">Projets En Cours</div>
+        <span class="kpi-trend up">↑ 0% avancement</span>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-icon">📝</div>
+        <div class="kpi-value" id="kpiRapports">0</div>
+        <div class="kpi-label">Rapports Déposés</div>
+        <span class="kpi-trend down">↓ 0 manquants</span>
+      </div>
+      <div class="kpi-card red">
+        <div class="kpi-icon">🚫</div>
+        <div class="kpi-value" id="kpiBloques">0</div>
+        <div class="kpi-label">Comptes Bloqués</div>
+        <span class="kpi-trend down">⚠ Aucun problème</span>
+      </div>
+    </div>
+
+    <!-- CHARTS ROW -->
+    <div class="charts-row">
+      <!-- Bar Chart: Présences semaine -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <span class="chart-title">Présences Mensuelles</span>
+          <span class="chart-badge" id="presenceCountBadge">0 présents</span>
+          <span class="chart-badge">Mois en cours</span>
+        </div>
+        <div class="bar-chart" id="presenceChart">
+          <div class="bar-group">
+            <div class="bars">
+              <div class="bar" style="height:0px;background:var(--green);"></div>
+              <div class="bar" style="height:0px;background:var(--red);"></div>
+            </div>
+            <div class="bar-label">Jan</div>
+          </div>
+          <div class="bar-group">
+            <div class="bars">
+              <div class="bar" style="height:0px;background:var(--green);"></div>
+              <div class="bar" style="height:0px;background:var(--red);"></div>
+            </div>
+            <div class="bar-label">Fév</div>
+          </div>
+          <div class="bar-group">
+            <div class="bars">
+              <div class="bar" style="height:0px;background:var(--green);"></div>
+              <div class="bar" style="height:0px;background:var(--red);"></div>
+            </div>
+            <div class="bar-label">Mar</div>
+          </div>
+          <div class="bar-group">
+            <div class="bars">
+              <div class="bar" style="height:0px;background:var(--green);"></div>
+              <div class="bar" style="height:0px;background:var(--red);"></div>
+            </div>
+            <div class="bar-label">Avr</div>
+          </div>
+          <div class="bar-group">
+            <div class="bars">
+              <div class="bar" style="height:0px;background:var(--green);"></div>
+              <div class="bar" style="height:0px;background:var(--red);"></div>
+            </div>
+            <div class="bar-label">Mai</div>
+          </div>
+          <div class="bar-group">
+            <div class="bars">
+              <div class="bar" style="height:0px;background:rgba(34,211,160,0.3);"></div>
+              <div class="bar" style="height:0px;background:rgba(255,87,87,0.3);"></div>
+            </div>
+            <div class="bar-label">Juin</div>
+          </div>
+          <div class="bar-group">
+            <div class="bars">
+              <div class="bar" style="height:0;background:transparent;"></div>
+              <div class="bar" style="height:0;background:transparent;"></div>
+            </div>
+            <div class="bar-label">Juil</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:20px;margin-top:12px;font-size:11px;color:var(--muted)">
+          <span style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:10px;height:10px;background:var(--green);border-radius:2px;"></span>Présents</span>
+          <span style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:10px;height:10px;background:var(--red);border-radius:2px;"></span>Absents</span>
+        </div>
+      </div>
+
+      <!-- Donut: Statut candidatures -->
+      <div class="chart-card">
+        <div class="chart-header">
+          <span class="chart-title">Candidatures</span>
+          <span class="chart-badge" id="candidaturesTotal">Total: 0</span>
+        </div>
+        <div class="donut-wrap">
+          <svg class="donut" width="110" height="110" viewBox="0 0 110 110">
+            <circle cx="55" cy="55" r="40" fill="none" stroke="var(--border)" stroke-width="14"/>
+            <circle cx="55" cy="55" r="40" fill="none" stroke="var(--green)" stroke-width="14"
+              stroke-dasharray="0 251" stroke-linecap="round"/>
+            <circle cx="55" cy="55" r="40" fill="none" stroke="var(--red)" stroke-width="14"
+              stroke-dasharray="0 251" stroke-dashoffset="0" stroke-linecap="round"/>
+            <circle cx="55" cy="55" r="40" fill="none" stroke="var(--orange)" stroke-width="14"
+              stroke-dasharray="0 251" stroke-dashoffset="0" stroke-linecap="round"/>
+          </svg>
+          <div class="donut-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div><span class="legend-label">Acceptés</span><span class="legend-val" id="legendAcceptes">0</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div><span class="legend-label">Refusés</span><span class="legend-val" id="legendRefuses">0</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div><span class="legend-label">En attente</span><span class="legend-val" id="legendAttente">0</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM ROW -->
+    <div class="bottom-row">
+      <!-- Alertes -->
+      <div class="list-card">
+        <div class="list-header">
+          <span class="chart-title">🔔 Alertes Actives</span>
+          <span class="view-all" onclick="navigateTo('alertes.html')" style="cursor:pointer;">Voir tout →</span>
+        </div>
+        <div id="alertesContainer">
+          <!-- Les alertes seront ajoutées dynamiquement ici -->
+        </div>
+      </div>
+
+      <!-- Projets avancement -->
+      <div class="list-card">
+        <div class="list-header">
+          <span class="chart-title">📁 Avancement Projets</span>
+          <span class="view-all" onclick="navigateTo('projets.html')" style="cursor:pointer;">Voir tout →</span>
+        </div>
+        <div id="projetsContainer">
+          <!-- Les projets seront ajoutés dynamiquement ici -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/common.js"></script>
+<script>
+  // Charger les données depuis le système partagé pour synchroniser avec la gestion de projet
+  function loadProjetsData() {
+    try {
+      // Lire directement depuis orchidData (source de vérité des projets)
+      const orchidData = JSON.parse(localStorage.getItem('orchidData') || '{}');
+      const projets = orchidData.projets?.list || [];
+      return {
+        list: projets,
+        enCours: projets.filter(p => p.etat === 'encours').length,
+        termines: projets.filter(p => p.etat === 'done' || p.etat === 'termine').length,
+        retard: projets.filter(p => p.etat === 'retard').length
+      };
+    } catch(e) {
+      return { list: [], enCours: 0, termines: 0, retard: 0 };
+    }
+  }
+
+  // Utiliser les données partagées du système pour les autres données
+  let dashboardData = window.sharedData.getData();
+
+  // Fonction pour mettre à jour les KPIs
+  async function updateKPIs() {
+    console.log('[KPI] Début de updateKPIs');
+    const BACKEND_URL = 'http://192.168.11.249:8000';
+    
+    let stagiairesSuccess = false;
+    let stagiairesCount = 0;
+    
+    try {
+      // 1. Charger les stagiaires depuis la gestion des stagiaires
+      console.log('[KPI] Appel API stagiaires...');
+      
+      try {
+        const stagiairesResponse = await fetch(`${BACKEND_URL}/api/auth/stagiaires/`);
+        const stagiairesData = await stagiairesResponse.json();
+        console.log('[KPI] Réponse stagiaires:', stagiairesData);
+        
+        if (stagiairesData.success) {
+          stagiairesSuccess = true;
+          stagiairesCount = stagiairesData.stagiaires.length;
+          console.log('[KPI] Nombre de stagiaires depuis API:', stagiairesCount);
+          
+          // Sauvegarder dans localStorage pour fallback
+          localStorage.setItem('stagiaires_count', stagiairesCount);
+        } else {
+          console.error('[KPI] Erreur API stagiaires:', stagiairesData.error);
+          throw new Error(stagiairesData.error);
+        }
+      } catch (apiError) {
+        console.error('[KPI] Erreur appel API stagiaires, utilisation du fallback:', apiError);
+        // Fallback: utiliser localStorage
+        const stagiaires = JSON.parse(localStorage.getItem('stagiaires') || '[]');
+        stagiairesCount = stagiaires.length;
+        console.log('[KPI] Nombre de stagiaires depuis localStorage:', stagiairesCount);
+      }
+      
+      // Stagiaires KPI
+      const stagiairesEl = document.getElementById('kpiStagiaires');
+      console.log('[KPI] Element kpiStagiaires:', stagiairesEl);
+      if (stagiairesEl) {
+        stagiairesEl.textContent = stagiairesCount;
+        console.log('[KPI] Stagiaires KPI mis à jour:', stagiairesCount);
+      } else {
+        console.error('[KPI] Element kpiStagiaires non trouvé!');
+      }
+      
+      // 2. Charger les stagiaires actifs depuis le pointage (présents aujourd'hui)
+      console.log('[KPI] Appel API pointages...');
+      const pointagesResponse = await fetch(`${BACKEND_URL}/api/presences/pointages/`);
+      const pointagesData = await pointagesResponse.json();
+      console.log('[KPI] Réponse pointages:', pointagesData);
+      
+      if (pointagesData.success) {
+        const today = new Date().toISOString().split('T')[0];
+        console.log('[KPI] Date d\'aujourd\'hui:', today);
+        console.log('[KPI] Format des dates de pointage:', pointagesData.pointages.map(p => p.date));
+        
+        // Gérer différents formats de date (YYYY-MM-DD ou YYYY-MM-DDTHH:MM:SSZ)
+        const todayPointages = pointagesData.pointages.filter(p => {
+          const pointageDate = p.date.split('T')[0]; // Extraire YYYY-MM-DD
+          return pointageDate === today;
+        });
+        
+        console.log('[KPI] Pointages d\'aujourd\'hui:', todayPointages.length);
+        const uniquePresents = new Set(todayPointages.map(p => `${p.nom}_${p.prenom}`)).size;
+        
+        // Stagiaires Actifs KPI (présents aujourd'hui)
+        const actifsEl = document.getElementById('kpiActifs');
+        console.log('[KPI] Element kpiActifs:', actifsEl);
+        if (actifsEl) {
+          actifsEl.textContent = uniquePresents;
+          console.log('[KPI] Stagiaires Actifs KPI mis à jour:', uniquePresents);
+        } else {
+          console.error('[KPI] Element kpiActifs non trouvé!');
+        }
+      } else {
+        console.error('[KPI] Erreur API pointages:', pointagesData.error);
+      }
+      
+      // 3. Charger les projets depuis la gestion de projet via loadProjetsData
+      console.log('[KPI] Chargement des projets via loadProjetsData...');
+      const projetsData = loadProjetsData();
+      const projetsList = projetsData.list || [];
+      console.log('[KPI] Projets via loadProjetsData:', projetsList.length);
+      const projetsEnCours = projetsData.enCours;
+      console.log('[KPI] Projets en cours:', projetsEnCours);
+      
+      // Projets KPI
+      const projetsEl = document.getElementById('kpiProjets');
+      console.log('[KPI] Element kpiProjets:', projetsEl);
+      if (projetsEl) {
+        projetsEl.textContent = projetsEnCours;
+        console.log('[KPI] Projets KPI mis à jour:', projetsEnCours);
+      } else {
+        console.error('[KPI] Element kpiProjets non trouvé!');
+      }
+      
+      // 4. Charger les rapports depuis la gestion de rapport via sharedData
+      console.log('[KPI] Chargement des rapports depuis sharedData...');
+      const rapportsData = window.sharedData.getData().rapports || { list: [], finaux: [] };
+      const journaliers = rapportsData.list || [];
+      const finaux = rapportsData.finaux || [];
+      console.log('[KPI] Rapports dans sharedData:', journaliers.length);
+      
+      // Rapports Déposés KPI
+      const rapportsEl = document.getElementById('kpiRapports');
+      console.log('[KPI] Element kpiRapports:', rapportsEl);
+      if (rapportsEl) {
+        rapportsEl.textContent = journaliers.length;
+        console.log('[KPI] Rapports KPI mis à jour:', journaliers.length);
+      } else {
+        console.error('[KPI] Element kpiRapports non trouvé!');
+      }
+      
+      // Mettre à jour les légendes du graphique
+      const acceptesEl = document.getElementById('legendAcceptes');
+      if (acceptesEl) {
+        acceptesEl.textContent = stagiairesCount;
+      }
+      
+      const refusesEl = document.getElementById('legendRefuses');
+      if (refusesEl) {
+        refusesEl.textContent = 0;
+      }
+      
+      const attenteEl = document.getElementById('legendAttente');
+      if (attenteEl) {
+        attenteEl.textContent = 0;
+      }
+      
+      // Mettre à jour le total des candidatures
+      const candidaturesTotal = document.getElementById('candidaturesTotal');
+      if (candidaturesTotal) {
+        candidaturesTotal.textContent = `Total: ${stagiairesCount}`;
+      }
+      
+    } catch (error) {
+      console.error('[KPI] Erreur lors du chargement des données:', error);
+    }
+    
+    // Comptes bloqués KPI
+    const bloquesEl = document.getElementById('kpiBloques');
+    if (bloquesEl) {
+      bloquesEl.textContent = 0; // Aucun compte bloqué pour le moment
+    }
+  }
+
+  // Fonction pour mettre à jour le graphique de candidatures
+  function updateCandidaturesChart() {
+    // Lire depuis localStorage directement
+    const stagiaires = JSON.parse(localStorage.getItem('stagiaires') || '[]');
+    const actifs = stagiaires.filter(s => s.statut === 'Accepté' || !s.statut).length;
+    const bloques = stagiaires.filter(s => s.bloque === true || s.statut === 'Refusé').length;
+    const enAttente = stagiaires.filter(s => s.statut === 'En attente').length;
+    const total = actifs + bloques + enAttente;
+    
+    if (total === 0) {
+      // Pas de données, garder le graphique vide
+      return;
+    }
+    
+    // Calculer les proportions pour le donut chart
+    const circumference = 2 * Math.PI * 40; // 251.2
+    const acceptesLength = (actifs / total) * circumference;
+    const refusesLength = (bloques / total) * circumference;
+    const attenteLength = (enAttente / total) * circumference;
+    
+    // Mettre à jour les cercles SVG
+    const circles = document.querySelectorAll('.donut circle');
+    if (circles.length >= 4) {
+      // Acceptés (vert) - commence à 0
+      circles[1].style.strokeDasharray = `${acceptesLength} 251`;
+      
+      // Refusés (rouge) - commence après acceptés
+      circles[2].style.strokeDasharray = `${refusesLength} 251`;
+      circles[2].style.strokeDashoffset = -acceptesLength;
+      
+      // En attente (orange) - commence après acceptés + refusés
+      circles[3].style.strokeDasharray = `${attenteLength} 251`;
+      circles[3].style.strokeDashoffset = -(acceptesLength + refusesLength);
+    }
+  }
+
+  // Fonction pour charger les données depuis le backend
+  async function loadBackendData() {
+    try {
+      const BACKEND_URL = 'http://192.168.11.249:8000';
+      console.log('[BACKEND] Début du chargement des données depuis le backend...');
+      
+      // Charger les stagiaires
+      console.log('[BACKEND] Chargement des stagiaires...');
+      const stagiairesResponse = await fetch(`${BACKEND_URL}/api/auth/stagiaires/`);
+      const stagiairesData = await stagiairesResponse.json();
+      console.log('[BACKEND] Réponse stagiaires:', stagiairesData);
+      
+      if (stagiairesData.success) {
+        const stagiaires = stagiairesData.stagiaires.map(s => ({
+          id: s.id,
+          prenom: s.first_name,
+          nom: s.last_name,
+          email: s.email,
+          telephone: s.phone || '',
+          ecole: s.ecole || 'Non spécifié',
+          formation: s.formation || 'Non spécifié',
+          departement: s.departement || 'Non spécifié',
+          debut: s.date_debut_stage ? new Date(s.date_debut_stage).toLocaleDateString('fr-FR') : '-',
+          fin: s.date_fin_stage ? new Date(s.date_fin_stage).toLocaleDateString('fr-FR') : '-',
+          statut: 'Accepté',
+          absences: 0,
+          bloque: false,
+          rapport: 'Non déposé',
+          avatar: '#' + Math.floor(Math.random()*16777215).toString(16),
+          cv_url: s.cv_url,
+          cv_name: s.cv_name
+        }));
+        
+        localStorage.setItem('stagiaires', JSON.stringify(stagiaires));
+        console.log('[BACKEND] Stagiaires sauvegardés dans localStorage:', stagiaires.length);
+        
+        // Sauvegarder dans orchid_shared_data
+        if (window.sharedData) {
+          window.sharedData.updateData('stagiaires', {
+            total: stagiaires.length,
+            actifs: stagiaires.filter(s => s.statut === 'Accepté').length,
+            enAttente: stagiaires.filter(s => s.statut === 'En attente').length,
+            bloques: stagiaires.filter(s => s.statut === 'Refusé').length,
+            list: stagiaires
+          });
+          console.log('[BACKEND] Stagiaires sauvegardés dans orchid_shared_data');
+        }
+        
+        console.log('[BACKEND] Stagiaires chargés:', stagiaires.length);
+      } else {
+        console.error('[BACKEND] Erreur lors du chargement des stagiaires:', stagiairesData.error);
+      }
+      
+      // Charger les pointages
+      const pointagesResponse = await fetch(`${BACKEND_URL}/api/presences/pointages/`);
+      const pointagesData = await pointagesResponse.json();
+      if (pointagesData.success) {
+        window.sharedData.updateData('pointages', pointagesData.pointages);
+        console.log('[BACKEND] Pointages chargés:', pointagesData.pointages.length);
+      }
+      
+    } catch (error) {
+      console.error('[BACKEND] Erreur chargement des données:', error);
+    }
+  }
+
+  // Fonction pour synchroniser les pointages depuis le backend
+  async function syncPointagesFromBackend() {
+    try {
+      const BACKEND_URL = 'http://192.168.11.249:8000';
+      const response = await fetch(`${BACKEND_URL}/api/presences/pointages/`);
+      const data = await response.json();
+      if (data.success && data.pointages) {
+        // Mettre à jour les pointages dans orchid_shared_data
+        window.sharedData.updateData('pointages', data.pointages);
+        console.log('[SYNC] Pointages synchronisés:', data.pointages.length, 'pointages');
+      }
+    } catch (error) {
+      console.error('[SYNC] Erreur synchronisation pointages:', error);
+    }
+  }
+
+  // Fonction pour mettre à jour le graphique de présences
+  async function updatePresenceChart() {
+    // Synchroniser les données de pointage depuis le backend
+    await syncPointagesFromBackend();
+    
+    const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul'];
+    const barGroups = document.querySelectorAll('.bar-group');
+
+    // Utiliser les données de pointage réelles du système partagé
+    dashboardData = window.sharedData.getData();
+    const pointagesData = dashboardData.pointages || [];
+
+    // Calculer le nombre de présents aujourd'hui
+    const today = new Date().toISOString().split('T')[0];
+    const todayPointages = pointagesData.filter(p => p.date === today);
+    const uniquePresents = new Set(todayPointages.map(p => `${p.nom}_${p.prenom}`)).size;
+
+    console.log('[DEBUG] Pointages aujourd\'hui:', todayPointages.length);
+    console.log('[DEBUG] Présents uniques aujourd\'hui:', uniquePresents);
+    console.log('[DEBUG] Tous les pointages:', pointagesData);
+
+    // Mettre à jour le badge avec le nombre de personnes présentes aujourd'hui
+    const presenceCountBadge = document.getElementById('presenceCountBadge');
+    if (presenceCountBadge) {
+      presenceCountBadge.textContent = `${uniquePresents} présents`;
+    }
+
+    // Calculer monthlyData depuis les pointages réels
+    const monthNames = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+    const monthlyData = {};
+    pointagesData.forEach(p => {
+      const dateStr = p.date ? p.date.split('T')[0] : null;
+      if (!dateStr) return;
+      const month = monthNames[new Date(dateStr).getMonth()];
+      if (!monthlyData[month]) monthlyData[month] = { presents: 0, absents: 0 };
+      monthlyData[month].presents++;
+    });
+    
+    months.forEach((month, index) => {
+      if (barGroups[index]) {
+        const bars = barGroups[index].querySelectorAll('.bar');
+        const presents = monthlyData[month]?.presents || 0;
+        const absents = monthlyData[month]?.absents || 0;
+        
+        // Calculer la hauteur maximale pour l'échelle
+        const maxValue = Math.max(presents + absents, 100);
+        
+        if (bars[0]) {
+          bars[0].style.height = `${(presents / maxValue) * 100}px`;
+        }
+        if (bars[1]) {
+          bars[1].style.height = `${(absents / maxValue) * 100}px`;
+        }
+      }
+    });
+  }
+
+  // Fonction pour mettre à jour les alertes
+  function updateAlertes() {
+    const alertesContainer = document.getElementById('alertesContainer');
+    if (!alertesContainer) {
+      console.error('Conteneur d\'alertes non trouvé');
+      return;
+    }
+
+    // Lire les alertes depuis AlertManager (system_alerts) au lieu de dashboardData
+    let alertes = [];
+    if (window.alertManager) {
+      alertes = window.alertManager.getSystemAlerts();
+    } else {
+      // Fallback direct localStorage
+      alertes = JSON.parse(localStorage.getItem('system_alerts') || '[]');
+    }
+    console.log('Mise à jour des alertes avec les données:', alertes);
+    
+    alertesContainer.innerHTML = '';
+
+    if (!alertes || alertes.length === 0) {
+      alertesContainer.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Aucune alerte active</div>';
+      return;
+    }
+
+    alertes.forEach((alerte, index) => {
+      console.log(`Création de l'alerte ${index + 1}:`, alerte);
+      
+      const alertItem = document.createElement('div');
+      alertItem.className = 'alert-item';
+      alertItem.style.cursor = 'pointer';
+      alertItem.style.padding = '12px';
+      alertItem.style.borderRadius = '8px';
+      alertItem.style.marginBottom = '8px';
+      alertItem.style.border = '1px solid var(--border)';
+      alertItem.style.background = 'var(--card)';
+      
+      // Style différent pour les alertes non lues
+      if (!alerte.read) {
+        alertItem.style.borderLeft = '3px solid var(--primary-light)';
+        alertItem.style.background = 'rgba(0,75,168,0.05)';
+      }
+      
+      // Créer le contenu HTML de manière sécurisée
+      const iconHtml = alerte.icon || '!';
+      const messageHtml = alerte.message || 'Message d\'alerte';
+      const timeHtml = alerte.date ? new Date(alerte.date).toLocaleString('fr-FR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : 'Date inconnue';
+      const typeClass = alerte.type === 'critique' ? 'danger' : alerte.type === 'avertissement' ? 'warn' : 'info';
+      
+      alertItem.innerHTML = `
+        <div class="alert-icon ${typeClass}" style="font-size:16px;margin-right:12px;">${iconHtml}</div>
+        <div style="flex:1;">
+          <div class="alert-msg" style="font-size:13px;margin-bottom:4px;"><strong>${messageHtml}</strong></div>
+          <div class="alert-time" style="font-size:11px;color:var(--muted);">${timeHtml}</div>
+        </div>
+      `;
+      
+      alertItem.onclick = () => {
+        console.log('Clic sur l\'alerte:', alerte);
+        // Marquer l'alerte comme lue via AlertManager
+        if (window.alertManager) {
+          window.alertManager.markAlertAsRead(alerte.id);
+        }
+        // Naviguer vers la page liée
+        if (alerte.link) {
+          navigateTo(alerte.link);
+        } else {
+          navigateTo('alertes.html');
+        }
+      };
+      
+      alertesContainer.appendChild(alertItem);
+    });
+    
+    console.log('Alertes affichées avec succès');
+  }
+
+  // Fonction pour mettre à jour l'avancement des projets
+  function updateProjetsProgress() {
+    const projetsContainer = document.getElementById('projetsContainer');
+    if (!projetsContainer) return;
+    
+    // Vider le conteneur
+    projetsContainer.innerHTML = '';
+
+    // Utiliser les données réelles depuis localStorage
+    const projetsData = loadProjetsData();
+    const projets = projetsData.list || [];
+    
+    if (projets.length === 0) {
+      projetsContainer.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Aucun projet en cours</div>';
+      return;
+    }
+
+    projets.forEach(projet => {
+      const statusClass = projet.etat === 'done' || projet.etat === 'termine' ? 'status-done' : 
+                        projet.etat === 'encours' ? 'status-encours' : 'status-retard';
+      const statusText = projet.etat === 'done' || projet.etat === 'termine' ? 'Terminé' : 
+                        projet.etat === 'encours' ? 'En cours' : 'En retard';
+      
+      // Calculer l'avancement réel basé sur les tâches et sous-tâches
+      let totalTasks = 0;
+      let completedTasks = 0;
+      let totalSubs = 0;
+      let completedSubs = 0;
+      
+      if (projet.tasks && Array.isArray(projet.tasks)) {
+        projet.tasks.forEach(task => {
+          totalTasks++;
+          if (task.done) completedTasks++;
+          
+          if (task.subs && Array.isArray(task.subs)) {
+            task.subs.forEach(sub => {
+              totalSubs++;
+              if (sub.done) completedSubs++;
+            });
+          }
+        });
+      }
+      
+      const totalItems = totalTasks + totalSubs;
+      const completedItems = completedTasks + completedSubs;
+      const realProgress = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+      
+      // Couleur de progression selon l'avancement
+      let progressColor = 'var(--red)';
+      if (realProgress >= 100) {
+        progressColor = 'var(--green)';
+      } else if (realProgress >= 75) {
+        progressColor = '#27AE60';
+      } else if (realProgress >= 50) {
+        progressColor = '#F39C12';
+      } else if (realProgress >= 25) {
+        progressColor = '#E67E22';
+      }
+
+      const progressItem = document.createElement('div');
+      progressItem.className = 'progress-item';
+      progressItem.style.cursor = 'pointer';
+      progressItem.style.padding = '12px';
+      progressItem.style.borderRadius = '8px';
+      progressItem.style.marginBottom = '8px';
+      progressItem.style.border = '1px solid var(--border)';
+      progressItem.style.background = 'var(--card)';
+      progressItem.onclick = () => navigateTo('projets.html');
+      
+      progressItem.innerHTML = `
+        <div class="progress-header">
+          <span class="progress-name">${projet.nom}</span>
+          <span><span class="status-badge ${statusClass}">${statusText}</span> <span class="progress-pct">${realProgress}%</span></span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${realProgress}%;background:${progressColor}"></div></div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px;">
+          ${completedItems}/${totalItems} éléments terminés (${completedTasks}/${totalTasks} tâches, ${completedSubs}/${totalSubs} sous-tâches)
+        </div>
+      `;
+      
+      projetsContainer.appendChild(progressItem);
+    });
+  }
+
+  // Fonction pour mettre à jour le nombre d'alertes
+  function updateAlertBadge() {
+    // Utiliser AlertManager au lieu de sharedData
+    const unreadCount = window.alertManager ? window.alertManager.getUnreadAlertesCount() : 0;
+    
+    // Mettre à jour le badge dans la navigation
+    let navAlertBadge = document.querySelector('.nav-item[onclick*="alertes.html"] .nav-badge');
+    
+    // Si le sélecteur ne fonctionne pas, essayer une autre approche
+    if (!navAlertBadge) {
+      const navItems = document.querySelectorAll('.nav-item');
+      navItems.forEach(item => {
+        if (item.getAttribute('onclick') && item.getAttribute('onclick').includes('alertes.html')) {
+          navAlertBadge = item.querySelector('.nav-badge');
+        }
+      });
+    }
+    
+    if (navAlertBadge) {
+      navAlertBadge.textContent = unreadCount;
+      navAlertBadge.style.display = unreadCount > 0 ? 'inline-flex' : 'none';
+      
+      // Ajouter une animation si de nouvelles alertes
+      if (unreadCount > 0) {
+        navAlertBadge.style.animation = 'pulse 2s ease-in-out infinite';
+      } else {
+        navAlertBadge.style.animation = '';
+      }
+    }
+    
+    // Mettre à jour le badge dans la topbar
+    const topbarBadge = document.getElementById('notifBadge');
+    const topbarDot = document.getElementById('notifDot');
+    
+    if (topbarBadge) {
+      topbarBadge.textContent = unreadCount;
+      topbarBadge.style.display = unreadCount > 0 ? 'block' : 'none';
+    }
+    
+    if (topbarDot) {
+      topbarDot.style.display = unreadCount > 0 ? 'block' : 'none';
+    }
+    
+    // Debug
+    console.log('Badge alertes mis à jour:', unreadCount);
+  }
+
+  // Fonction pour rafraîchir toutes les données
+  async function refreshDashboard() {
+    console.log('[DASHBOARD] Début de refreshDashboard');
+    // Synchroniser toutes les données depuis les différents localStorage
+    if (window.sharedData) {
+      window.sharedData.syncProjetsData();
+      window.sharedData.syncStagiairesData();
+      window.sharedData.syncRapportsData();
+    }
+    
+    // Récupérer les données fraîches
+    dashboardData = window.sharedData.getData();
+    console.log('[DASHBOARD] Données récupérées:', dashboardData);
+    await updateKPIs();
+    console.log('[DASHBOARD] updateKPIs terminé');
+    await updatePresenceChart();
+    updateAlertes();
+    updateProjetsProgress();
+    updateAlertBadge();
+    updateCandidaturesChart();
+  }
+
+  // Fonction d'initialisation
+  async function initDashboard() {
+    console.log('[DASHBOARD] Début de initDashboard');
+    
+    // Vérifier les droits d'accès et filtrer la navigation
+    const currentUser = checkRoleAccess();
+    filterNavByRole();
+    
+    const d = new Date();
+    document.getElementById('currentDate').textContent = d.toLocaleDateString('fr-FR', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+    
+    // Navigation spécifique pour le dashboard
+    document.querySelector('.nav-item[onclick="navigateTo(\'dashboard.html\')"]')?.classList.add('active');
+    
+    // Charger les données depuis le backend immédiatement
+    try {
+      console.log('[DASHBOARD] Chargement des données depuis le backend...');
+      await loadBackendData();
+      console.log('[DASHBOARD] Données backend chargées');
+      
+      // Synchroniser toutes les données après le chargement
+      if (window.sharedData) {
+        window.sharedData.syncAllData();
+      }
+      
+      // Recharger les données après synchronisation
+      dashboardData = window.sharedData.getData();
+      console.log('[DASHBOARD] Données après syncAllData:', dashboardData);
+      
+      // Initialiser les données
+      console.log('[DASHBOARD] Appel de refreshDashboard...');
+      await refreshDashboard();
+      console.log('[DASHBOARD] refreshDashboard terminé');
+      
+      // Debug: Afficher les données dans la console
+      console.log('Dashboard initialisé avec les données:', dashboardData);
+      console.log('Nombre de stagiaires:', dashboardData.stagiaires?.total || 0);
+      console.log('Nombre de projets:', dashboardData.projets?.total || 0);
+      console.log('Nombre de rapports:', dashboardData.rapports?.aujourdhui || 0);
+    } catch (error) {
+      console.error('Erreur lors du chargement des données:', error);
+      // Fallback: utiliser les données existantes
+      await refreshDashboard();
+    }
+    
+    // Attendre que les données soient initialisées
+    setTimeout(() => {
+      
+      // Debug: Afficher les données dans la console
+      console.log('Dashboard initialisé avec les données:', dashboardData);
+      console.log('Nombre d\'alertes non lues:', window.alertManager ? window.alertManager.getUnreadAlertesCount() : 0);
+      
+      // Forcer une mise à jour immédiate
+      setTimeout(() => {
+        updateAlertes();
+        updateAlertBadge();
+        
+        // Vérifier si le conteneur d'alertes est vide et afficher un message approprié
+        const alertesContainer = document.getElementById('alertesContainer');
+        if (alertesContainer && alertesContainer.innerHTML.trim() === '') {
+          console.log('Conteneur d\'alertes vide, affichage du message par défaut');
+          alertesContainer.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Aucune alerte active</div>';
+        }
+      }, 200);
+    }, 500);
+    
+    // Rafraîchir automatiquement toutes les 30 secondes
+    setInterval(refreshDashboard, 30000);
+  }
+
+  // Écouter les mises à jour de données depuis les autres pages
+  window.addEventListener('dataUpdated', (event) => {
+    console.log('Dashboard: Données mises à jour:', event.detail);
+    if (event.detail.section === 'alertes' || event.detail.section === 'pointages') {
+      refreshDashboard();
+    }
+  });
+
+  // Initialisation au chargement de la page
+  document.addEventListener('DOMContentLoaded', initDashboard);
+</script>
+</body>
+</html>

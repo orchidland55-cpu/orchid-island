@@ -1,0 +1,1681 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orchid Island — Rapports</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07070A; --sidebar: #24272B; --card: #24272B; --border: #4A525A;
+    --text: #F0F4F8; --muted: #B8C5D6; --primary: #004BA8; --primary-light: #3E78B2;
+    --green: #27AE60; --red: #E74C3C; --orange: #F39C12; --purple: #8E44AD;
+  }
+  /* Animated background */
+  .bg-orbs {
+    position: fixed; inset: 0; z-index: 0;
+    pointer-events: none;
+  }
+  .orb { 
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.15;
+    animation: float 8s ease-in-out infinite;
+  }
+  .orb-1 { width: 500px; height: 500px; background: radial-gradient(circle, #004BA8, transparent); top: -100px; right: -100px; animation-delay: 0s; }
+  .orb-2 { width: 400px; height: 400px; background: radial-gradient(circle, #3E78B2, transparent); bottom: -80px; left: 10%; animation-delay: 3s; }
+  .orb-3 { width: 300px; height: 300px; background: radial-gradient(circle, #4A525A, transparent); top: 50%; left: 30%; animation-delay: 5s; }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-30px) scale(1.05); }
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; font-size: 14px; }
+  .sidebar { width: 240px; background: linear-gradient(135deg, #24272B 0%, #07070A 50%, #1A1F2E 100%); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; bottom: 0; }
+  .sidebar-logo { padding: 24px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+  .logo-icon { width: 38px; height: 38px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 8px 32px rgba(0,75,168,0.3); animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+  .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; }
+  .logo-sub { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+  .nav-section { padding: 16px 12px 8px; }
+  .nav-label { font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; padding: 0 8px; margin-bottom: 6px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; color: var(--muted); cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-size: 13px; margin-bottom: 2px; position: relative; overflow: hidden; }
+  .nav-item::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0,75,168,0.1), transparent);
+    transition: left 0.5s;
+  }
+  .nav-item:hover::before { left: 100%; }
+  .nav-item:hover { background: rgba(0,75,168,0.08); color: var(--text); transform: translateX(5px); }
+  .nav-item.active { background: linear-gradient(135deg, rgba(0,75,168,0.15), rgba(62,120,178,0.1)); color: var(--primary-light); font-weight: 600; border: 1px solid rgba(0,75,168,0.2); box-shadow: 0 4px 20px rgba(0,75,168,0.2); }
+  .nav-badge { margin-left: auto; background: var(--red); color: white; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 20px; }
+  .main { margin-left: 240px; flex: 1; }
+  .topbar { height: 60px; background: linear-gradient(135deg, #24272B 0%, #1A1F2E 100%); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; position: sticky; top: 0; z-index: 50; backdrop-filter: blur(10px); }
+  .topbar-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; }
+  .topbar-right { display: flex; gap: 10px; }
+  .btn-add { display: flex; align-items: center; gap: 8px; padding: 9px 18px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #F0F4F8; border: none; border-radius: 10px; font-family: 'Inter'; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(10px); }
+  .btn-add:hover { transform: translateY(-2px) scale(1.05); box-shadow: 0 8px 25px rgba(0,75,168,0.3); }
+  .content { padding: 28px; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 4px; background: linear-gradient(135deg, var(--card), #1A1F2E); border: 1px solid var(--border); border-radius: 12px; padding: 4px; width: fit-content; margin-bottom: 24px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(10px); }
+  .tabs:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,75,168,0.2); }
+  .tab { padding: 9px 22px; border-radius: 9px; font-size: 13px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: var(--muted); font-weight: 500; }
+  .tab.active { background: linear-gradient(135deg, rgba(0,75,168,0.15), rgba(62,120,178,0.1)); color: var(--primary-light); font-weight: 600; box-shadow: 0 4px 20px rgba(0,75,168,0.2); }
+
+  /* Stats KPI */
+  .kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 24px; }
+  .kpi-mini { background: linear-gradient(135deg, var(--card), #1A1F2E); border: 1px solid var(--border); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 6px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(10px); position: relative; overflow: hidden; }
+  .kpi-mini::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light), var(--primary));
+    animation: shimmer 2s linear infinite;
+  }
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  .kpi-mini:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 15px 40px rgba(0,75,168,0.3); border-color: var(--primary-light); }
+  .kpi-mini-val { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; }
+  .kpi-mini-label { font-size: 11px; color: var(--muted); }
+
+  /* Panel views */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* Journalier table */
+  .table-card { background: linear-gradient(135deg, var(--card), #1A1F2E); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-bottom: 20px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(10px); position: relative; }
+  .table-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light), var(--primary));
+    animation: shimmer 3s linear infinite;
+  }
+  .table-card:hover { transform: translateY(-3px) scale(1.01); box-shadow: 0 15px 40px rgba(0,75,168,0.3); border-color: var(--primary-light); }
+  .table-header-bar { display: flex; justify-content: space-between; align-items: center; padding: 18px 22px; border-bottom: 1px solid var(--border); }
+  .table-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; }
+  table { width: 100%; border-collapse: collapse; }
+  thead { background: rgba(255,255,255,0.02); }
+  th { padding: 11px 18px; text-align: left; font-size: 11px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+  td { padding: 14px 18px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  tr:last-child td { border-bottom: none; }
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-depose { background: rgba(34,211,160,0.12); color: var(--green); }
+  .badge-non { background: rgba(255,87,87,0.12); color: var(--red); }
+  .badge-valide { background: rgba(34,211,160,0.12); color: var(--green); }
+  .badge-attente { background: rgba(245,188,76,0.12); color: var(--gold); }
+  .badge-refuse { background: rgba(255,87,87,0.12); color: var(--red); }
+  .stag-info { display: flex; align-items: center; gap: 10px; }
+  .mini-av { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+  .action-btns { display: flex; gap: 8px; }
+  .btn-icon { padding: 5px 12px; border: 1px solid var(--border); background: transparent; border-radius: 8px; color: var(--muted); font-size: 12px; cursor: pointer; transition: all 0.2s; font-family: 'Inter'; }
+  .btn-icon:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+  .btn-validate { padding: 5px 12px; border: 1px solid rgba(34,211,160,0.3); background: rgba(34,211,160,0.08); border-radius: 8px; color: var(--green); font-size: 12px; cursor: pointer; transition: all 0.2s; font-family: 'Inter'; }
+  .btn-validate:hover { background: rgba(34,211,160,0.15); }
+  .btn-reject { padding: 5px 12px; border: 1px solid rgba(255,87,87,0.3); background: rgba(255,87,87,0.08); border-radius: 8px; color: var(--red); font-size: 12px; cursor: pointer; transition: all 0.2s; font-family: 'Inter'; }
+  .btn-reject:hover { background: rgba(255,87,87,0.15); }
+
+  /* Rapport detail card */
+  .report-detail-card { background: linear-gradient(135deg, var(--card), #1A1F2E); border: 1px solid var(--border); border-radius: 14px; padding: 24px; margin-bottom: 16px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(10px); position: relative; overflow: hidden; }
+  .report-detail-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light), var(--primary));
+    animation: shimmer 4s linear infinite;
+  }
+  .report-detail-card:hover { transform: translateY(-3px) scale(1.01); box-shadow: 0 15px 40px rgba(0,75,168,0.3); border-color: var(--primary-light); }
+  .report-detail-card:hover { border-color: rgba(77,159,255,0.3); }
+  .report-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+  .report-meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .tasks-section { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .tasks-col { background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+  .tasks-col-title { font-size: 12px; font-weight: 600; margin-bottom: 10px; }
+  .tasks-col.done .tasks-col-title { color: var(--green); }
+  .tasks-col.ongoing .tasks-col-title { color: var(--orange); }
+  .task-item { font-size: 12px; color: var(--text); padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); display: flex; align-items: center; gap: 8px; }
+  .task-item:last-child { border-bottom: none; }
+  .task-comment { margin-top: 14px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-left: 3px solid var(--blue); border-radius: 8px; padding: 12px; font-size: 13px; color: var(--muted); line-height: 1.5; }
+  /* Upload zone */
+  .upload-zone { border: 2px dashed var(--border); border-radius: 14px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.3s; }
+  .upload-zone:hover { border-color: var(--blue); background: rgba(77,159,255,0.04); }
+  .upload-icon { font-size: 40px; margin-bottom: 12px; }
+  .upload-title { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+  .upload-sub { font-size: 13px; color: var(--muted); }
+  .btn-upload { display: inline-block; margin-top: 16px; padding: 10px 24px; background: linear-gradient(135deg, var(--blue), #2563EB); color: white; border: none; border-radius: 10px; font-family: 'Inter'; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .whatsapp-banner { background: rgba(34,211,160,0.06); border: 1px solid rgba(34,211,160,0.2); border-radius: 12px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+  .wa-icon { font-size: 24px; }
+  .wa-text strong { display: block; font-size: 14px; }
+  .wa-text span { font-size: 12px; color: var(--muted); }
+  
+  /* Sidebar footer styles */
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 16px 12px;
+    border-top: 1px solid var(--border);
+  }
+  .user-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.02);
+  }
+  .user-avatar {
+    width: 32px; height: 32px;
+    background: var(--gold);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #050A14;
+  }
+  .user-name { font-size: 13px; font-weight: 500; }
+  .user-role { font-size: 11px; color: var(--muted); }
+</style>
+<script src="../auth_roles.js"></script>
+</head>
+<body>
+<div class="bg-orbs">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div><div class="logo-text">Orchid Island</div><div class="logo-sub">REAL ESTATE RH</div></div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Principal</div>
+    <div class="nav-item" onclick="navigateTo('dashboard.html')">Tableau de Bord</div>
+    <div class="nav-item" onclick="navigateTo('stagiaires.html')">Stagiaires <span class="nav-badge" id="badgeStagiaires">0</span></div>
+    <div class="nav-item" onclick="navigateTo('projets.html')">Projets</div>
+    <div class="nav-item" onclick="navigateTo('taches.html')">Tâches</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Gestion</div>
+    <div class="nav-item" onclick="navigateTo('pointage_qr.html')">Pointage QR</div>
+    <div class="nav-item active" onclick="navigateTo('rapports.html')">Rapports <span class="nav-badge" id="badgeRapports">0</span></div>
+    <div class="nav-item" onclick="navigateTo('alertes.html')">Alertes <span class="nav-badge" id="badgeAlertes">0</span></div>
+  </div>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar" id="userAvatar">Admin</div>
+      <div>
+        <div class="user-name" id="userName">Admin Orchid</div>
+        <div class="user-role" id="userRole">Administrateur</div>
+        <div class="user-email" id="userEmail" style="font-size: 11px; color: var(--muted); margin-top: 2px;">admin@orchid-island.com</div>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="logout()" style="width: 100%; padding: 8px; background: rgba(255,87,87,0.1); border: 1px solid rgba(255,87,87,0.3); border-radius: 6px; color: var(--red); font-size: 12px; cursor: pointer; margin-top: 8px; transition: all 0.2s;">
+      <span>Logout</span> Déconnexion
+    </button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">📝 Gestion des Rapports</div>
+    <div class="topbar-right">
+      <button class="btn-add" onclick="showUploadModal()">📎 Déposer Rapport Final</button>
+    </div>
+  </div>
+  <div class="content">
+
+    <!-- WhatsApp reminder banner -->
+    <div class="whatsapp-banner">
+      <div class="wa-icon">📱</div>
+      <div class="wa-text">
+        <strong>Rappel automatique WhatsApp activé à 17h00</strong>
+        <span>Les stagiaires n'ayant pas déposé leur rapport reçoivent un message automatique chaque soir.</span>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('journalier', this)">📋 Rapports Journaliers</div>
+      <div class="tab" onclick="switchTab('final', this)">📄 Rapports Finaux de Stage</div>
+      <div class="tab" onclick="switchTab('deposit', this)">📎 Déposer un Rapport</div>
+      <div class="tab" onclick="switchTab('stagiaires', this)">👥 Suivi par Stagiaire</div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-row">
+      <div class="kpi-mini"><div class="kpi-mini-val" id="kpiDeposes" style="color:var(--green)">18</div><div class="kpi-mini-label">Rapports déposés aujourd'hui</div></div>
+      <div class="kpi-mini"><div class="kpi-mini-val" id="kpiManquants" style="color:var(--red)">6</div><div class="kpi-mini-label">Rapports manquants</div></div>
+      <div class="kpi-mini"><div class="kpi-mini-val" id="kpiFinauxDeposes" style="color:var(--blue)">12</div><div class="kpi-mini-label">Rapports finaux déposés</div></div>
+      <div class="kpi-mini"><div class="kpi-mini-val" id="kpiFinauxValidés" style="color:var(--green)">9</div><div class="kpi-mini-label">Rapports finaux validés</div></div>
+      <div class="kpi-mini"><div class="kpi-mini-val" id="kpiEnAttente" style="color:var(--gold)">3</div><div class="kpi-mini-label">En attente de validation</div></div>
+    </div>
+
+    <!-- JOURNALIER PANEL -->
+    <div class="panel active" id="panel-journalier">
+      <div class="table-card">
+        <div class="table-header-bar">
+          <span class="table-title">📋 Rapports Journaliers — Aujourd'hui <span id="todayDate"></span></span>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span style="font-size:12px;color:var(--muted)" id="statsDepot">0 déposés · 0 manquants</span>
+            <button class="btn-icon" style="border-color:rgba(37,211,102,0.3);color:#25D366" onclick="sendAlertToAdmin()">📱 Alerte Admin</button>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Stagiaire</th><th>Date</th><th>Statut dépôt</th><th>Fichier</th><th>Projet</th><th>Heure dépôt</th><th>Actions</th></tr></thead>
+          <tbody id="journalierBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- FINAL PANEL -->
+    <div class="panel" id="panel-final">
+      <div class="table-card">
+        <div class="table-header-bar">
+          <span class="table-title">📄 Rapports Finaux de Stage</span>
+          <span style="font-size:12px;color:var(--muted)" id="statsFinaux">0 déposés</span>
+        </div>
+        <table>
+          <thead><tr><th>Stagiaire</th><th>Date dépôt</th><th>Statut</th><th>Fichier</th><th>Projet</th><th>Heure dépôt</th><th>Actions</th></tr></thead>
+          <tbody id="finauxBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- DEPOSIT PANEL -->
+    <div class="panel" id="panel-deposit">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px">
+        <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:20px">📎 Déposer un Rapport</div>
+        
+        <div style="margin-bottom:20px">
+          <label style="display:block;font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;font-weight:600">Nom de famille</label>
+          <input type="text" id="reportNom" class="form-input" style="width:100%;padding:12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Inter';font-size:13px;outline:none" placeholder="Ex: Amrani">
+        </div>
+        
+        <div style="margin-bottom:20px">
+          <label style="display:block;font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;font-weight:600">Prénom</label>
+          <input type="text" id="reportPrenom" class="form-input" style="width:100%;padding:12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Inter';font-size:13px;outline:none" placeholder="Ex: Youssef">
+        </div>
+        
+        <div style="margin-bottom:20px">
+          <label style="display:block;font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;font-weight:600">Nom de projet</label>
+          <input type="text" id="reportProjet" class="form-input" style="width:100%;padding:12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Inter';font-size:13px;outline:none" placeholder="Ex: Projet Immobilier">
+        </div>
+        
+        <div style="margin-bottom:20px">
+          <label style="display:block;font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;font-weight:600">Type de rapport</label>
+          <select id="reportType" style="width:100%;padding:12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Inter';font-size:13px;outline:none" onchange="toggleReportFields()">
+            <option value="journalier">Rapport Journalier</option>
+            <option value="final">Rapport Final de Stage</option>
+          </select>
+        </div>
+
+        <!-- Champs pour rapport journalier -->
+        <div id="journalierFields" style="margin-bottom:20px">
+          <div class="upload-zone" style="padding:24px;margin-bottom:14px">
+            <div class="upload-icon">📄</div>
+            <div class="upload-title">Déposer votre Rapport Journalier</div>
+            <div class="upload-sub">Format Word (.docx) ou PDF · Taille maximale: 10 MB</div>
+            <input type="file" id="journalierFile" accept=".docx,.doc,.pdf" style="display:none" onchange="handleJournalierFileSelect(this)">
+            <button class="btn-upload" onclick="document.getElementById('journalierFile').click()">📎 Choisir un fichier</button>
+            <div id="selectedJournalierFileName" style="margin-top:12px;font-size:12px;color:var(--green)"></div>
+          </div>
+          <div style="margin-bottom:14px">
+            <label style="display:block;font-size:11px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;font-weight:600">Commentaire libre</label>
+            <textarea id="commentaire" style="width:100%;min-height:60px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'Inter';font-size:13px;padding:12px;outline:none;resize:vertical" placeholder="Difficultés rencontrées, remarques..."></textarea>
+          </div>
+        </div>
+
+        <!-- Champs pour rapport final -->
+        <div id="finalFields" style="display:none;margin-bottom:20px">
+          <div class="upload-zone" style="padding:24px">
+            <div class="upload-icon">📄</div>
+            <div class="upload-title">Déposer votre Rapport Final de Stage</div>
+            <div class="upload-sub">Format Word (.docx) ou PDF · Taille maximale: 10 MB</div>
+            <input type="file" id="finalFile" accept=".docx,.doc,.pdf" style="display:none" onchange="handleFileSelect(this)">
+            <button class="btn-upload" onclick="document.getElementById('finalFile').click()">📎 Choisir un fichier</button>
+            <div id="selectedFileName" style="margin-top:12px;font-size:12px;color:var(--green)"></div>
+          </div>
+        </div>
+
+        <button class="btn-add" style="width:100%;justify-content:center" id="submitBtn" onclick="submitReport()">💾 Soumettre le rapport</button>
+        <div id="loadingIndicator" style="display:none;margin-top:12px;text-align:center;color:var(--muted);font-size:12px">
+          ⏳ Lecture du fichier en cours...
+          <div style="margin-top:8px;background:rgba(255,255,255,0.1);border-radius:4px;height:6px;overflow:hidden">
+            <div id="progressBar" style="width:0%;height:100%;background:linear-gradient(90deg,var(--blue),#2563EB);transition:width 0.3s"></div>
+          </div>
+          <div id="progressText" style="margin-top:4px;font-size:11px">0%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAGIAIRES PANEL -->
+    <div class="panel" id="panel-stagiaires">
+      <div class="table-card">
+        <div class="table-header-bar">
+          <span class="table-title">👥 Rapports déposés par Stagiaire</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Stagiaire</th>
+              <th>École</th>
+              <th>Début stage</th>
+              <th>Fin stage</th>
+              <th>Rapports déposés</th>
+              <th>Dernier dépôt</th>
+              <th>Taux dépôt</th>
+            </tr>
+          </thead>
+          <tbody id="stagiaireRapportsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/common.js"></script>
+<script>
+// Fonctions spécifiques à la gestion des rapports
+let journaliers = [];
+let finaux = [];
+
+// Charger les données depuis localStorage
+function loadRapports() {
+  const data = JSON.parse(localStorage.getItem('rapports') || '{"list":[],"finaux":[]}');
+  journaliers = data.list || [];
+  finaux = data.finaux || [];
+  console.log('[RAPPORTS] Données chargées:', journaliers.length, 'rapports journaliers');
+  
+  // Synchroniser avec orchid_shared_data
+  if (window.sharedData) {
+    const today = new Date().toLocaleDateString('fr-FR');
+    const rapportsAujourdhui = journaliers.filter(r => r.date === today).length;
+    const finauxEnAttente = finaux.filter(r => r.statut === 'attente').length;
+    
+    window.sharedData.updateData('rapports', {
+      aujourdhui: rapportsAujourdhui,
+      manquants: 0,
+      finauxDeposes: finaux.length,
+      finauxValides: finaux.filter(r => r.statut === 'valide').length,
+      enAttente: finauxEnAttente,
+      list: journaliers
+    });
+  }
+  
+  renderJournaliers();
+  renderFinaux();
+  updateStats();
+  updateNavBadges(); // Mettre à jour les badges de navigation
+  
+  // Démarrer le timer pour les alertes WhatsApp
+  startWhatsAppAlertTimer();
+}
+
+function renderJournaliers() {
+  const tbody = document.getElementById('journalierBody');
+  console.log('[RAPPORTS] renderJournaliers - tbody:', tbody, 'journaliers.length:', journaliers.length);
+  
+  // Récupérer la liste des stagiaires
+  let stagiaires = [];
+  try {
+    if (window.sharedData && window.sharedData.getData) {
+      const data = window.sharedData.getData();
+      stagiaires = data.stagiaires ? data.stagiaires.list || [] : [];
+    } else {
+      stagiaires = JSON.parse(localStorage.getItem('stagiaires') || '[]');
+    }
+  } catch (e) {
+    console.error('[RAPPORTS] Erreur lors du chargement des stagiaires:', e);
+    stagiaires = [];
+  }
+  
+  const totalStagiaires = stagiaires.length;
+  const deposes = journaliers.length;
+  const manquants = Math.max(0, totalStagiaires - deposes);
+  
+  // Mettre à jour les statistiques
+  document.getElementById('statsDepot').textContent = `${deposes} déposés · ${manquants} manquants`;
+  
+  // Mettre à jour les KPI
+  const kpiDeposes = document.getElementById('kpiDeposes');
+  if (kpiDeposes) {
+    kpiDeposes.textContent = deposes;
+  }
+  
+  const kpiManquants = document.getElementById('kpiManquants');
+  if (kpiManquants) {
+    kpiManquants.textContent = manquants;
+  }
+  
+  const kpiFinauxDeposes = document.getElementById('kpiFinauxDeposes');
+  if (kpiFinauxDeposes) {
+    kpiFinauxDeposes.textContent = finaux.length;
+  }
+  
+  const kpiFinauxValidés = document.getElementById('kpiFinauxValidés');
+  if (kpiFinauxValidés) {
+    const valides = finaux.filter(f => f.statut === 'valide').length;
+    kpiFinauxValidés.textContent = valides;
+  }
+  
+  const kpiEnAttente = document.getElementById('kpiEnAttente');
+  if (kpiEnAttente) {
+    const enAttente = finaux.filter(f => f.statut === 'attente').length;
+    kpiEnAttente.textContent = enAttente;
+  }
+  
+  if (journaliers.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted);">Aucun rapport journalier aujourd\'hui</td></tr>';
+    return;
+  }
+  
+  console.log('[RAPPORTS] Génération du tableau avec', journaliers.length, 'rapports');
+  tbody.innerHTML = journaliers.map(r => `
+    <tr>
+      <td><div class="stag-info">
+        <div class="mini-av" style="background:${r.color || '#4A525A'}22;color:${r.color || '#4A525A'}">${r.stagiaire ? r.stagiaire[0] : ''}${r.stagiaire && r.stagiaire.split(' ')[1] ? r.stagiaire.split(' ')[1][0] : ''}</div>
+        <span>${r.stagiaire || 'Stagiaire inconnu'}</span>
+      </div></td>
+      <td style="font-size:13px;color:var(--muted)">${r.date || new Date().toLocaleDateString('fr-FR')}</td>
+      <td><span class="badge ${r.statut === 'Validé' ? 'badge-valide' : r.statut === 'Déposé' ? 'badge-depose' : 'badge-non'}">${r.statut === 'Validé' ? '✅' : r.statut === 'Déposé' ? '✅' : '❌'} ${r.statut || 'Non déposé'}</span></td>
+      <td><span style="font-weight:600;color:var(--blue);font-size:12px;cursor:pointer;text-decoration:underline" onclick="viewReport(${r.id})">${r.fichier || '—'}</span></td>
+      <td style="font-size:12px;color:var(--muted)">${r.projet || '—'}</td>
+      <td><span style="font-family:monospace;color:var(--blue)">${r.heure || '—'}</span></td>
+      <td><div class="action-btns">
+        <button class="btn-icon" onclick="viewReport(${r.id})">👁️ Voir</button>
+        <button class="btn-icon" style="border-color:rgba(46,204,113,0.3);color:var(--green)" onclick="validateReport(${r.id})">✅ Valider</button>
+        <button class="btn-icon" style="border-color:rgba(231,76,60,0.3);color:var(--red)" onclick="deleteReport(${r.id})">🗑️ Supprimer</button>
+      </div></td>
+    </tr>
+  `).join('');
+}
+
+// Voir les détails d'un rapport journalier
+function viewReport(reportId) {
+  console.log('[RAPPORTS] viewReport appelé avec ID:', reportId);
+  const report = journaliers.find(r => r.id === reportId);
+  console.log('[RAPPORTS] Rapport trouvé:', report);
+  if (!report) return;
+  
+  const content = `
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Stagiaire</div>
+      <div style="font-size:16px;font-weight:600">${report.stagiaire}</div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Nom</div>
+      <div style="font-size:14px">${report.nom || 'N/A'}</div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Prénom</div>
+      <div style="font-size:14px">${report.prenom || 'N/A'}</div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Projet</div>
+      <div style="font-size:14px">${report.projet || 'N/A'}</div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Date</div>
+      <div style="font-size:14px">${report.date}</div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Heure</div>
+      <div style="font-size:14px;font-family:monospace">${report.heure}</div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Fichier</div>
+      <div style="font-size:14px;color:var(--blue)">${report.fichier || 'N/A'}</div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Commentaire</div>
+      <div style="font-size:14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:12px">${report.commentaire || 'Aucun commentaire'}</div>
+    </div>
+  `;
+  
+  document.getElementById('reportModalContent').innerHTML = content;
+  
+  // Afficher le contenu du fichier si disponible
+  const filePreview = document.getElementById('filePreview');
+  const filePreviewContent = document.getElementById('filePreviewContent');
+  const filePreviewIframe = document.getElementById('filePreviewIframe');
+  
+  if (report.fichierContenu) {
+    filePreview.style.display = 'block';
+    // Vérifier si le contenu est en base64 (Word/PDF) ou texte
+    if (report.fichierContenu.startsWith('data:application/pdf') || report.fichierContenu.startsWith('data:application/vnd')) {
+      // Afficher le fichier dans l'iframe pour PDF/Word
+      filePreviewContent.style.display = 'none';
+      filePreviewIframe.style.display = 'block';
+      filePreviewIframe.src = report.fichierContenu;
+    } else if (report.fichierContenu.startsWith('data:')) {
+      filePreviewContent.innerHTML = '<span style="color:var(--muted)">⚠️ Le format de fichier n\'est pas supporté pour l\'affichage direct. Veuillez télécharger le fichier pour le lire.</span>';
+      filePreviewIframe.style.display = 'none';
+    } else {
+      // Afficher le contenu texte
+      filePreviewContent.style.display = 'block';
+      filePreviewContent.textContent = report.fichierContenu;
+      filePreviewIframe.style.display = 'none';
+    }
+  } else {
+    filePreview.style.display = 'none';
+  }
+  
+  const modal = document.getElementById('reportModal');
+  console.log('[RAPPORTS] Modal trouvée:', modal);
+  modal.style.display = 'flex';
+  console.log('[RAPPORTS] Modal ouverte avec display:', modal.style.display);
+}
+
+// Fermer la modal
+function closeReportModal() {
+  document.getElementById('reportModal').style.display = 'none';
+}
+
+// Vérifier et envoyer les alertes WhatsApp après 17h
+function checkAndSendWhatsAppAlerts() {
+  const now = new Date();
+  const currentHour = now.getHours();
+  
+  // Vérifier si l'heure est après 17h (17:00)
+  if (currentHour >= 17) {
+    console.log('[RAPPORTS] Vérification des alertes WhatsApp après 17h');
+    
+    // Numéro de l'admin
+    const adminNumber = '+212681314877';
+    
+    // Récupérer les rapports d'aujourd'hui
+    const today = new Date().toLocaleDateString('fr-FR');
+    const rapportsAujourdhui = journaliers.filter(r => r.date === today);
+    
+    // Construire la liste des rapports
+    let rapportList = '';
+    rapportsAujourdhui.forEach((r, index) => {
+      rapportList += `\n${index + 1}. ${r.stagiaire} - ${r.fichier} - ${r.heure}`;
+    });
+    
+    if (rapportList === '') {
+      rapportList = '\nAucun rapport déposé aujourd\'hui';
+    }
+    
+    // Construire le message
+    const message = `📊 Rapports du ${today}\n\nListe des rapports déposés aujourd'hui :${rapportList}`;
+    
+    // Envoyer l'alerte à l'admin
+    sendWhatsAppAlert(adminNumber, message);
+  }
+}
+
+// Envoyer une alerte WhatsApp via WhatsApp Web
+function sendWhatsAppAlert(phoneNumber, message) {
+  // Formater le numéro
+  let formattedNumber = phoneNumber.replace(/\D/g, ''); // Enlever tous les caractères non numériques
+  
+  // Ne pas ajouter +212 si le numéro commence déjà par 212
+  if (!formattedNumber.startsWith('212')) {
+    formattedNumber = '212' + formattedNumber;
+  }
+  
+  // Ajouter + si nécessaire
+  if (!formattedNumber.startsWith('+')) {
+    formattedNumber = '+' + formattedNumber;
+  }
+  
+  // Encoder le message pour l'URL
+  const encodedMessage = encodeURIComponent(message);
+  
+  // Ouvrir WhatsApp Web avec le message pré-rempli
+  const whatsappUrl = `https://wa.me/${formattedNumber.replace('+', '')}?text=${encodedMessage}`;
+  
+  console.log(`[WHATSAPP] Ouverture WhatsApp pour ${formattedNumber}: ${message}`);
+  
+  // Ouvrir WhatsApp Web dans un nouvel onglet
+  window.open(whatsappUrl, '_blank');
+}
+
+// Démarrer le timer pour vérifier les alertes toutes les minutes
+function startWhatsAppAlertTimer() {
+  // Vérifier immédiatement
+  checkAndSendWhatsAppAlerts();
+  
+  // Vérifier toutes les minutes
+  setInterval(checkAndSendWhatsAppAlerts, 60000); // 60000ms = 1 minute
+}
+
+// Envoyer une alerte WhatsApp à l'admin manuellement
+function sendAlertToAdmin() {
+  const adminNumber = '+212681314877';
+  
+  // Récupérer les rapports d'aujourd'hui
+  const today = new Date().toLocaleDateString('fr-FR');
+  const rapportsAujourdhui = journaliers.filter(r => r.date === today);
+  
+  // Construire la liste des rapports
+  let rapportList = '';
+  rapportsAujourdhui.forEach((r, index) => {
+    rapportList += `\n${index + 1}. ${r.stagiaire} - ${r.fichier} - ${r.heure}`;
+  });
+  
+  if (rapportList === '') {
+    rapportList = '\nAucun rapport déposé aujourd\'hui';
+  }
+  
+  // Construire le message
+  const message = `📊 Rapports du ${today}\n\nListe des rapports déposés aujourd'hui :${rapportList}`;
+  
+  // Envoyer l'alerte
+  sendWhatsAppAlert(adminNumber, message);
+}
+
+// Télécharger un rapport journalier
+function downloadReport(reportId) {
+  const report = journaliers.find(r => r.id === reportId);
+  if (!report) {
+    alert('❌ Rapport non trouvé');
+    return;
+  }
+  
+  // Pour l'instant, simuler le téléchargement avec un message
+  // Dans une vraie application, cela téléchargerait le fichier depuis le serveur
+  alert(`📥 Téléchargement du fichier: ${report.fichier}\n\nNote: Le téléchargement sera implémenté avec le backend.`);
+}
+
+// Supprimer un rapport journalier
+function deleteReport(reportId) {
+  const report = journaliers.find(r => r.id === reportId);
+  if (!report) {
+    alert('❌ Rapport non trouvé');
+    return;
+  }
+  
+  if (!confirm(`Êtes-vous sûr de vouloir supprimer le rapport de ${report.stagiaire} ?`)) {
+    return;
+  }
+  
+  // Supprimer le rapport de la liste
+  journaliers = journaliers.filter(r => r.id !== reportId);
+  
+  // Sauvegarder dans localStorage
+  saveRapports();
+  
+  // Rafraîchir l'affichage
+  renderJournaliers();
+  
+  alert('✅ Rapport supprimé avec succès');
+}
+
+// Valider un rapport journalier
+function validateReport(reportId) {
+  console.log('[RAPPORTS] validateReport appelé avec ID:', reportId);
+  console.log('[RAPPORTS] Liste des rapports:', journaliers);
+  
+  const report = journaliers.find(r => r.id === reportId);
+  console.log('[RAPPORTS] Rapport trouvé:', report);
+  
+  if (!report) {
+    alert('❌ Rapport non trouvé');
+    return;
+  }
+  
+  if (!confirm(`Êtes-vous sûr de vouloir valider le rapport de ${report.stagiaire} ?`)) {
+    return;
+  }
+  
+  console.log('[RAPPORTS] Validation du rapport, statut actuel:', report.statut);
+  
+  // Mettre à jour le statut du rapport
+  report.statut = 'Validé';
+  console.log('[RAPPORTS] Nouveau statut:', report.statut);
+  
+  // Sauvegarder dans localStorage
+  saveRapports();
+  console.log('[RAPPORTS] Rapports sauvegardés');
+  
+  // Rafraîchir l'affichage
+  renderJournaliers();
+  console.log('[RAPPORTS] Affichage rafraîchi');
+  
+  alert('✅ Rapport validé avec succès');
+}
+
+// Voir les détails d'un rapport final
+function viewFinalReport(reportId) {
+  console.log('[RAPPORTS] viewFinalReport appelé avec ID:', reportId);
+  const report = finaux.find(r => r.id === reportId);
+  console.log('[RAPPORTS] Rapport final trouvé:', report);
+  if (!report) return;
+  
+  const content = `
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Stagiaire</div>
+      <div style="font-size:16px;font-weight:600">${report.nom || 'N/A'}</div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Nom de famille</div>
+      <div style="font-size:14px">${report.nomFamille || 'N/A'}</div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Prénom</div>
+      <div style="font-size:14px">${report.prenom || 'N/A'}</div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Projet</div>
+      <div style="font-size:14px">${report.projet || 'N/A'}</div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Date dépôt</div>
+      <div style="font-size:14px">${report.depot || 'N/A'}</div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Fichier</div>
+      <div style="font-size:14px;color:var(--blue)">${report.fichier || 'N/A'}</div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Statut</div>
+      <div style="font-size:14px">${report.statut || 'N/A'}</div>
+    </div>
+  `;
+  
+  document.getElementById('reportModalContent').innerHTML = content;
+  
+  // Afficher le contenu du fichier si disponible
+  const filePreview = document.getElementById('filePreview');
+  const filePreviewContent = document.getElementById('filePreviewContent');
+  const filePreviewIframe = document.getElementById('filePreviewIframe');
+  
+  console.log('[RAPPORTS] fichierContenu existe:', !!report.fichierContenu);
+  console.log('[RAPPORTS] fichierContenu (premiers 100 chars):', report.fichierContenu ? report.fichierContenu.substring(0, 100) : 'N/A');
+  
+  if (report.fichierContenu) {
+    filePreview.style.display = 'block';
+    // Vérifier si le contenu est en base64 (Word/PDF) ou texte
+    if (report.fichierContenu.startsWith('data:application/pdf') || report.fichierContenu.startsWith('data:application/vnd')) {
+      // Afficher le fichier dans l'iframe pour PDF/Word
+      console.log('[RAPPORTS] Format PDF/Word détecté, affichage dans iframe');
+      filePreviewContent.style.display = 'none';
+      filePreviewIframe.style.display = 'block';
+      filePreviewIframe.src = report.fichierContenu;
+    } else if (report.fichierContenu.startsWith('data:')) {
+      console.log('[RAPPORTS] Format de fichier non supporté pour affichage direct');
+      filePreviewContent.innerHTML = '<span style="color:var(--muted)">⚠️ Le format de fichier n\'est pas supporté pour l\'affichage direct. Veuillez télécharger le fichier pour le lire.</span>';
+      filePreviewIframe.style.display = 'none';
+    } else {
+      // Afficher le contenu texte
+      console.log('[RAPPORTS] Format texte détecté, affichage direct');
+      filePreviewContent.style.display = 'block';
+      filePreviewContent.textContent = report.fichierContenu;
+      filePreviewIframe.style.display = 'none';
+    }
+  } else {
+    console.log('[RAPPORTS] Pas de contenu de fichier, affichage d\'un message explicite');
+    filePreview.style.display = 'block';
+    filePreviewContent.style.display = 'block';
+    filePreviewContent.innerHTML = '<span style="color:var(--muted)">⚠️ Ce rapport a été déposé avant la mise à jour du système. Le contenu du fichier n\'est pas disponible pour l\'affichage direct. Veuillez redéposer le rapport pour activer l\'affichage du contenu.</span>';
+    filePreviewIframe.style.display = 'none';
+  }
+  
+  const modal = document.getElementById('reportModal');
+  modal.style.display = 'flex';
+  console.log('[RAPPORTS] Modal ouverte');
+}
+
+// Valider un rapport final
+function validateFinalReport(reportId) {
+  console.log('[RAPPORTS] validateFinalReport appelé avec ID:', reportId);
+  console.log('[RAPPORTS] Liste des rapports finaux:', finaux);
+  
+  const report = finaux.find(r => r.id === reportId);
+  console.log('[RAPPORTS] Rapport final trouvé:', report);
+  
+  if (!report) {
+    alert('❌ Rapport non trouvé');
+    return;
+  }
+  
+  if (!confirm(`Êtes-vous sûr de vouloir valider le rapport final de ${report.nom} ?`)) {
+    return;
+  }
+  
+  console.log('[RAPPORTS] Validation du rapport final, statut actuel:', report.statut);
+  
+  // Mettre à jour le statut du rapport
+  report.statut = 'valide';
+  console.log('[RAPPORTS] Nouveau statut:', report.statut);
+  
+  // Sauvegarder dans localStorage
+  saveRapports();
+  console.log('[RAPPORTS] Rapports sauvegardés');
+  
+  // Rafraîchir l'affichage
+  renderFinaux();
+  renderJournaliers(); // Pour mettre à jour les KPI
+  console.log('[RAPPORTS] Affichage rafraîchi');
+  
+  alert('✅ Rapport final validé avec succès');
+}
+
+// Supprimer un rapport final
+function deleteFinalReport(reportId) {
+  const report = finaux.find(r => r.id === reportId);
+  if (!report) {
+    alert('❌ Rapport non trouvé');
+    return;
+  }
+  
+  if (!confirm(`Êtes-vous sûr de vouloir supprimer le rapport final de ${report.nom} ?`)) {
+    return;
+  }
+  
+  // Supprimer le rapport de la liste
+  finaux = finaux.filter(r => r.id !== reportId);
+  
+  // Sauvegarder dans localStorage
+  saveRapports();
+  
+  // Rafraîchir l'affichage
+  renderFinaux();
+  renderJournaliers(); // Pour mettre à jour les KPI
+  
+  alert('✅ Rapport final supprimé avec succès');
+}
+
+function renderFinaux() {
+  const tbody = document.getElementById('finauxBody');
+  if (finaux.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted);">Aucun rapport final</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = finaux.map(r => `
+    <tr>
+      <td><div class="stag-info">
+        <div class="mini-av" style="background:${r.color || '#4A525A'}22;color:${r.color || '#4A525A'}">${r.nom ? r.nom[0] : ''}${r.nom && r.nom.split(' ')[1] ? r.nom.split(' ')[1][0] : ''}</div>
+        <span>${r.nom || 'Stagiaire inconnu'}</span>
+      </div></td>
+      <td style="font-size:13px;color:var(--muted)">${r.depot || new Date().toLocaleDateString('fr-FR')}</td>
+      <td><span class="badge ${r.statut === 'valide' ? 'badge-valide' : r.statut === 'attente' ? 'badge-attente' : 'badge-refuse'}">${r.statut === 'valide' ? '✅' : r.statut === 'attente' ? '⏳' : '❌'} ${r.statut}</span></td>
+      <td><span style="font-weight:600;color:var(--blue);font-size:12px;cursor:pointer;text-decoration:underline" onclick="viewFinalReport(${r.id})">${r.fichier || '—'}</span></td>
+      <td style="font-size:12px;color:var(--muted)">${r.projet || '—'}</td>
+      <td><span style="font-family:monospace;color:var(--blue)">${r.heure || '—'}</span></td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-icon" onclick="viewFinalReport(${r.id})">👁️ Voir</button>
+          ${r.statut === 'attente' ? `<button class="btn-icon" style="border-color:rgba(46,204,113,0.3);color:var(--green)" onclick="validateFinalReport(${r.id})">✅ Valider</button>` : ''}
+          <button class="btn-icon" style="border-color:rgba(37,211,102,0.3);color:#25D366;font-size:16px;" onclick="envoyerWARapportFinal(${r.id})" title="Envoyer WhatsApp">📱</button>
+          <button class="btn-icon" style="border-color:rgba(231,76,60,0.3);color:var(--red)" onclick="deleteFinalReport(${r.id})">🗑️ Supprimer</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function envoyerWARapportFinal(reportId) {
+  const report = finaux.find(r => r.id === reportId);
+  if (!report) { alert('❌ Rapport non trouvé'); return; }
+
+  const WA_ADMIN = '212681314877';
+  const statutLabel = report.statut === 'valide' ? '✅ Validé' : report.statut === 'attente' ? '⏳ En attente de validation' : '❌ Refusé';
+
+  const message =
+`📄 *Rapport Final de Stage - Orchid Island*
+
+👤 *Stagiaire:* ${report.nom || 'Non spécifié'}
+📁 *Projet:* ${report.projet || 'Non spécifié'}
+📎 *Fichier:* ${report.fichier || 'Non spécifié'}
+📅 *Date de dépôt:* ${report.depot || '—'}
+🕐 *Heure:* ${report.heure || '—'}
+📊 *Statut:* ${statutLabel}
+
+${report.statut === 'attente' ? '⚠️ Ce rapport est en attente de votre validation.' : ''}
+
+_Orchid Island - Système RH_`;
+
+  const waUrl = `https://wa.me/${WA_ADMIN}?text=${encodeURIComponent(message)}`;
+  window.open(waUrl, '_blank');
+}
+
+function updateStats() {
+  // Synchroniser les données depuis localStorage vers orchid_shared_data
+  if (window.sharedData) {
+    window.sharedData.syncRapportsData();
+    window.sharedData.syncStagiairesData();
+  }
+  
+  const data = window.sharedData.getData();
+  const rapportsData = data.rapports || {};
+  const stagiairesData = data.stagiaires || {};
+  
+  // Mettre à jour les KPIs avec les données synchronisées
+  const kpiDeposes = document.getElementById('kpiDeposes');
+  if (kpiDeposes) {
+    kpiDeposes.textContent = rapportsData.aujourdhui || 0;
+  }
+  
+  const kpiManquants = document.getElementById('kpiManquants');
+  if (kpiManquants) {
+    const totalStagiaires = stagiairesData.total || 0;
+    const deposes = rapportsData.aujourdhui || 0;
+    kpiManquants.textContent = totalStagiaires > 0 ? Math.max(0, totalStagiaires - deposes) : 0;
+  }
+  
+  const kpiFinauxDeposes = document.getElementById('kpiFinauxDeposes');
+  if (kpiFinauxDeposes) {
+    kpiFinauxDeposes.textContent = rapportsData.finauxDeposes || 0;
+  }
+  
+  const kpiFinauxValidés = document.getElementById('kpiFinauxValidés');
+  if (kpiFinauxValidés) {
+    kpiFinauxValidés.textContent = rapportsData.finauxValides || 0;
+  }
+  
+  const kpiEnAttente = document.getElementById('kpiEnAttente');
+  if (kpiEnAttente) {
+    kpiEnAttente.textContent = rapportsData.enAttente || 0;
+  }
+  
+  // Mettre à jour le badge de navigation
+  const badgeRapports = document.getElementById('badgeRapports');
+  if (badgeRapports) {
+    badgeRapports.textContent = rapportsData.enAttente || 0;
+    badgeRapports.style.display = (rapportsData.enAttente || 0) > 0 ? 'inline-flex' : 'none';
+  }
+}
+
+// Mettre à jour les badges de navigation avec les vraies données
+function updateNavBadges() {
+  // Mettre à jour le badge des stagiaires
+  const badgeStagiaires = document.getElementById('badgeStagiaires');
+  if (badgeStagiaires) {
+    let stagiairesCount = 0;
+    try {
+      if (window.sharedData && window.sharedData.getData) {
+        const data = window.sharedData.getData();
+        stagiairesCount = data.stagiaires ? data.stagiaires.list.length : 0;
+      } else {
+        const stored = JSON.parse(localStorage.getItem('stagiaires') || '[]');
+        stagiairesCount = stored.length;
+      }
+    } catch (e) {
+      console.error('[RAPPORTS] Erreur lors du comptage des stagiaires:', e);
+    }
+    badgeStagiaires.textContent = stagiairesCount;
+    badgeStagiaires.style.display = stagiairesCount > 0 ? 'block' : 'none';
+  }
+  
+  // Mettre à jour le badge des rapports (rapports finaux en attente + rapports journaliers d'aujourd'hui)
+  const badgeRapports = document.getElementById('badgeRapports');
+  if (badgeRapports) {
+    let rapportsCount = 0;
+    try {
+      // Compter les rapports finaux en attente
+      const finauxEnAttente = finaux.filter(r => r.statut === 'attente').length;
+      // Compter les rapports journaliers d'aujourd'hui
+      const today = new Date().toLocaleDateString('fr-FR');
+      const rapportsAujourdhui = journaliers.filter(r => r.date === today).length;
+      rapportsCount = finauxEnAttente + rapportsAujourdhui;
+    } catch (e) {
+      console.error('[RAPPORTS] Erreur lors du comptage des rapports:', e);
+    }
+    badgeRapports.textContent = rapportsCount;
+    badgeRapports.style.display = rapportsCount > 0 ? 'block' : 'none';
+  }
+  
+  // Mettre à jour le badge des alertes (rapports manquants)
+  const badgeAlertes = document.getElementById('badgeAlertes');
+  if (badgeAlertes) {
+    let alertesCount = 0;
+    try {
+      // Calculer le nombre de rapports manquants
+      let totalStagiaires = 0;
+      if (window.sharedData && window.sharedData.getData) {
+        const data = window.sharedData.getData();
+        totalStagiaires = data.stagiaires ? data.stagiaires.list.length : 0;
+      } else {
+        const stored = JSON.parse(localStorage.getItem('stagiaires') || '[]');
+        totalStagiaires = stored.length;
+      }
+      const today = new Date().toLocaleDateString('fr-FR');
+      const rapportsAujourdhui = journaliers.filter(r => r.date === today).length;
+      alertesCount = Math.max(0, totalStagiaires - rapportsAujourdhui);
+    } catch (e) {
+      console.error('[RAPPORTS] Erreur lors du comptage des alertes:', e);
+    }
+    badgeAlertes.textContent = alertesCount;
+    badgeAlertes.style.display = alertesCount > 0 ? 'block' : 'none';
+  }
+}
+
+const statutLabels = { valide: { cls: 'badge-valide', icon: '✅', txt: 'Validé' }, attente: { cls: 'badge-attente', icon: '⏳', txt: 'En attente' }, refuse: { cls: 'badge-refuse', icon: '❌', txt: 'Refusé' } };
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', function() {
+  // Vérifier les droits d'accès et filtrer la navigation
+  const currentUser = checkRoleAccess();
+  filterNavByRole();
+  
+  // Mettre à jour la date d'aujourd'hui
+  const today = new Date();
+  document.getElementById('todayDate').textContent = today.toLocaleDateString('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  });
+  
+  loadRapports();
+  
+  // Écouter les mises à jour de données
+  window.addEventListener('dataUpdated', (event) => {
+    if (event.detail.section === 'rapports') {
+      loadRapports();
+    }
+  });
+});
+
+document.getElementById('finalCards').innerHTML = finaux.map(r => {
+  const s = statutLabels[r.statut];
+  return `<div class="report-detail-card">
+    <div class="report-header">
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <div class="mini-av" style="background:${r.color}22;color:${r.color};width:36px;height:36px;border-radius:10px;font-size:14px">${r.nom[0]}${r.nom.split(' ')[1][0]}</div>
+          <div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px">${r.nom}</div>
+            <div class="report-meta">📄 ${r.fichier} · Déposé le ${r.depot}</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="badge ${s.cls}">${s.icon} ${s.txt}</span>
+        ${r.statut === 'attente' ? `<button class="btn-validate" onclick="changeStatus(this,'valide')">✅ Valider</button><button class="btn-reject" onclick="changeStatus(this,'refuse')">❌ Refuser</button>` : ''}
+        <button class="btn-icon">📥 Télécharger</button>
+      </div>
+    </div>
+    ${r.commentaire ? `<div class="task-comment">💬 <em>${r.commentaire}</em></div>` : ''}
+  </div>`;
+}).join('');
+
+function switchTab(tab, el) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+  if (tab === 'stagiaires') {
+    renderStagiairesRapports();
+  }
+}
+
+function renderStagiairesRapports() {
+  const tbody = document.getElementById('stagiaireRapportsBody');
+  if (!tbody) return;
+
+  let stagiaires = [];
+  try {
+    stagiaires = JSON.parse(localStorage.getItem('stagiaires') || '[]');
+  } catch(e) { stagiaires = []; }
+
+  if (stagiaires.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--muted);">Aucun stagiaire</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = stagiaires.map(s => {
+    const fullName = `${s.prenom} ${s.nom}`;
+
+    // Rapports journaliers de ce stagiaire
+    const rapportsStag = journaliers.filter(r =>
+      r.stagiaire === fullName ||
+      (r.nom === s.nom && r.prenom === s.prenom)
+    );
+
+    // Calculer les jours de stage écoulés
+    let joursEcoules = 0;
+    let tauxDepot = 0;
+    if (s.debut && s.debut !== '-') {
+      const parts = s.debut.split('/');
+      if (parts.length === 3) {
+        const debutDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+        joursEcoules = Math.max(0, Math.ceil((new Date() - debutDate) / (1000*60*60*24)));
+        // Jours ouvrables approximatifs (x 5/7)
+        const joursOuvrables = Math.ceil(joursEcoules * 5 / 7);
+        tauxDepot = joursOuvrables > 0 ? Math.min(100, Math.round((rapportsStag.length / joursOuvrables) * 100)) : 0;
+      }
+    }
+
+    // Dernier dépôt
+    const dernierDepot = rapportsStag.length > 0
+      ? rapportsStag.reduce((a, b) => new Date(a.date) > new Date(b.date) ? a : b).date
+      : null;
+
+    // Liste des dates de dépôt (tooltip)
+    const datesDepot = rapportsStag.map(r => r.date).join(', ');
+
+    const tauxColor = tauxDepot >= 80 ? 'var(--green)' : tauxDepot >= 50 ? 'var(--orange)' : 'var(--red)';
+
+    return `<tr>
+      <td>
+        <div style="font-weight:500">${fullName}</div>
+        <div style="font-size:11px;color:var(--muted)">${s.email}</div>
+      </td>
+      <td style="font-size:13px;color:var(--muted)">${s.ecole}</td>
+      <td style="font-size:12px">${s.debut || '—'}</td>
+      <td style="font-size:12px">${s.fin || '—'}</td>
+      <td>
+        <span title="${datesDepot}" style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;
+          color:${rapportsStag.length > 0 ? 'var(--green)' : 'var(--red)'}">
+          ${rapportsStag.length}
+        </span>
+        <span style="font-size:11px;color:var(--muted);margin-left:4px">rapport(s)</span>
+      </td>
+      <td>
+        ${dernierDepot
+          ? `<span style="color:var(--primary-light)">${dernierDepot}</span>`
+          : '<span style="color:var(--muted)">Aucun</span>'
+        }
+      </td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;min-width:60px">
+            <div style="height:100%;width:${tauxDepot}%;background:${tauxColor};border-radius:3px;"></div>
+          </div>
+          <span style="color:${tauxColor};font-weight:600;font-size:12px">${tauxDepot}%</span>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function changeStatus(btn, newStatus) {
+  const card = btn.closest('.report-detail-card');
+  const s = statutLabels[newStatus];
+  const badge = card.querySelector('.badge');
+  badge.className = `badge ${s.cls}`;
+  badge.textContent = `${s.icon} ${s.txt}`;
+  card.querySelectorAll('.btn-validate, .btn-reject').forEach(b => b.remove());
+}
+
+function simulateUpload(btn) {
+  btn.textContent = '✅ Fichier sélectionné: rapport_final.pdf';
+  btn.style.background = 'linear-gradient(135deg, var(--green), #0EA5E9)';
+}
+
+// Basculer entre les champs journalier et final
+function toggleReportFields() {
+  const reportType = document.getElementById('reportType').value;
+  const journalierFields = document.getElementById('journalierFields');
+  const finalFields = document.getElementById('finalFields');
+  
+  if (reportType === 'journalier') {
+    journalierFields.style.display = 'block';
+    finalFields.style.display = 'none';
+  } else {
+    journalierFields.style.display = 'none';
+    finalFields.style.display = 'block';
+  }
+}
+
+// Gérer la sélection de fichier pour rapport final
+function handleFileSelect(input) {
+  const fileNameDiv = document.getElementById('selectedFileName');
+  if (input.files && input.files[0]) {
+    const file = input.files[0];
+    fileNameDiv.textContent = '✅ Fichier sélectionné: ' + file.name;
+  }
+}
+
+// Gérer la sélection de fichier pour rapport journalier
+function handleJournalierFileSelect(input) {
+  const fileNameDiv = document.getElementById('selectedJournalierFileName');
+  if (input.files && input.files[0]) {
+    const file = input.files[0];
+    fileNameDiv.textContent = '✅ Fichier sélectionné: ' + file.name;
+  }
+}
+
+// Fonction pour notifier l'admin RH par WhatsApp du dépôt d'un rapport final
+function notifyAdminRapportFinal(nom, prenom, projet) {
+  const WA_ADMIN = '212681314877';
+  const now = new Date();
+  const heure = now.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+  const dateStr = now.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+  
+  const message = 
+`📄 *Nouveau Rapport Final - Orchid Island*
+
+✅ Un rapport final de stage vient d'être déposé.
+
+👤 *Stagiaire:* ${prenom} ${nom}
+📁 *Projet:* ${projet || 'Non spécifié'}
+🕐 *Heure de dépôt:* ${heure}
+📅 *Date:* ${dateStr}
+
+Veuillez procéder à la validation du rapport.
+
+_Orchid Island - Système RH_`;
+
+  const waUrl = `https://wa.me/${WA_ADMIN}?text=${encodeURIComponent(message)}`;
+  
+  // Afficher confirmation avant d'ouvrir WhatsApp
+  if (confirm(`📱 Notifier l'admin RH par WhatsApp du dépôt du rapport final de ${prenom} ${nom} ?`)) {
+    window.open(waUrl, '_blank');
+  }
+}
+
+// Soumettre le rapport avec vérification que l'utilisateur est un stagiaire
+async function submitReport() {
+  console.log('[RAPPORTS] ===== submitReport appelé =====');
+  console.log('[RAPPORTS] Timestamp:', new Date().toISOString());
+  
+  // Désactiver le bouton et afficher l'indicateur de chargement
+  const submitBtn = document.getElementById('submitBtn');
+  const loadingIndicator = document.getElementById('loadingIndicator');
+  const progressBar = document.getElementById('progressBar');
+  const progressText = document.getElementById('progressText');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = '⏳ Traitement...';
+  }
+  if (loadingIndicator) {
+    loadingIndicator.style.display = 'block';
+  }
+  if (progressBar) {
+    progressBar.style.width = '0%';
+  }
+  if (progressText) {
+    progressText.textContent = '0%';
+  }
+  
+  try {
+    // Récupérer les champs du formulaire
+    const nom = document.getElementById('reportNom').value.trim();
+    const prenom = document.getElementById('reportPrenom').value.trim();
+    const projet = document.getElementById('reportProjet').value.trim();
+    
+    console.log('[RAPPORTS] Champs - Nom:', nom, 'Prénom:', prenom, 'Projet:', projet);
+  
+    // Vérifier que le stagiaire existe dans la liste par nom et prénom
+    let stagiaires = [];
+    try {
+      if (window.sharedData && window.sharedData.getData) {
+        const data = window.sharedData.getData();
+        stagiaires = data.stagiaires ? data.stagiaires.list || [] : [];
+      } else {
+        // Fallback vers localStorage
+        stagiaires = JSON.parse(localStorage.getItem('stagiaires') || '[]');
+      }
+    } catch (e) {
+      console.error('[RAPPORTS] Erreur lors du chargement des stagiaires:', e);
+      stagiaires = [];
+    }
+    
+    console.log('[RAPPORTS] Liste des stagiaires:', stagiaires);
+    console.log('[RAPPORTS] Nombre de stagiaires:', stagiaires.length);
+    if (stagiaires.length > 0) {
+      console.log('[RAPPORTS] Premier stagiaire (structure):', stagiaires[0]);
+    }
+    console.log('[RAPPORTS] Recherche - Nom:', nom, 'Prénom:', prenom);
+    
+    const stagiaireTrouve = stagiaires.find(s => {
+      // Essayer différentes structures de données
+      const stagiaireNom = s.last_name || s.nom || s.lastName || '';
+      const stagiairePrenom = s.first_name || s.prenom || s.firstName || '';
+      console.log('[RAPPORTS] Vérification - Stagiaire:', stagiaireNom, stagiairePrenom, 'vs', nom, prenom);
+      return stagiaireNom.toLowerCase() === nom.toLowerCase() && 
+             stagiairePrenom.toLowerCase() === prenom.toLowerCase();
+    });
+    console.log('[RAPPORTS] Stagiaire trouvé:', stagiaireTrouve);
+    
+    if (!stagiaireTrouve) {
+      alert('❌ Ce stagiaire n\'existe pas dans la liste. Veuillez vérifier le nom et le prénom.');
+      console.log('[RAPPORTS] Stagiaire non trouvé - Nom:', nom, 'Prénom:', prenom);
+      return;
+    }
+    console.log('[RAPPORTS] Stagiaire vérifié:', stagiaireTrouve.email);
+    
+    // Vérifier que les champs obligatoires sont remplis
+    if (!nom || !prenom) {
+      alert('❌ Veuillez remplir le nom et le prénom.');
+      return;
+    }
+    
+    const reportType = document.getElementById('reportType').value;
+    console.log('[RAPPORTS] Type de rapport:', reportType);
+  
+  if (reportType === 'journalier') {
+    // Soumettre rapport journalier
+    const fileInput = document.getElementById('journalierFile');
+    const commentaire = document.getElementById('commentaire').value.trim();
+    
+    console.log('[RAPPORTS] File input:', fileInput, 'Fichiers:', fileInput.files);
+    
+    if (!fileInput.files || !fileInput.files[0]) {
+      alert('❌ Veuillez sélectionner un fichier.');
+      return;
+    }
+    
+    const file = fileInput.files[0];
+    console.log('[RAPPORTS] Fichier sélectionné:', file.name);
+    console.log('[RAPPORTS] Taille du fichier:', (file.size / 1024 / 1024).toFixed(2) + ' MB');
+    
+    // Vérifier la taille du fichier (10 MB maximum)
+    const maxSize = 10 * 1024 * 1024; // 10 MB en octets
+    if (file.size > maxSize) {
+      alert('❌ Le fichier est trop volumineux. La taille maximale est de 10 MB. Votre fichier fait ' + (file.size / 1024 / 1024).toFixed(2) + ' MB.');
+      return;
+    }
+    
+    // Vérifier le format du fichier
+    const validExtensions = ['.docx', '.doc', '.pdf', '.txt'];
+    const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+    
+    if (!validExtensions.includes(fileExtension)) {
+      alert('❌ Format de fichier non supporté. Veuillez utiliser Word (.docx), PDF ou TXT.');
+      return;
+    }
+    
+    console.log('[RAPPORTS] Extension valide:', fileExtension);
+    
+    // Réinitialiser la barre de progression
+    if (progressBar) {
+      progressBar.style.width = '0%';
+    }
+    if (progressText) {
+      progressText.textContent = '0%';
+    }
+    
+    // Lire le contenu du fichier avec FileReader
+    const reader = new FileReader();
+    
+    // Handler pour mettre à jour la barre de progression
+    reader.onprogress = function(e) {
+      if (e.lengthComputable) {
+        const percentComplete = (e.loaded / e.total) * 100;
+        console.log('[RAPPORTS] Progression lecture:', percentComplete.toFixed(2) + '%');
+        if (progressBar) {
+          progressBar.style.width = percentComplete + '%';
+        }
+        if (progressText) {
+          progressText.textContent = Math.round(percentComplete) + '%';
+        }
+      }
+    };
+    
+    reader.onload = function(e) {
+      console.log('[RAPPORTS] FileReader onload - contenu chargé');
+      const fileContent = e.target.result;
+      console.log('[RAPPORTS] Taille du contenu:', fileContent ? fileContent.length : 0);
+      
+      // Créer l'objet rapport journalier
+      const report = {
+        id: Date.now(),
+        stagiaire: prenom + ' ' + nom,
+        nom: nom,
+        prenom: prenom,
+        projet: projet || 'Non spécifié',
+        fichier: file.name,
+        fichierContenu: fileContent,
+        date: new Date().toLocaleDateString('fr-FR'),
+        heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+        statut: 'Déposé',
+        commentaire: commentaire
+      };
+      
+      console.log('[RAPPORTS] Objet rapport créé:', report);
+      
+      // Ajouter à la liste des rapports journaliers
+      journaliers.unshift(report);
+      console.log('[RAPPORTS] Rapport ajouté à la liste');
+      
+      // Sauvegarder dans localStorage
+      saveRapports();
+      console.log('[RAPPORTS] Rapports sauvegardés dans localStorage');
+      
+      // Rafraîchir l'affichage
+      renderJournaliers();
+      console.log('[RAPPORTS] Affichage rafraîchi');
+      
+      // Réinitialiser le formulaire
+      document.getElementById('reportNom').value = '';
+      document.getElementById('reportPrenom').value = '';
+      document.getElementById('reportProjet').value = '';
+      fileInput.value = '';
+      document.getElementById('selectedJournalierFileName').textContent = '';
+      document.getElementById('commentaire').value = '';
+      
+      // Réactiver le bouton et masquer l'indicateur
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '💾 Soumettre le rapport';
+      }
+      if (loadingIndicator) {
+        loadingIndicator.style.display = 'none';
+      }
+
+      alert('✅ Rapport journalier déposé avec succès!');
+
+      // Déclencher l'alerte dépôt rapport
+      if (window.alertManager) {
+        window.alertManager.alertRapportDepose(prenom, nom, 'journalier');
+      }
+    };
+    
+    reader.onerror = function(e) {
+      console.error('[RAPPORTS] Erreur lors de la lecture du fichier:', e);
+      
+      // Réactiver le bouton et masquer l'indicateur
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '💾 Soumettre le rapport';
+      }
+      if (loadingIndicator) {
+        loadingIndicator.style.display = 'none';
+      }
+      
+      alert('❌ Erreur lors de la lecture du fichier. Veuillez réessayer.');
+    };
+    
+    console.log('[RAPPORTS] Démarrage de la lecture du fichier');
+    // Lire le fichier selon son type
+    if (fileExtension === '.txt') {
+      reader.readAsText(file);
+    } else {
+      // Pour Word et PDF, lire comme DataURL (note: le contenu ne sera pas lisible directement)
+      reader.readAsDataURL(file);
+    }
+    console.log('[RAPPORTS] Lecture du fichier initiée');
+    
+  } else {
+    // Soumettre rapport final
+    console.log('[RAPPORTS] Soumission rapport final');
+    const fileInput = document.getElementById('finalFile');
+    console.log('[RAPPORTS] fileInput:', fileInput, 'files:', fileInput.files);
+    
+    if (!fileInput.files || !fileInput.files[0]) {
+      alert('❌ Veuillez sélectionner un fichier.');
+      return;
+    }
+    
+    const file = fileInput.files[0];
+    console.log('[RAPPORTS] Fichier sélectionné:', file.name);
+    console.log('[RAPPORTS] Taille du fichier:', (file.size / 1024 / 1024).toFixed(2) + ' MB');
+    
+    // Vérifier la taille du fichier (10 MB maximum)
+    const maxSize = 10 * 1024 * 1024; // 10 MB en octets
+    if (file.size > maxSize) {
+      alert('❌ Le fichier est trop volumineux. La taille maximale est de 10 MB. Votre fichier fait ' + (file.size / 1024 / 1024).toFixed(2) + ' MB.');
+      return;
+    }
+    
+    // Vérifier le format du fichier
+    const validExtensions = ['.docx', '.doc', '.pdf'];
+    const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+    console.log('[RAPPORTS] Extension du fichier:', fileExtension);
+    
+    if (!validExtensions.includes(fileExtension)) {
+      alert('❌ Format de fichier non supporté. Veuillez utiliser Word (.docx) ou PDF.');
+      return;
+    }
+    
+    // Réinitialiser la barre de progression
+    if (progressBar) {
+      progressBar.style.width = '0%';
+    }
+    if (progressText) {
+      progressText.textContent = '0%';
+    }
+    
+    // Lire le contenu du fichier avec FileReader
+    const reader = new FileReader();
+    
+    // Handler pour mettre à jour la barre de progression
+    reader.onprogress = function(e) {
+      if (e.lengthComputable) {
+        const percentComplete = (e.loaded / e.total) * 100;
+        console.log('[RAPPORTS] Progression lecture:', percentComplete.toFixed(2) + '%');
+        if (progressBar) {
+          progressBar.style.width = percentComplete + '%';
+        }
+        if (progressText) {
+          progressText.textContent = Math.round(percentComplete) + '%';
+        }
+      }
+    };
+    
+    reader.onload = function(e) {
+      console.log('[RAPPORTS] Fichier final lu, taille:', e.target.result.length);
+      
+      // Créer l'objet rapport final avec le contenu
+      const report = {
+        id: Date.now(),
+        nom: prenom + ' ' + nom,
+        nomFamille: nom,
+        prenom: prenom,
+        projet: projet || 'Non spécifié',
+        fichier: file.name,
+        depot: new Date().toLocaleDateString('fr-FR'),
+        heure: new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'}),
+        statut: 'attente',
+        commentaire: '',
+        fichierContenu: e.target.result
+      };
+      console.log('[RAPPORTS] Rapport final créé:', report);
+      
+      // Ajouter à la liste des rapports finaux
+      finaux.unshift(report);
+      console.log('[RAPPORTS] Rapport ajouté à la liste, total finaux:', finaux.length);
+      
+      // Sauvegarder dans localStorage
+      saveRapports();
+      console.log('[RAPPORTS] Rapport final sauvegardé');
+      
+      // Rafraîchir l'affichage
+      renderFinaux();
+      renderJournaliers(); // Pour mettre à jour les KPI
+      
+      // Réinitialiser le formulaire
+      document.getElementById('reportNom').value = '';
+      document.getElementById('reportPrenom').value = '';
+      document.getElementById('reportProjet').value = '';
+      fileInput.value = '';
+      document.getElementById('selectedFileName').textContent = '';
+      
+      // Réactiver le bouton et masquer l'indicateur
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '💾 Soumettre le rapport';
+      }
+      if (loadingIndicator) {
+        loadingIndicator.style.display = 'none';
+      }
+      
+      // Notifier l'admin par WhatsApp
+      notifyAdminRapportFinal(nom, prenom, projet);
+      
+      alert('✅ Rapport final déposé avec succès!');
+    };
+    
+    reader.onerror = function(e) {
+      console.error('[RAPPORTS] Erreur lors de la lecture du fichier:', e);
+      
+      // Réactiver le bouton et masquer l'indicateur
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '💾 Soumettre le rapport';
+      }
+      if (loadingIndicator) {
+        loadingIndicator.style.display = 'none';
+      }
+      
+      alert('❌ Erreur lors de la lecture du fichier.');
+    };
+    
+    // Pour Word et PDF, lire comme DataURL
+    reader.readAsDataURL(file);
+    console.log('[RAPPORTS] Lecture du fichier final initiée');
+  }
+  } catch (error) {
+    console.error('[RAPPORTS] Erreur lors de la soumission du rapport:', error);
+    
+    // Réactiver le bouton et masquer l'indicateur
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '💾 Soumettre le rapport';
+    }
+    if (loadingIndicator) {
+      loadingIndicator.style.display = 'none';
+    }
+    
+    alert('❌ Erreur lors de la soumission du rapport: ' + error.message);
+  }
+}
+
+// Sauvegarder les rapports dans localStorage
+function saveRapports() {
+  const data = {
+    list: journaliers,
+    finaux: finaux
+  };
+  localStorage.setItem('rapports', JSON.stringify(data));
+  
+  // Synchroniser toutes les données automatiquement
+  if (window.sharedData) {
+    window.sharedData.syncAllData();
+  }
+  
+  // Mettre à jour les badges de navigation
+  updateNavBadges();
+  
+  // Émettre un événement pour mettre à jour les autres pages
+  window.dispatchEvent(new CustomEvent('dataUpdated', { detail: { section: 'rapports' } }));
+}
+</script>
+
+<!-- Modal pour afficher les détails du rapport -->
+<div id="reportModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1000;align-items:center;justify-content:center">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:30px;max-width:600px;width:90%;max-height:85vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700">📋 Détails du Rapport</div>
+      <button onclick="closeReportModal()" style="background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer">&times;</button>
+    </div>
+    <div id="reportModalContent"></div>
+    <div id="filePreview" style="margin-top:20px;padding:16px;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;display:none">
+      <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:12px">📄 Contenu du fichier</div>
+      <div id="filePreviewContent" style="font-size:13px;color:var(--text);line-height:1.6;white-space:pre-wrap"></div>
+      <iframe id="filePreviewIframe" style="width:100%;height:400px;border:none;display:none;margin-top:12px"></iframe>
+    </div>
+    <button onclick="closeReportModal()" style="width:100%;padding:12px;background:linear-gradient(135deg,var(--primary),var(--primary-light));color:white;border:none;border-radius:10px;font-family:'Inter';font-size:14px;font-weight:600;cursor:pointer;margin-top:20px">Fermer</button>
+  </div>
+</div>
+</body>
+</html>

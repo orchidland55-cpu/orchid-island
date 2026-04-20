@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orchid Island | Tâches</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07070A; --sidebar: #24272B; --card: #24272B; --border: #4A525A;
+    --text: #F0F4F8; --muted: #B8C5D6; --primary: #004BA8; --primary-light: #3E78B2;
+    --green: #27AE60; --red: #E74C3C; --orange: #F39C12; --purple: #8E44AD;
+    --col-bg: #1A1F2E;
+  }
+  /* Animated background */
+  .bg-orbs {
+    position: fixed; inset: 0; z-index: 0;
+    pointer-events: none;
+  }
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.15;
+    animation: float 8s ease-in-out infinite;
+  }
+  .orb-1 { width: 500px; height: 500px; background: radial-gradient(circle, #004BA8, transparent); top: -100px; right: -100px; animation-delay: 0s; }
+  .orb-2 { width: 400px; height: 400px; background: radial-gradient(circle, #3E78B2, transparent); bottom: -80px; left: 10%; animation-delay: 3s; }
+  .orb-3 { width: 300px; height: 300px; background: radial-gradient(circle, #4A525A, transparent); top: 50%; left: 30%; animation-delay: 5s; }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-30px) scale(1.05); }
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; font-size: 14px; }
+  .sidebar { width: 240px; background: linear-gradient(135deg, #24272B 0%, #07070A 50%, #1A1F2E 100%); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; bottom: 0; }
+  .sidebar-logo { padding: 24px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+  .logo-icon { width: 38px; height: 38px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 8px 32px rgba(0,75,168,0.3); animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+  .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; }
+  .logo-sub { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+  .nav-section { padding: 16px 12px 8px; }
+  .nav-label { font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; padding: 0 8px; margin-bottom: 6px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; color: var(--muted); cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-size: 13px; margin-bottom: 2px; position: relative; overflow: hidden; }
+  .nav-item::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0,75,168,0.1), transparent);
+    transition: left 0.5s;
+  }
+  .nav-item:hover::before { left: 100%; }
+  .nav-item:hover { background: rgba(0,75,168,0.08); color: var(--text); transform: translateX(5px); }
+  .nav-item.active { background: linear-gradient(135deg, rgba(0,75,168,0.15), rgba(62,120,178,0.1)); color: var(--primary-light); font-weight: 600; border: 1px solid rgba(0,75,168,0.2); box-shadow: 0 4px 20px rgba(0,75,168,0.2); }
+  .nav-badge { margin-left: auto; background: var(--red); color: white; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 20px; }
+  .main { margin-left: 240px; flex: 1; }
+  .topbar { height: 60px; background: linear-gradient(135deg, #24272B 0%, #1A1F2E 100%); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; position: sticky; top: 0; z-index: 50; backdrop-filter: blur(10px); }
+  .topbar-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; }
+  .topbar-actions { display: flex; gap: 10px; }
+  .filter-select { padding: 8px 12px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 12px; cursor: pointer; }
+  .btn-add { padding: 8px 16px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .btn-add:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,75,168,0.3); }
+  .sub-bar { padding: 12px 28px; background: var(--card); border-bottom: 1px solid var(--border); display: flex; gap: 8px; overflow-x: auto; }
+  .filter-chip { padding: 6px 12px; background: var(--col-bg); border: 1px solid var(--border); border-radius: 20px; color: var(--muted); font-size: 11px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .filter-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+  .kanban-area { padding: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+  .kanban-col { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .col-header { padding: 16px; background: var(--col-bg); border-bottom: 1px solid var(--border); font-weight: 600; font-size: 13px; }
+  .col-todos { padding: 12px; min-height: 200px; }
+  .task-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; }
+  .task-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+  .task-title { font-weight: 500; margin-bottom: 6px; font-size: 13px; }
+  .task-meta { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--muted); }
+  .task-prio { padding: 2px 6px; border-radius: 10px; font-size: 10px; font-weight: 500; }
+  .prio-h { background: rgba(255,87,87,0.12); color: var(--red); }
+  .prio-m { background: rgba(245,188,76,0.12); color: var(--orange); }
+  .prio-l { background: rgba(34,211,160,0.12); color: var(--green); }
+  .task-checkbox { width: 16px; height: 16px; border: 1.5px solid var(--border); border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+  .task-checkbox.checked { background: var(--green); border-color: var(--green); }
+  .task-checkbox.checked::after { content: '✓'; font-size: 9px; color: white; font-weight: 700; }
+  .task-project { font-size: 10px; color: var(--muted); margin-bottom: 4px; }
+  .task-progress { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 6px; }
+  .task-progress-fill { height: 100%; background: var(--primary); transition: width 0.3s; }
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 16px 12px;
+    border-top: 1px solid var(--border);
+  }
+  .user-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.02);
+  }
+  .user-avatar {
+    width: 32px; height: 32px;
+    background: var(--gold);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #050A14;
+  }
+  .user-name { font-size: 13px; font-weight: 500; }
+  .user-role { font-size: 11px; color: var(--muted); }
+  .logout-btn { width: 100%; padding: 8px; background: rgba(255,87,87,0.1); border: 1px solid rgba(255,87,87,0.3); border-radius: 6px; color: var(--red); font-size: 12px; cursor: pointer; margin-top: 8px; transition: all 0.2s; }
+</style>
+</head>
+<body>
+<div class="bg-orbs">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div><div class="logo-text">Orchid Island</div><div class="logo-sub">REAL ESTATE RH</div></div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Principal</div>
+    <div class="nav-item" onclick="navigateTo('dashboard.html')">Tableau de Bord</div>
+    <div class="nav-item" onclick="navigateTo('stagiaires.html')">Stagiaires <span class="nav-badge" id="badgeStagiaires">0</span></div>
+    <div class="nav-item" onclick="navigateTo('projets.html')">Projets</div>
+    <div class="nav-item active" onclick="navigateTo('taches.html')">Tâches</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Gestion</div>
+    <div class="nav-item" onclick="navigateTo('pointage_qr.html')">Pointage QR</div>
+    <div class="nav-item" onclick="navigateTo('rapports.html')">Rapports <span class="nav-badge" id="badgeRapports">0</span></div>
+    <div class="nav-item" onclick="navigateTo('alertes.html')">Alertes <span class="nav-badge" id="badgeAlertes">0</span></div>
+  </div>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar" id="userAvatar">Admin</div>
+      <div>
+        <div class="user-name" id="userName">Admin Orchid</div>
+        <div class="user-role" id="userRole">Administrateur</div>
+        <div class="user-email" id="userEmail" style="font-size: 11px; color: var(--muted); margin-top: 2px;">admin@orchid-island.com</div>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="logout()">Logout Déconnexion</button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">Gestion des Tâches</div>
+    <div class="topbar-actions">
+      <select class="filter-select" id="projectFilter" onchange="filterTasks()">
+        <option value="">Tous les projets</option>
+      </select>
+      <select class="filter-select" id="assigneeFilter" onchange="filterTasks()">
+        <option value="">Tous les stagiaires</option>
+      </select>
+      <button class="btn-add" onclick="refreshTasks()">Rafraîchir</button>
+    </div>
+  </div>
+  <div class="sub-bar">
+    <button class="filter-chip active" onclick="setFilter('all', this)">Total (<span id="countAll">0</span>)</button>
+    <button class="filter-chip" onclick="setFilter('todo', this)">À faire (<span id="countTodo">0</span>)</button>
+    <button class="filter-chip" onclick="setFilter('done', this)">Terminées (<span id="countDone">0</span>)</button>
+    <button class="filter-chip" onclick="setFilter('h', this)">Priorité Haute (<span id="countHigh">0</span>)</button>
+    <button class="filter-chip" onclick="setFilter('m', this)">Priorité Moyenne (<span id="countMedium">0</span>)</button>
+    <button class="filter-chip" onclick="setFilter('l', this)">Priorité Faible (<span id="countLow">0</span>)</button>
+  </div>
+
+  <div class="kanban-area" id="kanbanArea">
+    <!-- Les tâches seront chargées ici -->
+  </div>
+</div>
+
+<script src="../assets/common.js"></script>
+<script>
+// Variables globales
+let allTasks = [];
+let currentFilter = 'all';
+let currentProjectFilter = null;
+let currentAssigneeFilter = null;
+let openSubsMap = {}; // taskId -> bool (subtasks expanded)
+
+// Charger les tâches et sous-tâches depuis les projets
+function loadTasksFromProjects() {
+  try {
+    const data = JSON.parse(localStorage.getItem('orchidData') || '{"projets":{"list":[]}}');
+    const projects = data.projets.list || [];
+    
+    allTasks = [];
+    const projectsSet = new Set();
+    const assigneesSet = new Set();
+    
+    projects.forEach(project => {
+      projectsSet.add({id: project.id, nom: project.nom});
+      assigneesSet.add(project.resp || 'Non assigné');
+      
+      if (project.tasks && Array.isArray(project.tasks)) {
+        project.tasks.forEach(task => {
+          // Ajouter la tâche principale
+          const subs = task.subs || [];
+          const subsDone = subs.filter(s => s.done).length;
+          const progress = subs.length > 0 ? Math.round((subsDone / subs.length) * 100) : (task.done ? 100 : 0);
+          
+          allTasks.push({
+            id: task.id,
+            name: task.name,
+            project: project.nom,
+            projectId: project.id,
+            assignee: project.resp || 'Non assigné',
+            prio: task.prio || 'm',
+            done: task.done || false,
+            subs: subs,
+            subsDone: subsDone,
+            progress: progress,
+            deadline: project.fin || '-',
+            type: 'task',
+            taskId: task.id
+          });
+          
+          // Ajouter chaque sous-tâche comme élément individuel
+          if (subs && Array.isArray(subs)) {
+            subs.forEach(sub => {
+              allTasks.push({
+                id: sub.id,
+                name: sub.name,
+                project: project.nom,
+                projectId: project.id,
+                assignee: project.resp || 'Non assigné',
+                prio: sub.prio || 'm', // Utiliser la priorité individuelle de la sous-tâche
+                done: sub.done || false,
+                parentTask: task.name,
+                parentTaskId: task.id,
+                deadline: project.fin || '-',
+                type: 'subtask'
+              });
+            });
+          }
+        });
+      }
+    });
+    
+    // Mettre à jour les filtres
+    updateFilters(projectsSet, assigneesSet);
+    updateStats();
+    renderTasks();
+    
+  } catch(e) {
+    console.error('Erreur chargement tâches:', e);
+  }
+}
+
+// Mettre à jour les filtres
+function updateFilters(projects, assignees) {
+  const projectSelect = document.getElementById('projectFilter');
+  const assigneeSelect = document.getElementById('assigneeFilter');
+  
+  projectSelect.innerHTML = '<option value="">Tous les projets</option>';
+  projects.forEach(p => {
+    projectSelect.innerHTML += `<option value="${p.id}">${p.nom}</option>`;
+  });
+  
+  assigneeSelect.innerHTML = '<option value="">Tous les stagiaires</option>';
+  assignees.forEach(a => {
+    assigneeSelect.innerHTML += `<option value="${a}">${a}</option>`;
+  });
+}
+
+// Mettre à jour les statistiques
+function updateStats() {
+  const doneCount = allTasks.filter(t => t.done).length;
+  const todoCount = allTasks.filter(t => !t.done).length;
+  console.log('[STATS] Tâches totales:', allTasks.length, 'Terminées:', doneCount, 'À faire:', todoCount);
+  document.getElementById('countAll').textContent = allTasks.length;
+  document.getElementById('countTodo').textContent = todoCount;
+  document.getElementById('countDone').textContent = doneCount;
+  document.getElementById('countHigh').textContent = allTasks.filter(t => t.prio === 'h').length;
+  document.getElementById('countMedium').textContent = allTasks.filter(t => t.prio === 'm').length;
+  document.getElementById('countLow').textContent = allTasks.filter(t => t.prio === 'l').length;
+}
+
+// Filtrer les tâches
+function filterTasks() {
+  currentProjectFilter = document.getElementById('projectFilter').value;
+  currentAssigneeFilter = document.getElementById('assigneeFilter').value;
+  renderTasks();
+}
+
+// Définir le filtre
+function setFilter(filter, btn) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTasks();
+}
+
+// Obtenir les tâches filtrées
+function getFilteredTasks() {
+  let filtered = [...allTasks];
+  
+  console.log('[FILTRE] Filtre actuel:', currentFilter, 'Tâches totales:', filtered.length);
+  console.log('[FILTRE] Filtre projet:', currentProjectFilter, 'Filtre assignee:', currentAssigneeFilter);
+  
+  if (currentFilter === 'todo') {
+    filtered = filtered.filter(t => !t.done);
+    console.log('[FILTRE] Tâches à faire après filtrage:', filtered.length);
+  } else if (currentFilter === 'done') {
+    filtered = filtered.filter(t => t.done);
+    console.log('[FILTRE] Tâches terminées après filtrage:', filtered.length);
+  } else if (currentFilter === 'h' || currentFilter === 'm' || currentFilter === 'l') {
+    filtered = filtered.filter(t => t.prio === currentFilter);
+    console.log('[FILTRE] Tâches priorité', currentFilter, 'après filtrage:', filtered.length);
+  }
+  
+  if (currentProjectFilter) {
+    console.log('[FILTRE] Avant filtre projet:', filtered.length, 'Projet ID:', currentProjectFilter);
+    filtered = filtered.filter(t => String(t.projectId) === String(currentProjectFilter));
+    console.log('[FILTRE] Après filtre projet:', filtered.length);
+  }
+  
+  if (currentAssigneeFilter) {
+    filtered = filtered.filter(t => t.assignee === currentAssigneeFilter);
+  }
+  
+  currentFilteredTasks = filtered;
+  return filtered;
+}
+
+// Basculer l'affichage des sous-tâches
+function toggleSubs(taskId) {
+  openSubsMap[taskId] = !openSubsMap[taskId];
+  renderTasks();
+}
+
+// Rendre les tâches avec leurs sous-tâches groupées
+function renderTasks() {
+  const container = document.getElementById('kanbanArea');
+  const tasks = getFilteredTasks();
+  
+  if (tasks.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);grid-column:1/-1;">Aucune tâche trouvée</div>';
+    return;
+  }
+  
+  // Grouper les tâches principales avec leurs sous-tâches
+  const groupedTasks = {};
+  const mainTasks = [];
+  
+  // D'abord, ajouter toutes les tâches principales filtrées
+  tasks.forEach(task => {
+    if (task.type === 'task') {
+      groupedTasks[task.id] = {
+        ...task,
+        subs: []
+      };
+      mainTasks.push(groupedTasks[task.id]);
+    }
+  });
+  
+  // Ensuite, ajouter les sous-tâches filtrées à leur tâche parente
+  tasks.forEach(task => {
+    if (task.type === 'subtask' && task.parentTaskId) {
+      // Si la tâche parente n'est pas dans groupedTasks, l'ajouter
+      if (!groupedTasks[task.parentTaskId]) {
+        const parentTask = allTasks.find(t => t.id === task.parentTaskId && t.type === 'task');
+        if (parentTask) {
+          groupedTasks[task.parentTaskId] = {
+            ...parentTask,
+            subs: []
+          };
+          mainTasks.push(groupedTasks[task.parentTaskId]);
+        }
+      }
+      // Ajouter la sous-tâche à son parent
+      if (groupedTasks[task.parentTaskId]) {
+        groupedTasks[task.parentTaskId].subs.push(task);
+      }
+    }
+  });
+  
+  container.innerHTML = mainTasks.map(task => {
+    const subs = task.subs || [];
+    const subsDone = subs.filter(s => s.done).length;
+    const progress = subs.length > 0 ? Math.round((subsDone / subs.length) * 100) : (task.done ? 100 : 0);
+    const subsOpen = openSubsMap[task.id] || false;
+    
+    return `
+    <div class="task-group" style="margin-bottom:16px;">
+      <!-- Tâche principale -->
+      <div class="task-card" data-task-id="${task.id}" style="background: var(--card); border: 1px solid var(--border);">
+        <div class="task-project">${task.project}</div>
+        <div class="task-title" style="font-weight: 500; font-size: 13px;">${task.name}</div>
+        <div class="task-meta">
+          <span class="task-prio prio-${task.prio}">${task.prio === 'h' ? 'Haute' : task.prio === 'm' ? 'Moyenne' : 'Faible'}</span>
+          <div class="task-checkbox ${task.done ? 'checked' : ''}" onclick="toggleTask(${task.id})"></div>
+        </div>
+        <div class="task-meta">
+          <span>• ${task.assignee}</span>
+          <span>• ${task.deadline}</span>
+        </div>
+        ${subs.length > 0 ? `
+          <div style="font-size:10px;color:var(--muted);margin-top:4px;">
+            • ${subsDone}/${subs.length} sous-tâches
+          </div>
+          <div class="task-progress">
+            <div class="task-progress-fill" style="width:${progress}%"></div>
+          </div>
+          <div style="font-size:11px;color:var(--primary);cursor:pointer;margin-top:4px;" onclick="toggleSubs(${task.id})">
+            ${subsOpen?'👁️ Masquer':'👁️ Voir'} les sous-tâches (${subs.length})
+          </div>
+        ` : ''}
+      </div>
+      
+      <!-- Sous-tâches groupées -->
+      ${subs.length > 0 && subsOpen ? `
+        <div style="margin-left:20px;margin-top:8px;">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:500;">• Sous-tâches:</div>
+          ${subs.map(sub => `
+            <div class="task-card" data-task-id="${sub.id}" style="background: var(--col-bg); border-left: 3px solid var(--primary); margin-bottom:6px; padding:10px;">
+              <div class="task-title" style="font-size: 12px; font-weight: 400;">${sub.name}</div>
+              <div class="task-meta">
+                <span class="task-prio prio-${sub.prio}" style="font-size:10px;">${sub.prio === 'h' ? 'H' : sub.prio === 'm' ? 'M' : 'F'}</span>
+                <div class="task-checkbox ${sub.done ? 'checked' : ''}" onclick="toggleTask(${sub.id})" style="width:14px;height:14px;"></div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+    </div>
+  `;
+  }).join('');
+}
+
+// Cocher/décocher une tâche ou sous-tâche
+function toggleTask(taskId) {
+  const task = allTasks.find(t => t.id === taskId);
+  if (task) {
+    task.done = !task.done;
+    
+    // Si c'est une sous-tâche, vérifier si toutes les sous-tâches de la tâche parente sont cochées
+    if (task.type === 'subtask' && task.parentTaskId) {
+      const parentTask = allTasks.find(t => t.id === task.parentTaskId && t.type === 'task');
+      if (parentTask) {
+        const allSubs = allTasks.filter(t => t.parentTaskId === task.parentTaskId && t.type === 'subtask');
+        if (allSubs.length > 0 && allSubs.every(s => s.done)) {
+          parentTask.done = true;
+        } else if (allSubs.length > 0 && !allSubs.every(s => s.done)) {
+          parentTask.done = false;
+        }
+      }
+    }
+    
+    // Si c'est une tâche principale, cocher/décocher toutes ses sous-tâches
+    if (task.type === 'task') {
+      const subs = allTasks.filter(t => t.parentTaskId === taskId && t.type === 'subtask');
+      subs.forEach(sub => {
+        sub.done = task.done;
+      });
+    }
+    
+    saveTasksToProjects();
+    renderTasks();
+    updateStats();
+  }
+}
+
+// Sauvegarder les tâches et sous-tâches dans les projets
+function saveTasksToProjects() {
+  try {
+    const data = JSON.parse(localStorage.getItem('orchidData') || '{"projets":{"list":[]}}');
+    const projects = data.projets.list || [];
+    
+    projects.forEach(project => {
+      if (project.tasks && Array.isArray(project.tasks)) {
+        project.tasks.forEach(task => {
+          // Mettre à jour la tâche principale
+          const updatedTask = allTasks.find(t => t.id === task.id && t.type === 'task');
+          if (updatedTask) {
+            task.done = updatedTask.done;
+          }
+          
+          // Mettre à jour les sous-tâches
+          if (task.subs && Array.isArray(task.subs)) {
+            task.subs.forEach(sub => {
+              const updatedSub = allTasks.find(t => t.id === sub.id && t.type === 'subtask');
+              if (updatedSub) {
+                sub.done = updatedSub.done;
+              }
+            });
+          }
+        });
+      }
+    });
+    
+    localStorage.setItem('orchidData', JSON.stringify(data));
+    console.log('Tâches et sous-tâches sauvegardées');
+    
+    // Sync to shared data system
+    if (window.sharedData) {
+      window.sharedData.syncProjetsData();
+    }
+  } catch(e) {
+    console.error('Erreur sauvegarde tâches:', e);
+  }
+}
+
+// Rafraîchir les tâches
+function refreshTasks() {
+  loadTasksFromProjects();
+}
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', function() {
+  loadTasksFromProjects();
+});
+</script>
+</body>
+</html>

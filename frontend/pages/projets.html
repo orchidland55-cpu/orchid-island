@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orchid Island | Projets</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+  :root {
+    --bg: #07070A; --sidebar: #24272B; --card: #24272B; --border: #4A525A;
+    --text: #F0F4F8; --muted: #B8C5D6; --primary: #004BA8; --primary-light: #3E78B2;
+    --green: #27AE60; --red: #E74C3C; --orange: #F39C12; --purple: #8E44AD;
+  }
+  /* Animated background */
+  .bg-orbs {
+    position: fixed; inset: 0; z-index: 0;
+    pointer-events: none;
+  }
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.15;
+    animation: float 8s ease-in-out infinite;
+  }
+  .orb-1 { width: 500px; height: 500px; background: radial-gradient(circle, #004BA8, transparent); top: -100px; right: -100px; animation-delay: 0s; }
+  .orb-2 { width: 400px; height: 400px; background: radial-gradient(circle, #3E78B2, transparent); bottom: -80px; left: 10%; animation-delay: 3s; }
+  .orb-3 { width: 300px; height: 300px; background: radial-gradient(circle, #4A525A, transparent); top: 50%; left: 30%; animation-delay: 5s; }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-30px) scale(1.05); }
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; font-size: 14px; }
+  .sidebar { width: 240px; background: linear-gradient(135deg, #24272B 0%, #07070A 50%, #1A1F2E 100%); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; bottom: 0; }
+  .sidebar-logo { padding: 24px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+  .logo-icon { width: 38px; height: 38px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 8px 32px rgba(0,75,168,0.3); animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+  .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; }
+  .logo-sub { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+  .nav-section { padding: 16px 12px 8px; }
+  .nav-label { font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; padding: 0 8px; margin-bottom: 6px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; color: var(--muted); cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-size: 13px; margin-bottom: 2px; position: relative; overflow: hidden; }
+  .nav-item::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0,75,168,0.1), transparent);
+    transition: left 0.5s;
+  }
+  .nav-item:hover::before { left: 100%; }
+  .nav-item:hover { background: rgba(0,75,168,0.08); color: var(--text); transform: translateX(5px); }
+  .nav-item.active { background: linear-gradient(135deg, rgba(0,75,168,0.15), rgba(62,120,178,0.1)); color: var(--primary-light); font-weight: 600; border: 1px solid rgba(0,75,168,0.2); box-shadow: 0 4px 20px rgba(0,75,168,0.2); }
+  .nav-badge { margin-left: auto; background: var(--red); color: white; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 20px; }
+  .main { margin-left: 240px; flex: 1; }
+  .topbar { height: 60px; background: linear-gradient(135deg, #24272B 0%, #1A1F2E 100%); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; position: sticky; top: 0; z-index: 50; backdrop-filter: blur(10px); }
+  .topbar-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; }
+  .topbar-actions { display: flex; gap: 10px; }
+  .btn-view { display: flex; align-items: center; gap: 6px; padding: 8px 14px; background: linear-gradient(135deg, var(--card), #1A1F2E); border: 1px solid var(--border); border-radius: 9px; color: var(--muted); font-family: 'Inter'; font-size: 12px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(10px); }
+  .btn-view.active { background: linear-gradient(135deg, rgba(0,75,168,0.15), rgba(62,120,178,0.1)); border-color: var(--primary-light); color: var(--primary-light); box-shadow: 0 4px 20px rgba(0,75,168,0.2); }
+  .btn-view:hover:not(.active) { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,75,168,0.2); }
+  .btn-add { display: flex; align-items: center; gap: 8px; padding: 9px 18px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #F0F4F8; border: none; border-radius: 10px; font-family: 'Inter'; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(10px); }
+  .btn-add:hover { transform: translateY(-2px) scale(1.05); box-shadow: 0 8px 25px rgba(0,75,168,0.3); }
+  .content { padding: 28px; }
+
+  /* Stats row */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
+  .stat-card { background: linear-gradient(135deg, var(--card), #1A1F2E); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; gap: 14px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(10px); position: relative; overflow: hidden; }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light), var(--primary));
+    animation: shimmer 2s linear infinite;
+  }
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  .stat-card:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 15px 40px rgba(0,75,168,0.3); border-color: var(--primary-light); }
+  .stat-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .stat-info strong { display: block; font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; }
+  .stat-info span { font-size: 12px; color: var(--muted); }
+
+  /* View toggle */
+  .view-container { display: none; }
+  .view-container.active { display: block; }
+
+  /* Card grid view */
+  .projects-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .project-card {
+    background: linear-gradient(135deg, var(--card), #1A1F2E);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+  }
+  .project-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light), var(--primary));
+    animation: shimmer 3s linear infinite;
+  }
+  .project-card:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 20px 60px rgba(0,75,168,0.3); border-color: var(--primary-light); }
+  .project-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .project-card.encours::before { background: linear-gradient(90deg, var(--blue), #60A5FA); }
+  .project-card.retard::before { background: linear-gradient(90deg, var(--red), var(--orange)); }
+  .project-card.termine::before { background: linear-gradient(90deg, var(--green), #38BDF8); }
+  .project-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .project-name { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; flex: 1; margin-right: 10px; }
+  .status-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .status-encours { background: rgba(77,159,255,0.12); color: var(--blue); }
+  .status-retard { background: rgba(255,87,87,0.12); color: var(--red); }
+  .status-termine { background: rgba(34,211,160,0.12); color: var(--green); }
+  .project-desc { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 16px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .project-meta { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+  .meta-item { display: flex; align-items: center; gap: 5px; }
+  .progress-section { margin-bottom: 14px; }
+  .progress-header { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12px; }
+  .progress-label { color: var(--muted); }
+  .progress-pct { font-weight: 600; }
+  .progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 3px; transition: width 1.5s cubic-bezier(0.25, 1, 0.5, 1); }
+  .project-footer { display: flex; justify-content: space-between; align-items: center; }
+  .assignee { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+  .assignee-avatar { width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+  .deadline { font-size: 11px; }
+  .deadline.late { color: var(--red); }
+  .deadline.ok { color: var(--muted); }
+  .action-btns { display: flex; gap: 6px; }
+  .btn-icon { width: 28px; height: 28px; border: 1px solid var(--border); background: transparent; border-radius: 7px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 13px; color: var(--muted); transition: all 0.2s; }
+  .btn-icon:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+
+  /* List view */
+  .table-card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  thead { background: rgba(255,255,255,0.02); }
+  th { padding: 12px 18px; text-align: left; font-size: 11px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+  td { padding: 14px 18px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  tr:last-child td { border-bottom: none; }
+  .progress-mini { height: 5px; background: var(--border); border-radius: 3px; width: 100px; overflow: hidden; }
+  .progress-mini-fill { height: 100%; border-radius: 3px; }
+  
+  /* Sidebar footer styles */
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 16px 12px;
+    border-top: 1px solid var(--border);
+  }
+  .user-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.02);
+  }
+  .user-avatar {
+    width: 32px; height: 32px;
+    background: var(--gold);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #050A14;
+  }
+  .user-name { font-size: 13px; font-weight: 500; }
+  .user-role { font-size: 11px; color: var(--muted); }
+
+  /* Tasks and subtasks styles */
+  .task-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 8px 10px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    transition: all 0.15s;
+    cursor: default;
+    margin-bottom: 6px;
+  }
+  .task-item:hover {
+    border-color: rgba(255,255,255,0.12);
+  }
+  .task-item.done-task {
+    opacity: 0.55;
+  }
+
+  /* Checkbox styles */
+  .chk {
+    width: 16px;
+    height: 16px;
+    border-radius: 5px;
+    border: 1.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 1px;
+  }
+  .chk.checked {
+    background: var(--green);
+    border-color: var(--green);
+  }
+  .chk.checked::after {
+    content: 'â';
+    font-size: 9px;
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .task-content {
+    flex: 1;
+  }
+  .task-name-txt {
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+  .task-name-txt.done-txt {
+    text-decoration: line-through;
+    color: var(--muted);
+  }
+
+  .task-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+  }
+  .task-chip {
+    font-size: 10px;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-weight: 500;
+  }
+  .b-h { background: rgba(255,87,87,0.12); color: var(--red); }
+  .b-m { background: rgba(245,188,76,0.12); color: var(--orange); }
+  .b-l { background: rgba(34,211,160,0.12); color: var(--green); }
+
+  /* Subtasks styles */
+  .sub-toggle {
+    font-size: 10px;
+    color: var(--blue);
+    cursor: pointer;
+    margin-top: 5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .sub-toggle:hover {
+    text-decoration: underline;
+  }
+  .subtask-list {
+    margin-top: 6px;
+    margin-left: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-left: 2px solid var(--border);
+    padding-left: 10px;
+  }
+  .sub-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 8px;
+    border-radius: 7px;
+    background: rgba(255,255,255,0.03);
+    transition: all 0.15s;
+  }
+  .sub-item:hover {
+    background: rgba(255,255,255,0.06);
+  }
+  .sub-chk {
+    width: 13px;
+    height: 13px;
+    border-radius: 3px;
+    border: 1.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .sub-chk.checked {
+    background: var(--blue);
+    border-color: var(--blue);
+  }
+  .sub-chk.checked::after {
+    content: 'â';
+    font-size: 8px;
+    color: #fff;
+  }
+  .sub-name {
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .sub-name.done-txt {
+    text-decoration: line-through;
+    color: var(--border);
+  }
+
+  /* Add task form styles */
+  .add-task-form {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .add-input {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 11px;
+    color: var(--text);
+    font-family: 'Inter';
+    font-size: 12px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+  .add-input:focus {
+    border-color: var(--blue);
+  }
+  .add-input::placeholder {
+    color: var(--muted);
+  }
+  .add-row {
+    display: flex;
+    gap: 6px;
+  }
+  .add-select {
+    flex: 1;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 9px;
+    color: var(--text);
+    font-family: 'Inter';
+    font-size: 11px;
+    outline: none;
+  }
+  .btn-add-task {
+    padding: 7px 12px;
+    background: rgba(0,75,168,0.15);
+    border: 1px solid rgba(0,75,168,0.3);
+    border-radius: 8px;
+    color: var(--blue);
+    font-family: 'Inter';
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-add-task:hover {
+    background: rgba(0,75,168,0.25);
+  }
+  .btn-cancel-add {
+    padding: 7px 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-family: 'Inter';
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .show-add {
+    font-size: 11px;
+    color: var(--muted);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 8px;
+    padding: 5px 9px;
+    border-radius: 7px;
+    background: rgba(255,255,255,0.03);
+    border: 1px dashed var(--border);
+    width: 100%;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .show-add:hover {
+    border-color: var(--blue);
+    color: var(--blue);
+  }
+</style>
+</head>
+<body>
+<div class="bg-orbs">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div><div class="logo-text">Orchid Island</div><div class="logo-sub">REAL ESTATE RH</div></div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Principal</div>
+    <div class="nav-item" onclick="navigateTo('dashboard.html')">Tableau de Bord</div>
+    <div class="nav-item" onclick="navigateTo('stagiaires.html')">Stagiaires <span class="nav-badge" id="badgeStagiaires">0</span></div>
+    <div class="nav-item active" onclick="navigateTo('projets.html')">Projets</div>
+    <div class="nav-item" onclick="navigateTo('taches.html')">Tâches</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Gestion</div>
+    <div class="nav-item" onclick="navigateTo('pointage_qr.html')">Pointage QR</div>
+    <div class="nav-item" onclick="navigateTo('rapports.html')">Rapports <span class="nav-badge" id="badgeRapports">0</span></div>
+    <div class="nav-item" onclick="navigateTo('alertes.html')">Alertes <span class="nav-badge" id="badgeAlertes">0</span></div>
+  </div>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar" id="userAvatar">Admin</div>
+      <div>
+        <div class="user-name" id="userName">Admin Orchid</div>
+        <div class="user-role" id="userRole">Administrateur</div>
+        <div class="user-email" id="userEmail" style="font-size: 11px; color: var(--muted); margin-top: 2px;">admin@orchid-island.com</div>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="logout()" style="width: 100%; padding: 8px; background: rgba(255,87,87,0.1); border: 1px solid rgba(255,87,87,0.3); border-radius: 6px; color: var(--red); font-size: 12px; cursor: pointer; margin-top: 8px; transition: all 0.2s;">
+      <span>Logout</span> Déconnexion
+    </button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">📊 Gestion des Projets</div>
+    <div class="topbar-actions">
+      <button class="btn-view active" onclick="setView('cards', this)">📇 Cartes</button>
+      <button class="btn-view" onclick="setView('list', this)">📋 Liste</button>
+      <button class="btn-add" onclick="ouvrirModalProjet()">+ Nouveau Projet</button>
+    </div>
+  </div>
+  <div class="content">
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(77,159,255,0.12);color:var(--blue)">📈</div>
+        <div class="stat-info"><strong id="stat-encours">0</strong><span>En cours</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(255,87,87,0.12);color:var(--red)">⚠️</div>
+        <div class="stat-info"><strong id="stat-retard">0</strong><span>En retard</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(34,211,160,0.12);color:var(--green)">✅</div>
+        <div class="stat-info"><strong id="stat-termines">0</strong><span>Terminés</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(245,188,76,0.12);color:var(--gold)">📊</div>
+        <div class="stat-info"><strong id="stat-avancement">0%</strong><span>Avancement moyen</span></div>
+      </div>
+    </div>
+
+    <!-- Cards view -->
+    <div class="view-container active" id="cardsView">
+      <div class="projects-grid" id="cardsGrid"></div>
+    </div>
+
+    <!-- List view -->
+    <div class="view-container" id="listView">
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Projet</th><th>Responsable</th><th>État</th><th>Avancement</th><th>Date limite</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="listBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Nouveau Projet -->
+<div id="modalProjet" class="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;align-items:center;justify-content:center;">
+  <div class="modal-content" style="background:linear-gradient(135deg, #24272B, #1A1F2E);border:1px solid var(--border);border-radius:16px;padding:28px;width:90%;max-width:500px;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+      <h3 style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--text);">➕ Nouveau Projet</h3>
+      <button onclick="fermerModalProjet()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;">✖️</button>
+    </div>
+    
+    <form id="formProjet" onsubmit="creerProjet(event)">
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Nom du Projet</label>
+        <input type="text" id="nomProjet" required placeholder="Ex: Développement Application Mobile" style="width:100%;padding:12px 16px;background:#07070A;border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;outline:none;transition:all 0.2s;">
+      </div>
+      
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Stagiaire Assigné</label>
+        <input type="text" id="stagiaireProjet" required placeholder="Ex: Amrani Youssef" style="width:100%;padding:12px 16px;background:#07070A;border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;outline:none;transition:all 0.2s;">
+      </div>
+      
+            
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+        <div>
+          <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Date Début</label>
+          <input type="date" id="debutProjet" required style="width:100%;padding:12px 16px;background:#07070A;border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;outline:none;transition:all 0.2s;">
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;">Date Fin</label>
+          <input type="date" id="finProjet" required style="width:100%;padding:12px 16px;background:#07070A;border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;outline:none;transition:all 0.2s;">
+        </div>
+      </div>
+      
+      <div style="display:flex;gap:12px;justify-content:flex-end;">
+        <button type="button" onclick="fermerModalProjet()" style="padding:12px 24px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--muted);font-size:14px;cursor:pointer;transition:all 0.2s;">Annuler</button>
+        <button type="submit" style="padding:12px 24px;background:linear-gradient(135deg, var(--primary), var(--primary-light));border:none;border-radius:10px;color:white;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;">✓ Créer le Projet</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="../assets/common.js"></script>
+<script>
+// Fonctions spécifiques à la gestion des projets
+let projects = [
+  {
+    id:1, nom:'Site Web Agence', desc:'Refonte du site vitrine avec recherche immobilière.',
+    etat:'retard', resp:'Youssef Amrani', respColor:'#E74C3C',
+    debut:'01/01/2026', fin:'31/03/2026', color:'#9B59B6',
+    tasks:[
+      { id:101, name:'Maquettes Figma pages principales', prio:'h', done:true,
+        subs:[
+          {id:1011,name:'Maquette page accueil',done:true,prio:'h'},
+          {id:1012,name:'Maquette page propriétés',done:true,prio:'m'},
+          {id:1013,name:'Maquette page contact',done:false,prio:'l'},
+        ]},
+      { id:102, name:'Intégration HTML/CSS responsive', prio:'h', done:false,
+        subs:[
+          {id:1021,name:'Header & navigation',done:true,prio:'h'},
+          {id:1022,name:'Section hero & bannière',done:false,prio:'h'},
+          {id:1023,name:'Footer & formulaire contact',done:false,prio:'m'},
+        ]},
+      { id:103, name:'Optimisation SEO et performances', prio:'m', done:false, subs:[]},
+      { id:104, name:'Tests cross-browser (Chrome, Firefox, Edge)', prio:'l', done:false, subs:[]},
+    ]
+  },
+  {
+    id:2, nom:'App Mobile Clients', desc:'Application iOS/Android pour les clients souhaitant voir les propriétés.',
+    etat:'encours', resp:'Sara Benali', respColor:'#9B59B6',
+    debut:'15/01/2026', fin:'30/06/2026', color:'#4A90E2',
+    tasks:[
+      { id:201, name:'Architecture React Native', prio:'h', done:true,
+        subs:[
+          {id:2011,name:'Configuration Expo',done:true,prio:'h'},
+          {id:2012,name:'Navigation & écrans',done:true,prio:'m'},
+          {id:2013,name:'State management Redux',done:false,prio:'m'},
+        ]},
+      { id:202, name:'Interface utilisateur et composants', prio:'m', done:false,
+        subs:[
+          {id:2021,name:'Composants réutilisables',done:false,prio:'m'},
+          {id:2022,name:'Formulaire de recherche',done:false,prio:'h'},
+          {id:2023,name:'Affichage des propriétés',done:false,prio:'m'},
+        ]},
+      { id:203, name:'Intégration API paiement', prio:'h', done:false,
+        subs:[
+          {id:2031,name:'Intégration Stripe',done:false,prio:'h'},
+          {id:2032,name:'Gestion erreurs paiement',done:false,prio:'h'},
+        ]},
+      { id:204, name:'Notifications push', prio:'m', done:false, subs:[]},
+    ]
+  }
+];
+
+// Fonction pour calculer le statut basé sur les priorités et progression
+function calcProjectStatus(proj) {
+  const all = proj.tasks;
+  if (!all || !all.length) return 'encours';
+  
+  const progress = Math.round((all.filter(t => t.done).length / all.length) * 100);
+  
+  // Si progression = 100%, projet terminé
+  if (progress === 100) return 'done';
+  
+  // Vérifier les tâches de haute priorité non terminées
+  const highPriorityTasks = all.filter(t => t.prio === 'h' && !t.done);
+  const mediumPriorityTasks = all.filter(t => t.prio === 'm' && !t.done);
+  const totalTasks = all.length;
+  const doneTasks = all.filter(t => t.done).length;
+  
+  // Calculer le temps restant
+  const today = new Date();
+  const endDate = new Date(proj.fin);
+  const daysRemaining = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
+  
+  // Logique de détection de retard basée sur les priorités
+  if (highPriorityTasks.length > 0) {
+    // S'il reste des tâches de haute priorité et moins de 30% du temps écoulé ou moins de 7 jours
+    const timeElapsed = (today - new Date(proj.debut)) / (endDate - new Date(proj.debut));
+    if (timeElapsed > 0.7 || daysRemaining < 7) {
+      return 'retard';
+    }
+  }
+  
+  // Si beaucoup de tâches de moyenne priorité restent et peu de temps
+  if (mediumPriorityTasks.length > totalTasks * 0.5 && daysRemaining < 14) {
+    return 'retard';
+  }
+  
+  // Vérifier si la date de fin est dépassée
+  if (daysRemaining < 0) {
+    return 'retard';
+  }
+  
+  return 'encours';
+}
+
+// Fonction pour calculer le pourcentage d'avancement
+function calcPct(proj) {
+  const tasks = proj.tasks;
+  if (!tasks || !tasks.length) return 0;
+  
+  // Calculer le nombre total d'éléments (tâches + sous-tâches)
+  let totalItems = 0;
+  let completedItems = 0;
+  
+  tasks.forEach(task => {
+    totalItems++;
+    if (task.done) completedItems++;
+    
+    // Inclure les sous-tâches dans le calcul
+    if (task.subs && Array.isArray(task.subs)) {
+      task.subs.forEach(sub => {
+        totalItems++;
+        if (sub.done) completedItems++;
+      });
+    }
+  });
+  
+  const progress = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+  
+  // Mettre automatiquement à jour le statut si progression = 100%
+  if (progress === 100 && proj.etat !== 'done') {
+    proj.etat = 'done';
+    sauvegarderProjets();
+  } else if (progress < 100) {
+    // Recalculer le statut basé sur les priorités
+    const newStatus = calcProjectStatus(proj);
+    if (proj.etat !== newStatus) {
+      proj.etat = newStatus;
+      sauvegarderProjets();
+    }
+  }
+  
+  return progress;
+}
+
+// STATE tâches
+let openTasksMap = {}; // projectId -> bool (tasks expanded)
+let openSubsMap  = {}; // taskId -> bool (subtasks expanded)
+let editingTaskId = null; // ID de la tâche en cours d'édition
+let editingSubId = null;  // ID de la sous-tâche en cours d'édition
+
+// Fonctions utilitaires pour les priorités
+function prioClass(p) { return p==='h'?'b-h':p==='m'?'b-m':'b-l'; }
+function prioLabel(p) { return p==='h'?'Haute':p==='m'?'Moyenne':'Faible'; }
+
+// RENDU D'UNE SOUS-TÂCHE
+function renderSub(s, projId, taskId) {
+  const isEditing = editingSubId === s.id;
+  
+  if (isEditing) {
+    return `
+      <div class="sub-item">
+        <input type="text" id="edit-sub-${s.id}" value="${s.name}" style="flex:1;padding:4px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:11px;" onkeydown="if(event.key==='Enter')saveEditSub(${projId},${taskId},${s.id});if(event.key==='Escape')cancelEditSub();">
+        <select id="edit-prio-${s.id}" style="padding:4px;background:var(--bg);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:11px;">
+          <option value="l" ${s.prio==='l'?'selected':''}>🟢 Faible</option>
+          <option value="m" ${s.prio==='m'?'selected':''}>🟡 Moyenne</option>
+          <option value="h" ${s.prio==='h'?'selected':''}>🔴 Haute</option>
+        </select>
+        <div style="display:flex;gap:2px;">
+          <button onclick="saveEditSub(${projId},${taskId},${s.id})" style="padding:2px 6px;background:var(--green);border:none;border-radius:3px;color:white;font-size:10px;cursor:pointer;">✅</button>
+          <button onclick="cancelEditSub()" style="padding:2px 6px;background:var(--red);border:none;border-radius:3px;color:white;font-size:10px;cursor:pointer;">❌</button>
+        </div>
+      </div>`;
+  } else {
+    return `
+      <div class="sub-item">
+        <span class="sub-name">${s.name}</span>
+        <span class="badge task-chip ${prioClass(s.prio || 'm')}" style="font-size:10px;margin-left:8px;">${prioLabel(s.prio || 'm')}</span>
+        <div style="margin-left:auto;display:flex;gap:2px;">
+          <button onclick="editSub(${s.id})" style="background:none;border:none;color:var(--blue);cursor:pointer;font-size:10px;padding:1px;" title="Modifier">✏️</button>
+          <button onclick="deleteSub(${projId},${taskId},${s.id})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:10px;padding:1px;" title="Supprimer">🗑️</button>
+        </div>
+      </div>`;
+  }
+}
+
+// RENDU D'UNE TÂCHE
+function renderTask(t, projId) {
+  const subsOpen = openSubsMap[t.id] || false;
+  const subsDone = t.subs.filter(s=>s.done).length;
+  const isEditing = editingTaskId === t.id;
+  
+  return `
+    <div class="task-item" id="task-${t.id}">
+      <div class="task-content">
+        ${isEditing ? `
+          <div style="display:flex;gap:6px;margin-bottom:6px;">
+            <input type="text" id="edit-task-${t.id}" value="${t.name}" style="flex:1;padding:6px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;" onkeydown="if(event.key==='Enter')saveEditTask(${projId},${t.id});if(event.key==='Escape')cancelEditTask();">
+          </div>
+          <div style="display:flex;gap:4px;">
+            <button onclick="saveEditTask(${projId},${t.id})" style="padding:4px 8px;background:var(--green);border:none;border-radius:4px;color:white;font-size:11px;cursor:pointer;">✅</button>
+            <button onclick="cancelEditTask()" style="padding:4px 8px;background:var(--red);border:none;border-radius:4px;color:white;font-size:11px;cursor:pointer;">❌</button>
+          </div>
+        ` : `
+          <div class="task-name-txt">${t.name}</div>
+          <div class="task-meta-row">
+            ${t.subs.length>0?`<span style="font-size:10px;color:var(--muted)">${subsDone}/${t.subs.length} sous-tâches</span>`:''}
+            <div style="margin-left:auto;display:flex;gap:4px;">
+              <button onclick="editTask(${t.id})" style="background:none;border:none;color:var(--blue);cursor:pointer;font-size:12px;padding:2px;" title="Modifier">✏️</button>
+              <button onclick="deleteTask(${projId},${t.id})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:12px;padding:2px;" title="Supprimer">🗑️</button>
+            </div>
+          </div>
+        `}
+        ${t.subs.length>0?`
+          <div class="sub-toggle" onclick="toggleSubs(${t.id})">
+            ${subsOpen?'👁️ Masquer':'👁️ Voir'} les sous-tâches (${t.subs.length})
+          </div>
+          ${subsOpen?`<div class="subtask-list">${t.subs.map(s=>renderSub(s,projId,t.id)).join('')}</div>`:''}
+        `:''}
+        <div class="sub-toggle" onclick="addSubPrompt(${t.id})" style="color:var(--muted);margin-top:4px">➕ Ajouter une sous-tâche</div>
+        <div id="addsub-${t.id}" style="display:none;margin-top:6px">
+          <input type="text" class="add-input" id="subinput-${t.id}" placeholder="Nouvelle sous-tâche..." 
+                 onkeydown="if(event.key==='Enter')saveSubTask(${projId},${t.id})">
+          <div style="display:flex;gap:6px;margin-top:4px;">
+            <select id="subprio-${t.id}" style="flex:1;padding:6px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;">
+              <option value="l">🟢 Faible</option>
+              <option value="m" selected>🟡 Moyenne</option>
+              <option value="h">🔴 Haute</option>
+            </select>
+          </div>
+          <div style="display:flex;gap:5px;margin-top:4px">
+            <button class="btn-add-task" onclick="saveSubTask(${projId},${t.id})">Ajouter</button>
+            <button class="btn-cancel-add" onclick="cancelSub(${t.id})">Annuler</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// Fonctions de gestion des tâches
+function toggleTasks(pid) {
+  openTasksMap[pid] = !openTasksMap[pid];
+  render();
+}
+
+function toggleSubs(tid) {
+  openSubsMap[tid] = !openSubsMap[tid];
+  render();
+}
+
+
+function showAddTaskForm(pid) {
+  render();
+  setTimeout(() => {
+    const el = document.getElementById(`addtask-${pid}`);
+    if (el) el.style.display = 'flex';
+    const inp = document.getElementById(`tinput-${pid}`);
+    if (inp) inp.focus();
+  }, 10);
+}
+
+function cancelTask(pid) {
+  const el = document.getElementById(`addtask-${pid}`);
+  if (el) el.style.display = 'none';
+}
+
+function saveTask(pid) {
+  const inp  = document.getElementById(`tinput-${pid}`);
+  const prio = document.getElementById(`tprio-${pid}`);
+  if (!inp || !inp.value.trim()) return;
+  const p = projects.find(p=>p.id===pid);
+  p.tasks.push({ id:Date.now(), name:inp.value.trim(), prio:'m', done:false, subs:[] });
+  openTasksMap[pid] = true;
+  sauvegarderProjets();
+}
+
+function addSubPrompt(tid) {
+  const el = document.getElementById(`addsub-${tid}`);
+  if (el) { el.style.display = el.style.display==='none'?'block':'none'; }
+  const inp = document.getElementById(`subinput-${tid}`);
+  if (inp) inp.focus();
+}
+
+function cancelSub(tid) {
+  const el = document.getElementById(`addsub-${tid}`);
+  if (el) el.style.display = 'none';
+}
+
+function saveSubTask(pid, tid) {
+  const inp = document.getElementById(`subinput-${tid}`);
+  const prio = document.getElementById(`subprio-${tid}`);
+  if (!inp || !inp.value.trim()) return;
+  const p = projects.find(p=>p.id===pid);
+  const t = p.tasks.find(t=>t.id===tid);
+  t.subs.push({ id:Date.now(), name:inp.value.trim(), prio:prio.value, done:false });
+  openSubsMap[tid] = true;
+  sauvegarderProjets();
+}
+
+// Fonctions de modification et suppression des tâches
+function editTask(taskId) {
+  editingTaskId = taskId;
+  editingSubId = null;
+  render();
+  // Focus sur le champ d'édition
+  setTimeout(() => {
+    const inp = document.getElementById(`edit-task-${taskId}`);
+    if (inp) {
+      inp.focus();
+      inp.select();
+    }
+  }, 10);
+}
+
+function saveEditTask(projId, taskId) {
+  const inp = document.getElementById(`edit-task-${taskId}`);
+  if (!inp || !inp.value.trim()) return;
+  
+  const p = projects.find(p=>p.id===projId);
+  const t = p.tasks.find(t=>t.id===taskId);
+  t.name = inp.value.trim();
+  
+  editingTaskId = null;
+  sauvegarderProjets();
+}
+
+function cancelEditTask() {
+  editingTaskId = null;
+  render();
+}
+
+function deleteTask(projId, taskId) {
+  if (confirm('⚠️ Êtes-vous sûr de vouloir supprimer cette tâche ?')) {
+    const p = projects.find(p=>p.id===projId);
+    p.tasks = p.tasks.filter(t=>t.id!==taskId);
+    sauvegarderProjets();
+  }
+}
+
+// Fonctions de modification et suppression des sous-tâches
+function editSub(subId) {
+  editingSubId = subId;
+  editingTaskId = null;
+  render();
+  // Focus sur le champ d'édition
+  setTimeout(() => {
+    const inp = document.getElementById(`edit-sub-${subId}`);
+    if (inp) {
+      inp.focus();
+      inp.select();
+    }
+  }, 10);
+}
+
+function saveEditSub(projId, taskId, subId) {
+  const inp = document.getElementById(`edit-sub-${subId}`);
+  const prio = document.getElementById(`edit-prio-${subId}`);
+  if (!inp || !inp.value.trim()) return;
+  
+  const p = projects.find(p=>p.id===projId);
+  const t = p.tasks.find(t=>t.id===taskId);
+  const s = t.subs.find(s=>s.id===subId);
+  s.name = inp.value.trim();
+  if (prio) s.prio = prio.value;
+  
+  editingSubId = null;
+  sauvegarderProjets();
+}
+
+function cancelEditSub() {
+  editingSubId = null;
+  render();
+}
+
+function deleteSub(projId, taskId, subId) {
+  if (confirm('⚠️ Êtes-vous sûr de vouloir supprimer cette sous-tâche ?')) {
+    const p = projects.find(p=>p.id===projId);
+    const t = p.tasks.find(t=>t.id===taskId);
+    t.subs = t.subs.filter(s=>s.id!==subId);
+    sauvegarderProjets();
+  }
+}
+
+// Charger les données depuis le localStorage
+function loadProjects() {
+  try {
+    const data = JSON.parse(localStorage.getItem('orchidData') || '{"projets":{"list":[]}}');
+    const storedProjects = data.projets.list || [];
+    
+    // Toujours utiliser les données du localStorage (même si vide)
+    projects = storedProjects;
+    console.log('Projets chargés depuis localStorage:', projects.length);
+    
+    // Synchroniser avec orchid_shared_data
+    if (window.sharedData) {
+      window.sharedData.syncProjetsData();
+    }
+    
+    // Si c'est le premier chargement et localStorage est vide, initialiser avec les données par défaut
+    if (storedProjects.length === 0 && !localStorage.getItem('orchidData_initialized')) {
+      console.log('Premier chargement - initialisation avec données par défaut');
+      // Marquer comme initialisé et sauvegarder les données par défaut
+      localStorage.setItem('orchidData_initialized', 'true');
+      sauvegarderProjets();
+    }
+  } catch(e) {
+    console.error('Erreur chargement projets:', e);
+    // En cas d'erreur, initialiser avec les données par défaut
+    localStorage.setItem('orchidData_initialized', 'true');
+    sauvegarderProjets();
+  }
+  render();
+}
+
+function renderCards() {
+  const container = document.getElementById('cardsGrid');
+  if (projects.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted);grid-column:1/-1;">Aucun projet en cours</div>';
+    return;
+  }
+  
+  container.innerHTML = projects.map(p => {
+    const statusClass = p.etat === 'done' ? 'done' : p.etat === 'encours' ? 'progress' : 'retard';
+    const statusText = p.etat === 'done' ? 'Terminé' : p.etat === 'encours' ? 'En cours' : 'En retard';
+    const avancement = calcPct(p);
+    const tasksOpen = openTasksMap[p.id] || false;
+    
+    // Couleur de progression selon l'avancement
+    let progressColor = 'var(--red)';
+    if (avancement >= 100) {
+      progressColor = 'var(--green)';
+    } else if (avancement >= 75) {
+      progressColor = '#27AE60';
+    } else if (avancement >= 50) {
+      progressColor = '#F39C12';
+    } else if (avancement >= 25) {
+      progressColor = '#E67E22';
+    }
+    
+    return `<div class="project-card" style="background:linear-gradient(135deg, var(--card), #1A1F2E);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);backdrop-filter:blur(10px);">
+      <div style="height:3px;background:linear-gradient(90deg, var(--primary), var(--primary-light), var(--primary));"></div>
+      <div style="padding:20px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+          <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;flex:1;margin-right:10px;">${p.nom}</div>
+          <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;background:${statusClass === 'done' ? 'rgba(34,211,160,0.12)' : statusClass === 'progress' ? 'rgba(77,159,255,0.12)' : 'rgba(255,87,87,0.12)'};color:${statusClass === 'done' ? 'var(--green)' : statusClass === 'progress' ? 'var(--blue)' : 'var(--red)'};">${statusText}</span>
+        </div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:16px;">${p.desc || 'Aucune description'}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);margin-bottom:14px;">
+          <div><span style="color:var(--muted)">Responsable:</span> ${p.resp || 'Non assigné'}</div>
+          <div><span style="color:var(--muted)">Période:</span> ${p.debut || '-'} - ${p.fin || '-'}</div>
+        </div>
+        <div style="margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px;">
+            <span style="color:var(--muted)">Progression</span>
+            <span style="font-weight:600;color:${progressColor}">${avancement}%</span>
+          </div>
+          <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden;">
+            <div style="height:100%;border-radius:3px;transition:width 1.5s cubic-bezier(0.25, 1, 0.5, 1);width:${avancement}%;background:${progressColor};"></div>
+          </div>
+        </div>
+
+        <!-- Tasks toggle -->
+        <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:10px 0;border-top:1px solid var(--border);" onclick="toggleTasks(${p.id})">
+          <span style="font-size:12px;color:var(--muted);font-weight:500;">📋 Tâches</span>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;">
+            <span style="color:${p.color || 'var(--blue)'}">${p.tasks ? p.tasks.filter(t => t.done).length : 0}/${p.tasks ? p.tasks.length : 0} faites</span>
+            <span style="font-size:11px;color:var(--muted);transition:transform 0.2s;${tasksOpen ? 'transform:rotate(90deg)' : ''}">▶</span>
+          </div>
+        </div>
+
+        ${tasksOpen && p.tasks ? `
+          <div style="margin-top:10px;display:flex;flex-direction:column;gap:5px;">
+            ${p.tasks.map(t => renderTask(t, p.id)).join('')}
+          </div>
+          <div style="font-size:11px;color:var(--muted);cursor:pointer;display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:5px 9px;border-radius:7px;background:rgba(255,255,255,0.03);border:1px dashed var(--border);width:100%;justify-content:center;transition:all 0.2s;" onclick="showAddTaskForm(${p.id})">➕ Ajouter une tâche</div>
+          <div id="addtask-${p.id}" style="display:none;margin-top:8px;display:flex;flex-direction:column;gap:6px;">
+            <input type="text" class="add-input" id="tinput-${p.id}" placeholder="Nom de la tâche..." onkeydown="if(event.key==='Enter')saveTask(${p.id})">
+            <div style="display:flex;gap:6px;">
+            </div>
+            <div style="display:flex;gap:6px;">
+              <button class="btn-add-task" onclick="saveTask(${p.id})">➕ Ajouter</button>
+              <button class="btn-cancel-add" onclick="cancelTask(${p.id})">Annuler</button>
+            </div>
+          </div>
+        ` : ''}
+
+        <div style="display:flex;gap:8px;margin-top:12px;">
+          <button onclick="voirProjet(${p.id})" style="flex:1;padding:8px;background:rgba(0,75,168,0.15);border:1px solid rgba(0,75,168,0.3);border-radius:8px;color:var(--primary-light);font-size:12px;cursor:pointer;transition:all 0.2s;">👁️ Voir</button>
+          <button onclick="supprimerProjet(${p.id})" style="padding:8px 12px;background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.3);border-radius:8px;color:var(--red);font-size:12px;cursor:pointer;transition:all 0.2s;">🗑️</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderTable() {
+  const container = document.getElementById('listBody');
+  if (projects.length === 0) {
+    container.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--muted);">Aucun projet en cours</td></tr>';
+    return;
+  }
+  
+  container.innerHTML = projects.map(p => {
+    const avancement = calcPct(p);
+    // Couleur de progression selon l'avancement
+    let progressColor = 'var(--red)';
+    if (avancement >= 100) {
+      progressColor = 'var(--green)';
+    } else if (avancement >= 75) {
+      progressColor = '#27AE60';
+    } else if (avancement >= 50) {
+      progressColor = '#F39C12';
+    } else if (avancement >= 25) {
+      progressColor = '#E67E22';
+    }
+    
+    return `
+    <tr>
+      <td><div style="font-weight:500">${p.nom}</div><div style="font-size:12px;color:var(--muted)">${p.desc || 'Aucune description'}</div></td>
+      <td>${p.resp || 'Non assigné'}</td>
+      <td><div style="font-size:12px">${p.debut || '-'}</div><div style="font-size:11px;color:var(--muted)">-> ${p.fin || '-'}</div></td>
+      <td><div class="progress-mini"><div class="progress-mini-fill" style="width:${avancement}%;background:${progressColor}"></div></div> <span style="color:${progressColor};font-weight:600">${avancement}%</span></td>
+      <td><span class="status-badge status-${p.etat === 'done' ? 'done' : p.etat === 'encours' ? 'progress' : 'retard'}">${p.etat === 'done' ? 'Terminé' : p.etat === 'encours' ? 'En cours' : 'En retard'}</span></td>
+      <td style="font-size:13px;color:${p.etat === 'retard' ? 'var(--red)' : 'var(--muted)'}">${p.fin || '-'}</td>
+      <td><div class="action-btns"><button class="btn-icon" onclick="voirProjet(${p.id})" title="Voir">👁️</button><button class="btn-icon" onclick="modifierProjet(${p.id})" title="Modifier">✏️</button><button class="btn-icon" onclick="supprimerProjet(${p.id})" title="Supprimer">🗑️</button></div></td>
+    </tr>`;
+  }).join('');
+}
+
+function voirProjet(id) {
+  const projet = projects.find(p => p.id === id);
+  if (!projet) return;
+  
+  const statusText = projet.etat === 'done' ? 'Terminé' : projet.etat === 'encours' ? 'En cours' : 'En retard';
+  
+  // Formater les tâches avec sous-tâches et avancement
+  let tachesDetails = '';
+  if (Array.isArray(projet.tasks) && projet.tasks.length > 0) {
+    tachesDetails = projet.tasks.map((t, i) => {
+      const subs = t.subs || [];
+      const totalSt = subs.length;
+      const completeSt = subs.filter(st => st.done).length;
+      const progressTache = totalSt > 0 ? Math.round((completeSt / totalSt) * 100) : 0;
+      
+      let subsList = '';
+      if (subs.length > 0) {
+        subsList = '\n' + subs.map((st, sti) => 
+          `      ${st.done ? '✅' : '☐'} ${st.name}`
+        ).join('\n');
+      } else {
+        subsList = '\n      (Aucune sous-tâche)';
+      }
+      
+      return `   ${i + 1}. ${t.name} - ${progressTache}% (${completeSt}/${totalSt})${subsList}`;
+    }).join('\n\n');
+  } else {
+    tachesDetails = '   Aucune tâche définie';
+  }
+  
+  // Avancement global
+  const avancementGlobal = calcPct(projet);
+  const barreProgress = '█'.repeat(Math.round(avancementGlobal / 5)) + '░'.repeat(20 - Math.round(avancementGlobal / 5));
+  
+  alert(`â DÉTAILS DU PROJET: ${projet.nom}
+
+â Stagiaire: ${projet.resp || 'Non assigné'}
+â État: ${statusText}
+â Période: ${projet.debut || '-'} - ${projet.fin || '-'}
+
+â AVANCEMENT GLOBAL: ${avancementGlobal}%
+   [${barreProgress}]
+
+â TÂCHES ET SOUS-TÂCHES:
+
+${tachesDetails}`);
+}
+
+function modifierProjet(id) {
+  alert('Fonction de modification à implémenter');
+}
+
+function supprimerProjet(id) {
+  if (confirm('â Êtes-vous sûr de vouloir supprimer ce projet ?')) {
+    projects = projects.filter(p => p.id !== id);
+    sauvegarderProjets();
+    alert('â Projet supprimé avec succès !');
+  }
+}
+
+function setView(view, btn) {
+  document.querySelectorAll('.btn-view').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('cardsView').classList.toggle('active', view === 'cards');
+  document.getElementById('listView').classList.toggle('active', view === 'list');
+}
+
+function updateStats() {
+  // Recalculer les statuts basés sur la progression avant de compter
+  projects.forEach(p => {
+    const progress = calcPct(p);
+    if (progress === 100 && p.etat !== 'done') {
+      p.etat = 'done';
+    }
+  });
+  
+  const total = projects.length;
+  const enCours = projects.filter(p => p.etat === 'encours').length;
+  const termines = projects.filter(p => p.etat === 'done').length;
+  const enRetard = projects.filter(p => p.etat === 'retard').length;
+  
+  // Calcul avancement moyen
+  const avancementTotal = projects.reduce((sum, p) => sum + calcPct(p), 0);
+  const avancementMoyen = total > 0 ? Math.round(avancementTotal / total) : 0;
+  
+  // Mettre à jour l'affichage
+  document.getElementById('stat-encours').textContent = enCours;
+  document.getElementById('stat-retard').textContent = enRetard;
+  document.getElementById('stat-termines').textContent = termines;
+  document.getElementById('stat-avancement').textContent = avancementMoyen + '%';
+  
+  console.log('Stats mises à jour:', { total, enCours, termines, enRetard, avancementMoyen });
+}
+
+function render() {
+  renderCards();
+  renderTable();
+  updateStats();
+}
+
+// Modal functions
+function ouvrirModalProjet() {
+  const modal = document.getElementById('modalProjet');
+  modal.style.display = 'flex';
+  // Set default dates
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('debutProjet').value = today;
+  document.getElementById('nomProjet').focus();
+}
+
+function fermerModalProjet() {
+  document.getElementById('modalProjet').style.display = 'none';
+  document.getElementById('formProjet').reset();
+}
+
+function creerProjet(event) {
+  event.preventDefault();
+  
+  const nom = document.getElementById('nomProjet').value.trim();
+  const stagiaire = document.getElementById('stagiaireProjet').value.trim();
+  const debut = document.getElementById('debutProjet').value;
+  const fin = document.getElementById('finProjet').value;
+  
+  if (!nom || !stagiaire || !debut || !fin) {
+    alert('Veuillez remplir tous les champs obligatoires');
+    return;
+  }
+  
+  if (new Date(debut) > new Date(fin)) {
+    alert('La date de fin doit être après la date de début');
+    return;
+  }
+  
+  // Create new project object without tasks
+  const nouveauProjet = {
+    id: Date.now(),
+    nom: nom,
+    resp: stagiaire,
+    desc: 'Nouveau projet créé',
+    tasks: [],  // Tableau de tâches vide
+    debut: debut,
+    fin: fin,
+    etat: 'encours',
+    avancement: 0,  // Avancement à 0% car pas de tâches
+    color: 'var(--blue)'
+  };
+  
+  // Add to projects array
+  projects.unshift(nouveauProjet);
+  
+  // Save to localStorage
+  sauvegarderProjets();
+  
+  // Close modal and confirm
+  fermerModalProjet();
+  alert('✅ Projet créé avec succès !');
+}
+
+function sauvegarderProjets() {
+  // Save to localStorage directly
+  try {
+    const data = JSON.parse(localStorage.getItem('orchidData') || '{"projets":{"list":[]}}');
+    data.projets.list = projects;
+    localStorage.setItem('orchidData', JSON.stringify(data));
+    console.log('Sauvegarde projets OK');
+    
+    // Sync to shared data system
+    if (window.sharedData) {
+      window.sharedData.syncProjetsData();
+    }
+  } catch(e) {
+    console.error('Erreur sauvegarde:', e);
+  }
+  
+  // Refresh display
+  render();
+}
+
+// Close modal on outside click
+window.onclick = function(event) {
+  const modal = document.getElementById('modalProjet');
+  if (event.target === modal) {
+    fermerModalProjet();
+  }
+}
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', function() {
+  loadProjects();
+});
+</script>
+</body>
+</html>

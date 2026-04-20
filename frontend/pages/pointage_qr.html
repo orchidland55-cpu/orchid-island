@@ -1,0 +1,1176 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orchid Island — Pointage QR</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --bg: #07070A;
+    --sidebar-bg: #24272B;
+    --card: #24272B;
+    --card2: #1A1F2E;
+    --border: #4A525A;
+    --text: #F0F4F8;
+    --muted: #B8C5D6;
+    --primary: #004BA8;
+    --primary-light: #3E78B2;
+    --accent: #3E78B2;
+    --green: #27AE60;
+    --red: #E74C3C;
+    --orange: #F39C12;
+    --purple: #8E44AD;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; font-size: 14px; }
+
+  /* Animated background */
+  .bg-orbs {
+    position: fixed; inset: 0; z-index: 0;
+    pointer-events: none;
+  }
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.15;
+    animation: float 8s ease-in-out infinite;
+  }
+  .orb-1 { width: 500px; height: 500px; background: radial-gradient(circle, #004BA8, transparent); top: -100px; right: -100px; animation-delay: 0s; }
+  .orb-2 { width: 400px; height: 400px; background: radial-gradient(circle, #3E78B2, transparent); bottom: -80px; left: 10%; animation-delay: 3s; }
+  .orb-3 { width: 300px; height: 300px; background: radial-gradient(circle, #4A525A, transparent); top: 50%; left: 30%; animation-delay: 5s; }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-30px) scale(1.05); }
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 240px;
+    background: linear-gradient(135deg, #24272B 0%, #07070A 50%, #1A1F2E 100%);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+  }
+  .sidebar-logo {
+    padding: 24px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-icon {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 8px 32px rgba(0,75,168,0.3);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+  .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; }
+  .logo-sub { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+  .nav-section { padding: 16px 12px 8px; }
+  .nav-label { font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; padding: 0 8px; margin-bottom: 6px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 13px;
+    margin-bottom: 2px;
+    position: relative;
+    overflow: hidden;
+  }
+  .nav-item::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0,75,168,0.1), transparent);
+    transition: left 0.5s;
+  }
+  .nav-item:hover::before { left: 100%; }
+  .nav-item:hover { 
+    background: rgba(0,75,168,0.08); 
+    color: var(--text);
+    transform: translateX(5px);
+  }
+  .nav-item.active { 
+    background: linear-gradient(135deg, rgba(0,75,168,0.15), rgba(62,120,178,0.1)); 
+    color: var(--primary-light); 
+    font-weight: 600; 
+    border: 1px solid rgba(0,75,168,0.2);
+    box-shadow: 0 4px 20px rgba(0,75,168,0.2);
+  }
+  .nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+  .nav-badge {
+    margin-left: auto;
+    background: var(--red);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 20px;
+  }
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 16px 12px;
+    border-top: 1px solid var(--border);
+  }
+  .user-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  .user-avatar {
+    width: 34px; height: 34px;
+    background: linear-gradient(135deg, var(--primary-light), var(--purple));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .user-name { font-size: 13px; font-weight: 500; }
+  .user-role { font-size: 11px; color: var(--primary-light); }
+
+  /* MAIN */
+  .main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; }
+  .topbar {
+    height: 60px;
+    background: linear-gradient(135deg, #24272B 0%, #1A1F2E 100%);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 28px;
+    position: sticky; top: 0; z-index: 50;
+    backdrop-filter: blur(10px);
+  }
+  .topbar-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; }
+  .topbar-right { display: flex; align-items: center; gap: 16px; }
+  .topbar-date { font-size: 12px; color: var(--muted); }
+  .notif-btn { font-size: 18px; cursor: pointer; position: relative; padding: 8px; border-radius: 8px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+  .notif-btn:hover { background: rgba(0,75,168,0.1); transform: scale(1.05); }
+  .notif-dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; background: var(--red); border-radius: 50%; border: 2px solid var(--sidebar); }
+  .notif-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: var(--red);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 20px;
+    min-width: 18px;
+    text-align: center;
+    border: 2px solid var(--sidebar);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .content { padding: 28px; flex: 1; }
+
+  /* KPI CARDS */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .kpi-card {
+    background: linear-gradient(135deg, var(--card), #1A1F2E);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+  }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+  }
+  .kpi-card:hover { 
+    transform: translateY(-5px) scale(1.02); 
+    box-shadow: 0 20px 60px rgba(0,75,168,0.3); 
+    border-color: var(--primary-light);
+  }
+  .kpi-icon { font-size: 28px; margin-bottom: 12px; }
+  .kpi-value { font-family: 'Syne', sans-serif; font-size: 34px; font-weight: 800; line-height: 1; margin-bottom: 6px; }
+  .kpi-label { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .kpi-trend {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 600;
+    padding: 3px 8px; border-radius: 20px;
+  }
+  .kpi-trend.up { background: rgba(34,211,160,0.12); color: var(--green); }
+  .kpi-trend.down { background: rgba(255,87,87,0.12); color: var(--red); }
+
+  /* QR CODE STYLES */
+  .qr-container {
+    background: linear-gradient(135deg, var(--card), #1A1F2E);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 28px;
+  }
+  .qr-header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .qr-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .qr-subtitle {
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .qr-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  .qr-panel {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+  }
+  .qr-panel h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  .qr-wrapper {
+    background: white;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px 0;
+    display: inline-block;
+  }
+  .qr-session {
+    font-size: 12px;
+    color: var(--muted);
+    margin: 12px 0;
+  }
+  .btn-refresh {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+  }
+  .btn-refresh:hover {
+    background: var(--primary-light);
+    transform: scale(1.05);
+  }
+
+  /* LOGS TABLE */
+  .logs-container {
+    background: linear-gradient(135deg, var(--card), #1A1F2E);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+  }
+  .logs-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  .logs-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .logs-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .logs-table th {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .logs-table td {
+    padding: 12px;
+    border-bottom: 1px solid rgba(74,82,90,0.3);
+    font-size: 13px;
+  }
+  .badge-entree { background: rgba(34,197,94,0.12); color: var(--green); padding: 2px 8px; border-radius: 12px; font-size: 11px; }
+  .badge-sortie { background: rgba(249,115,22,0.12); color: var(--orange); padding: 2px 8px; border-radius: 12px; font-size: 11px; }
+  .badge-wa { background: rgba(34,197,94,0.1); color: var(--green); font-size: 10px; padding: 2px 6px; border-radius: 8px; }
+  .empty-logs { text-align: center; padding: 40px; color: var(--muted); }
+</style>
+<script src="../auth_roles.js"></script>
+</head>
+<body>
+<div class="bg-orbs">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div>
+      <div class="logo-text">Orchid Island</div>
+      <div class="logo-sub">REAL ESTATE RH</div>
+    </div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Principal</div>
+    <div class="nav-item" onclick="navigateTo('dashboard.html')">Tableau de Bord</div>
+    <div class="nav-item" onclick="navigateTo('stagiaires.html')">Stagiaires</div>
+    <div class="nav-item" onclick="navigateTo('projets.html')">Projets</div>
+    <div class="nav-item" onclick="navigateTo('taches.html')">Tâches</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Gestion</div>
+    <div class="nav-item active" onclick="navigateTo('pointage_qr.html')">Pointage QR</div>
+    <div class="nav-item" onclick="navigateTo('rapports.html')">Rapports</div>
+    <div class="nav-item" onclick="navigateTo('alertes.html')">Alertes</div>
+  </div>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar">Admin</div>
+      <div>
+        <div class="user-name">Admin Orchid</div>
+        <div class="user-role">Administrateur</div>
+        <div class="user-email" style="font-size: 11px; color: var(--muted); margin-top: 2px;">admin@orchid-island.com</div>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="logout()" style="width: 100%; padding: 8px; background: rgba(255,87,87,0.1); border: 1px solid rgba(255,87,87,0.3); border-radius: 6px; color: var(--red); font-size: 12px; cursor: pointer; margin-top: 8px; transition: all 0.2s;">
+      <span class="icon">Logout</span> Déconnexion
+    </button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">Pointage QR Code</div>
+    <div class="topbar-right">
+      <div class="topbar-date" id="currentDate"></div>
+      <div class="notif-btn" onclick="navigateTo('alertes.html')" style="cursor:pointer;position:relative;">
+        <span>🔔</span>
+        <div class="notif-dot" id="notifDot" style="display:none;"></div>
+        <div class="notif-badge" id="notifBadge" style="display:none;">0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- KPI CARDS -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon">📊</div>
+        <div class="kpi-value" id="todayScans">0</div>
+        <div class="kpi-label">Scans Aujourd'hui</div>
+        <span class="kpi-trend up">● En temps réel</span>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">👥</div>
+        <div class="kpi-value" id="activeStagiaires">0</div>
+        <div class="kpi-label">Stagiaires Actifs</div>
+        <span class="kpi-trend up">↑ Cette semaine</span>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">💬</div>
+        <div class="kpi-value" id="whatsappSent">0</div>
+        <div class="kpi-label">Messages WhatsApp</div>
+        <span class="kpi-trend up">✓ 100% envoyés</span>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">📱</div>
+        <div class="kpi-value" id="qrStatus">●</div>
+        <div class="kpi-label">Statut QR Codes</div>
+        <span class="kpi-trend up">● Actifs</span>
+      </div>
+    </div>
+
+    <!-- QR CODE UNIQUE -->
+    <div class="qr-container">
+      <div class="qr-header">
+        <div class="qr-title">Pointage QR Code</div>
+        <div class="qr-subtitle">Scannez pour pointer votre arrivée ou votre départ</div>
+      </div>
+      <div class="qr-grid" style="grid-template-columns: 1fr; max-width: 300px; margin: 0 auto;">
+        <div class="qr-panel">
+          <h3>� Scanner pour Pointer</h3>
+          <div class="qr-wrapper" id="qrWrapper"></div>
+          <div class="qr-session" id="qrSession">Génération en cours...</div>
+          <button class="btn-refresh" onclick="regenererQR()">↻ Régénérer</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOGS -->
+    <div class="logs-container">
+      <div class="logs-header">
+        <div class="logs-title">📋 Logs de Pointage</div>
+      </div>
+      <table class="logs-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Heure</th>
+            <th>Nom</th>
+            <th>Email</th>
+            <th>Type</th>
+            <th>WhatsApp</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="logsBody">
+          <tr>
+            <td colspan="7" class="empty-logs">— Aucun pointage enregistré aujourd'hui</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ===== BARRE DE PRÉSENCE STAGIAIRES ===== -->
+    <div class="presence-section" id="presenceSection">
+      <div class="presence-section-title">Suivi de présence du jour</div>
+      <div class="presence-wrapper">
+        <div class="pres-header">
+          <div>
+            <div class="pres-header-title" id="presDate">Présence Stagiaires</div>
+            <div class="pres-horaires">Horaires officiels : Entrée 09h30 — Sortie 15h30</div>
+          </div>
+          <div class="pres-legend">
+            <div class="pres-legend-item"><div class="pres-dot pdot-present"></div> Présent</div>
+            <div class="pres-legend-item"><div class="pres-dot pdot-retard"></div> Retard</div>
+            <div class="pres-legend-item"><div class="pres-dot pdot-absent"></div> Absent</div>
+            <div class="pres-legend-item"><div class="pres-dot pdot-partial"></div> Sortie précoce</div>
+          </div>
+        </div>
+        <div class="pres-col-header">
+          <div>Stagiaire</div>
+          <div>Timeline (08h — 17h)</div>
+          <div>Entrée</div>
+          <div>Sortie</div>
+          <div>Durée</div>
+          <div>Statut</div>
+        </div>
+        <div class="pres-list" id="presenceList">
+          <div class="pres-empty">Chargement des données...</div>
+        </div>
+        <div class="pres-footer">
+          <div class="pres-stat">
+            <div class="pres-stat-value" id="statPresent" style="color:var(--green)">0</div>
+            <div class="pres-stat-label">Présents</div>
+          </div>
+          <div class="pres-stat">
+            <div class="pres-stat-value" id="statRetard" style="color:var(--orange)">0</div>
+            <div class="pres-stat-label">Retards</div>
+          </div>
+          <div class="pres-stat">
+            <div class="pres-stat-value" id="statAbsent" style="color:var(--red)">0</div>
+            <div class="pres-stat-label">Absents</div>
+          </div>
+          <div class="pres-stat">
+            <div class="pres-stat-value" id="statPartial" style="color:var(--primary-light)">0</div>
+            <div class="pres-stat-label">Sorties précoces</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Navigation - compatible avec Django (port 8000) et Live Server (port 5500)
+function navigateTo(page) {
+  // Si on est sur le port 8000 (Django), utiliser l'URL sans extension
+  if (window.location.origin.includes(':8000')) {
+    // Remplacer .html par /
+    const djangoUrl = page.replace('.html', '/');
+    window.location.href = '/' + djangoUrl;
+  } else {
+    // Sinon, comportement normal
+    window.location.href = page;
+  }
+}
+
+// Logout
+function logout() {
+  if (confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.href = 'authentification.html';
+  }
+}
+
+// Date et heure
+function updateDateTime() {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  document.getElementById('currentDate').textContent = dateStr;
+}
+updateDateTime();
+setInterval(updateDateTime, 60000);
+
+// QR Code generation
+let qrCode = null;
+
+function genererQR() {
+  const sessionId = Date.now().toString();
+  // Utiliser l'IP réseau pour que le mobile puisse accéder
+  let baseUrl = 'http://192.168.11.249:8000';
+  const scanUrl = baseUrl + '/scan/';
+  const url = `${scanUrl}?session=${sessionId}`;
+  
+  const wrapper = document.getElementById('qrWrapper');
+  const sessionDiv = document.getElementById('qrSession');
+  
+  wrapper.innerHTML = '';
+  
+  const qr = new QRCode(wrapper, {
+    text: url,
+    width: 220,
+    height: 220,
+    colorDark: '#000000',
+    colorLight: '#ffffff',
+    correctLevel: QRCode.CorrectLevel.H
+  });
+  
+  sessionDiv.innerHTML = `<div>Session: ${sessionId}</div><div style="font-size:11px;color:#666;margin-top:4px;">${url}</div>`;
+  
+  qrCode = qr;
+  
+  console.log('QR Code généré:', url);
+}
+
+function regenererQR() {
+  genererQR();
+}
+
+// Logs management
+let logs = [];
+let BACKEND_URL = 'http://192.168.11.249:8000';
+
+async function loadLogsFromBackend() {
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/presences/pointages/`);
+    const data = await response.json();
+    if (data.success) {
+      console.log('Logs reçus:', data.pointages.map(p => `${p.id}:${p.prenom} ${p.nom}`).join(', '));
+      logs = data.pointages;
+      renderLogs();
+      updateKPIs();
+    }
+  } catch (error) {
+    console.error('Erreur chargement pointages:', error);
+  }
+}
+
+function renderLogs() {
+  const tbody = document.getElementById('logsBody');
+  console.log('DEBUG renderLogs - logs array:', JSON.stringify(logs.map(l => ({id: l.id, nom: l.nom, prenom: l.prenom, heure: l.heure}))));
+  
+  if (logs.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" class="empty-logs">— Aucun pointage enregistré aujourd\'hui</td></tr>';
+    return;
+  }
+  
+  // Supprimer les doublons (par ID ou par contenu nom+prénom+heure+type)
+  const uniqueLogs = [];
+  const seenIds = new Set();
+  const seenContent = new Set();
+  
+  for (const log of logs) {
+    // Clé unique basée sur le contenu
+    const contentKey = `${log.nom}-${log.prenom}-${log.heure}-${log.type}`;
+    
+    if (log.id && !seenIds.has(log.id)) {
+      seenIds.add(log.id);
+      seenContent.add(contentKey);
+      uniqueLogs.push(log);
+    } else if (!log.id && !seenContent.has(contentKey)) {
+      // Logs sans ID - vérifier par contenu
+      seenContent.add(contentKey);
+      uniqueLogs.push(log);
+    }
+    // Sinon: doublon détecté, on l'ignore
+  }
+  
+  console.log(`Affichage de ${uniqueLogs.length} logs uniques (sur ${logs.length} total)`);
+  
+  tbody.innerHTML = uniqueLogs.map(log => {
+    const date = log.date ? new Date(log.date).toLocaleDateString('fr-FR') : new Date().toLocaleDateString('fr-FR');
+    return `
+    <tr>
+      <td>${date}</td>
+      <td>${log.heure}</td>
+      <td>${log.prenom} ${log.nom}</td>
+      <td>${log.email || '-'}</td>
+      <td><span class="badge-${log.type}">${log.type === 'entree' ? 'Entrée' : 'Sortie'}</span></td>
+      <td>${log.wa ? '<span class="badge-wa">✓</span>' : ''}</td>
+      <td><button onclick="supprimerPointage(${log.id})" style="background:#ff4444;color:white;border:none;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px;">🗑️ Supprimer</button></td>
+    </tr>
+  `;
+  }).join('');
+}
+
+async function supprimerPointage(id) {
+  if (!confirm('Êtes-vous sûr de vouloir supprimer ce pointage ?')) return;
+  
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/presences/pointage/${id}/`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    
+    if (response.ok) {
+      // Supprimer du tableau local
+      logs = logs.filter(log => log.id !== id);
+      renderLogs();
+      updateKPIs();
+      alert('✓ Pointage supprimé');
+    } else {
+      alert('✗ Erreur lors de la suppression');
+    }
+  } catch (error) {
+    console.error('Erreur suppression:', error);
+    alert('✗ Erreur: ' + error.message);
+  }
+}
+
+function ajouterLog(data) {
+  const log = {
+    ...data,
+    timestamp: new Date().toISOString(),
+    heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+  };
+  
+  logs.unshift(log);
+  renderLogs();
+  updateKPIs();
+}
+
+function updateKPIs() {
+  const todayLogs = logs.filter(log => {
+    const logDate = new Date(log.timestamp).toDateString();
+    const today = new Date().toDateString();
+    return logDate === today;
+  });
+  
+  document.getElementById('todayScans').textContent = todayLogs.length;
+  document.getElementById('activeStagiaires').textContent = logs.length > 0 ? new Set(logs.map(l => l.prenom + ' ' + l.nom)).size : 0;
+  document.getElementById('whatsappSent').textContent = logs.filter(l => l.wa).length;
+  document.getElementById('qrStatus').textContent = '●';
+}
+
+// Check for new logs periodically
+function checkForNewLogs() {
+  loadLogsFromBackend();
+}
+
+// Initialize
+window.addEventListener('DOMContentLoaded', async () => {
+  // Vérifier les droits d'accès et filtrer la navigation
+  const currentUser = checkRoleAccess();
+  filterNavByRole();
+  
+  genererQR();
+  await loadLogsFromBackend();
+  updateKPIs();
+});
+</script>
+
+<!-- ===== BARRE DE PRÉSENCE STAGIAIRES ===== -->
+<style>
+  .presence-section {
+    margin-top: 28px;
+    width: 100%;
+    padding: 0;
+  }
+  .presence-section-title {
+    font-size: 11px; font-weight: 600; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px;
+  }
+  .presence-wrapper {
+    background: linear-gradient(135deg, var(--card), #1A1F2E);
+    border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+  }
+  .pres-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px; border-bottom: 1px solid var(--border);
+  }
+  .pres-header-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; }
+  .pres-horaires { font-size: 12px; color: var(--muted); }
+  .pres-legend { display: flex; gap: 14px; align-items: center; }
+  .pres-legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); }
+  .pres-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .pdot-present { background: var(--green); }
+  .pdot-retard  { background: var(--orange); }
+  .pdot-absent  { background: var(--red); }
+  .pdot-partial { background: var(--primary-light); }
+
+  .pres-col-header {
+    display: grid;
+    grid-template-columns: 190px 1fr 110px 110px 90px 110px;
+    gap: 10px; padding: 8px 20px;
+    background: rgba(255,255,255,0.02);
+    border-bottom: 1px solid var(--border);
+    font-size: 10px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+
+  .pres-list { max-height: 360px; overflow-y: auto; }
+  .pres-list::-webkit-scrollbar { width: 4px; }
+  .pres-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .pres-row {
+    display: grid;
+    grid-template-columns: 190px 1fr 110px 110px 90px 110px;
+    align-items: center; gap: 10px;
+    padding: 10px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: background 0.15s;
+    overflow: visible;
+  }
+  .pres-row:last-child { border-bottom: none; }
+  .pres-row:hover { background: rgba(255,255,255,0.02); }
+
+  .pres-name { font-size: 13px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pres-ecole { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+
+  .timeline-track {
+    position: relative;
+    height: 26px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 4px;
+    overflow: visible;
+    margin-top: 16px;
+  }
+  .tl-marker {
+    position: absolute; top: 0; bottom: 0;
+    width: 1px; background: rgba(255,255,255,0.15); z-index: 2;
+  }
+  .tl-marker-label {
+    position: absolute; top: -15px;
+    font-size: 9px; color: var(--muted);
+    transform: translateX(-50%); white-space: nowrap;
+  }
+  .tl-block {
+    position: absolute; top: 2px; bottom: 2px;
+    border-radius: 3px;
+    min-width: 4px;
+    opacity: 0.9;
+    z-index: 1;
+  }
+  .tl-present { background: var(--green); }
+  .tl-retard  { background: var(--orange); }
+  .tl-partial { background: var(--primary-light); }
+
+  .pres-time { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .pres-time.ok    { color: var(--green); }
+  .pres-time.late  { color: var(--orange); }
+  .pres-time.none  { color: rgba(255,255,255,0.2); }
+
+  .pbadge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600;
+  }
+  .pbadge-present { background: rgba(39,174,96,0.15); color: var(--green); }
+  .pbadge-retard  { background: rgba(243,156,18,0.15); color: var(--orange); }
+  .pbadge-absent  { background: rgba(231,76,60,0.15); color: var(--red); }
+  .pbadge-partial { background: rgba(62,120,178,0.15); color: var(--primary-light); }
+
+  .pres-footer {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid var(--border);
+  }
+  .pres-stat {
+    padding: 12px 16px; text-align: center;
+    border-right: 1px solid var(--border);
+  }
+  .pres-stat:last-child { border-right: none; }
+  .pres-stat-value { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; }
+  .pres-stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .pres-empty { text-align: center; padding: 32px; color: var(--muted); font-size: 13px; }
+</style>
+
+<script>
+// ===== BARRE DE PRÉSENCE =====
+const HEURE_DEBUT = 9 * 60 + 30;   // 09h30 en minutes
+const HEURE_FIN   = 15 * 60 + 30;  // 15h30 en minutes
+const TL_START    = 8 * 60;         // Timeline commence à 08h00
+const TL_END      = 17 * 60;        // Timeline finit à 17h00
+const TL_RANGE    = TL_END - TL_START;
+
+function toMinutes(timeStr) {
+  if (!timeStr) return null;
+  const parts = timeStr.toString().split(':');
+  if (parts.length < 2) return null;
+  const h = parseInt(parts[0]);
+  const m = parseInt(parts[1]);
+  if (isNaN(h) || isNaN(m)) return null;
+  return h * 60 + m;
+}
+
+function pct(minutes) {
+  return Math.max(0, Math.min(100, ((minutes - TL_START) / TL_RANGE) * 100));
+}
+
+function formatDuration(entry, exit) {
+  if (!entry || !exit) return '—';
+  const diff = exit - entry;
+  if (diff <= 0) return '—';
+  const h = Math.floor(diff / 60);
+  const m = diff % 60;
+  return h > 0 ? `${h}h ${m}min` : `${m}min`;
+}
+
+function getStatut(entry, exit) {
+  if (!entry) return 'absent';
+  if (entry > HEURE_DEBUT) {
+    if (exit && exit < HEURE_FIN - 10) return 'partial';
+    return 'retard';
+  }
+  if (exit && exit < HEURE_FIN - 10) return 'partial';
+  return 'present';
+}
+
+function buildPresenceRow(stagiaire, pointages) {
+  const todayStr = new Date().toDateString();
+  
+  // Filtrer les pointages du jour pour ce stagiaire
+  const todayPointages = pointages.filter(p => {
+    const pDate = new Date(p.timestamp || p.date || Date.now()).toDateString();
+    const nameMatch = (p.nom === stagiaire.nom && p.prenom === stagiaire.prenom) ||
+                      p.email === stagiaire.email;
+    return nameMatch;
+  });
+
+  const entreeLog = todayPointages.find(p => p.type === 'entree');
+  const sortieLog = todayPointages.find(p => p.type === 'sortie');
+
+  const entreeTime = entreeLog ? toMinutes(entreeLog.heure) : null;
+  const sortieTime = sortieLog ? toMinutes(sortieLog.heure) : null;
+  const statut = getStatut(entreeTime, sortieTime);
+
+  const fullName = `${stagiaire.prenom || ''} ${stagiaire.nom || ''}`.trim();
+
+  // Calcul de la position et largeur du bloc sur la timeline
+  let blockHtml = '';
+  const m09h30 = pct(HEURE_DEBUT);
+  const m15h30 = pct(HEURE_FIN);
+
+  if (entreeTime !== null) {
+    const now = new Date();
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+    const endMinutes = sortieTime !== null ? sortieTime : Math.min(nowMinutes, TL_END);
+    
+    const startPct = pct(entreeTime);
+    const endPct   = pct(endMinutes);
+    const widthPct = Math.max(0, endPct - startPct);
+    
+    const colorClass = statut === 'retard' ? 'tl-retard' : statut === 'partial' ? 'tl-partial' : 'tl-present';
+
+    blockHtml = `<div class="tl-block ${colorClass}" style="left:${startPct.toFixed(2)}%;width:${widthPct.toFixed(2)}%;"></div>`;
+  }
+
+  // Vérifier si l'absence est justifiée
+  const todayStr2 = new Date().toISOString().split('T')[0];
+  const justifiedKey = `absent_justifie_${todayStr2}`;
+  const justifiedList = JSON.parse(localStorage.getItem(justifiedKey) || '[]');
+  const isJustified = statut === 'absent' && justifiedList.includes(fullName);
+
+  // Badge statut
+  const badgeMap = {
+    present: ['pbadge-present', 'Présent'],
+    retard:  ['pbadge-retard',  `Retard +${entreeTime ? Math.max(0, entreeTime - HEURE_DEBUT) : 0}min`],
+    absent:  isJustified ? ['pbadge-partial', 'Absent (justifié)'] : ['pbadge-absent', 'Absent'],
+    partial: ['pbadge-partial', 'Sortie précoce']
+  };
+  const [badgeClass, badgeText] = badgeMap[statut];
+
+  const entreeClass = !entreeTime ? 'none' : entreeTime > HEURE_DEBUT ? 'late' : 'ok';
+  const sortieClass = !sortieTime ? 'none' : sortieTime < HEURE_FIN - 10 ? 'late' : 'ok';
+
+  return `
+    <div class="pres-row">
+      <div>
+        <div class="pres-name">${fullName}</div>
+        <div class="pres-ecole">${stagiaire.ecole || ''}</div>
+      </div>
+      <div class="timeline-track">
+        <div class="tl-marker" style="left:${m09h30.toFixed(1)}%;">
+          <div class="tl-marker-label">09h30</div>
+        </div>
+        <div class="tl-marker" style="left:${m15h30.toFixed(1)}%;">
+          <div class="tl-marker-label">15h30</div>
+        </div>
+        ${blockHtml}
+      </div>
+      <div class="pres-time ${entreeClass}">${entreeLog ? entreeLog.heure : '—'}</div>
+      <div class="pres-time ${sortieClass}">${sortieLog ? sortieLog.heure : '—'}</div>
+      <div class="pres-time">${formatDuration(entreeTime, sortieTime)}</div>
+      <div><span class="pbadge ${badgeClass}">${badgeText}</span></div>
+    </div>`;
+}
+
+async function renderPresenceBar() {
+  const now = new Date();
+  const presDateEl = document.getElementById('presDate');
+  if (presDateEl) {
+    presDateEl.textContent =
+      'Présence — ' + now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  const presenceListEl = document.getElementById('presenceList');
+  if (!presenceListEl) return;
+
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/presences/historique/`);
+    const data = await response.json();
+
+    if (!data.success || !data.stagiaires || data.stagiaires.length === 0) {
+      presenceListEl.innerHTML =
+        '<div class="pres-empty">Aucun stagiaire enregistré dans le système.</div>';
+      return;
+    }
+
+    let html = '';
+    let nPresent = 0, nRetard = 0, nAbsent = 0, nPartial = 0;
+
+    data.stagiaires.forEach(s => {
+      const todayData = s.jours[s.jours.length - 1]; // Dernier jour (aujourd'hui)
+      const statut = todayData.statut;
+
+      if (statut === 'present') nPresent++;
+      else if (statut === 'retard') nRetard++;
+      else if (statut === 'absent') nAbsent++;
+      else if (statut === 'partial') nPartial++;
+
+      const fullName = `${s.prenom || ''} ${s.nom || ''}`.trim();
+
+      // Calcul de la position et largeur du bloc sur la timeline
+      let blockHtml = '';
+      const m09h30 = pct(HEURE_DEBUT);
+      const m15h30 = pct(HEURE_FIN);
+
+      if (todayData.entree) {
+        const entreeTime = toMinutes(todayData.entree);
+        const now = new Date();
+        const nowMinutes = now.getHours() * 60 + now.getMinutes();
+        const endMinutes = todayData.sortie ? toMinutes(todayData.sortie) : Math.min(nowMinutes, TL_END);
+        
+        const startPct = pct(entreeTime);
+        const endPct   = pct(endMinutes);
+        const widthPct = Math.max(0, endPct - startPct);
+        
+        const colorClass = statut === 'retard' ? 'tl-retard' : statut === 'partial' ? 'tl-partial' : 'tl-present';
+
+        blockHtml = `<div class="tl-block ${colorClass}" style="left:${startPct.toFixed(2)}%;width:${widthPct.toFixed(2)}%;"></div>`;
+      }
+
+      // Vérifier si l'absence est justifiée
+      const todayStr2 = new Date().toISOString().split('T')[0];
+      const justifiedKey = `absent_justifie_${todayStr2}`;
+      const justifiedList = JSON.parse(localStorage.getItem(justifiedKey) || '[]');
+      const isJustified = statut === 'absent' && justifiedList.includes(fullName);
+
+      // Badge statut
+      const badgeMap = {
+        present: ['pbadge-present', 'Présent'],
+        retard:  ['pbadge-retard',  `Retard +${todayData.entree ? Math.max(0, toMinutes(todayData.entree) - HEURE_DEBUT) : 0}min`],
+        absent:  isJustified ? ['pbadge-partial', 'Absent (justifié)'] : ['pbadge-absent', 'Absent'],
+        partial: ['pbadge-partial', 'Sortie précoce']
+      };
+      const [badgeClass, badgeText] = badgeMap[statut];
+
+      const entreeClass = !todayData.entree ? 'none' : toMinutes(todayData.entree) > HEURE_DEBUT ? 'late' : 'ok';
+      const sortieClass = !todayData.sortie ? 'none' : toMinutes(todayData.sortie) < HEURE_FIN - 10 ? 'late' : 'ok';
+
+      html += `
+        <div class="pres-row">
+          <div>
+            <div class="pres-name">${fullName}</div>
+            <div class="pres-ecole">${s.ecole || ''}</div>
+          </div>
+          <div class="timeline-track">
+            <div class="tl-marker" style="left:${m09h30.toFixed(1)}%;">
+              <div class="tl-marker-label">09h30</div>
+            </div>
+            <div class="tl-marker" style="left:${m15h30.toFixed(1)}%;">
+              <div class="tl-marker-label">15h30</div>
+            </div>
+            ${blockHtml}
+          </div>
+          <div class="pres-time ${entreeClass}">${todayData.entree || '—'}</div>
+          <div class="pres-time ${sortieClass}">${todayData.sortie || '—'}</div>
+          <div class="pres-time">${formatDuration(todayData.entree ? toMinutes(todayData.entree) : null, todayData.sortie ? toMinutes(todayData.sortie) : null)}</div>
+          <div><span class="pbadge ${badgeClass}">${badgeText}</span></div>
+        </div>`;
+    });
+
+    presenceListEl.innerHTML = html;
+
+    const statPresentEl = document.getElementById('statPresent');
+    const statRetardEl = document.getElementById('statRetard');
+    const statAbsentEl = document.getElementById('statAbsent');
+    const statPartialEl = document.getElementById('statPartial');
+
+    if (statPresentEl) statPresentEl.textContent = nPresent;
+    if (statRetardEl) statRetardEl.textContent  = nRetard;
+    if (statAbsentEl) statAbsentEl.textContent  = nAbsent;
+    if (statPartialEl) statPartialEl.textContent = nPartial;
+  } catch (error) {
+    console.error('Erreur chargement historique:', error);
+    presenceListEl.innerHTML =
+      '<div class="pres-empty">Erreur lors du chargement des données.</div>';
+  }
+}
+
+// Lancer au chargement et rafraîchir toutes les 5s avec les logs
+window.addEventListener('DOMContentLoaded', async () => {
+  await loadLogsFromBackend();  // attendre les données
+  renderPresenceBar();           // puis afficher
+  setInterval(async () => {
+    await loadLogsFromBackend();
+    renderPresenceBar();
+  }, 5000);
+  renderHistorique();
+  setInterval(renderHistorique, 60000); // Rafraîchir toutes les minutes
+});
+
+async function renderHistorique() {
+  const res = await fetch(`${BACKEND_URL}/api/presences/historique/`);
+  const data = await res.json();
+  if (!data.success) return;
+
+  // Les 7 jours viennent du backend — toujours les 7 derniers jours glissants
+  const jours = data.stagiaires[0]?.jours || [];
+
+  let html = `
+    <div style="margin-top:28px;background:linear-gradient(135deg,var(--card),#1A1F2E);
+      border:1px solid var(--border);border-radius:16px;padding:24px;">
+      <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;
+        margin-bottom:20px;">📅 Historique 7 jours par Stagiaire
+        <span style="font-size:12px;color:var(--muted);font-weight:400;">
+          (${jours[0]?.date || ''} → ${jours[jours.length-1]?.date || ''})
+        </span>
+      </div>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr style="font-size:11px;color:var(--muted);text-transform:uppercase;">
+            <th style="text-align:left;padding:10px;">Stagiaire</th>`;
+
+  // En-têtes dynamiques — affiche "Aujourd'hui" pour le dernier jour
+  const today = new Date().toISOString().split('T')[0];
+  jours.forEach(j => {
+    const isToday = j.date === today;
+    html += `<th style="text-align:center;padding:10px;${isToday ? 'color:var(--primary-light);' : ''}">${isToday ? 'Aujourd\'hui' : j.date}</th>`;
+  });
+
+  html += `<th style="text-align:center;padding:10px;">Absences</th>
+           <th style="text-align:center;padding:10px;">Retards</th></tr></thead><tbody>`;
+
+  data.stagiaires.forEach(s => {
+    html += `<tr style="border-top:1px solid rgba(255,255,255,0.05);">
+      <td style="padding:12px;">
+        <div style="font-size:13px;font-weight:500;">${s.prenom} ${s.nom}</div>
+        <div style="font-size:11px;color:var(--muted);">${s.ecole}</div>
+      </td>`;
+
+    s.jours.forEach(j => {
+      const isToday = j.date === today;
+      // ✅ NOUVEAU — Vérifier si ce jour est justifié
+      const justifiedKey = `absent_justifie_${j.date}`;
+      const justifiedList = JSON.parse(localStorage.getItem(justifiedKey) || '[]');
+      const fullName = `${s.prenom || ''} ${s.nom || ''}`.trim();
+      const isJustifiedDay = j.statut === 'absent' && justifiedList.includes(fullName);
+
+      const color = j.statut === 'present' ? '#27AE60'
+                  : j.statut === 'retard'   ? '#F39C12'
+                  : isJustifiedDay          ? '#3E78B2'   // bleu = justifié
+                  :                           '#E74C3C';   // rouge = absent NJ
+
+      const icon  = j.statut === 'present' ? '✓'
+                  : j.statut === 'retard'   ? '⏰'
+                  : isJustifiedDay          ? '📄'         // document = justifié
+                  :                           '✗';
+      const title = j.entree ? `Entrée: ${j.entree}${j.sortie ? ' | Sortie: '+j.sortie : ''}` : 'Absent';
+      html += `<td style="text-align:center;padding:12px;">
+        <div title="${title}" style="width:32px;height:32px;border-radius:8px;
+          background:${color}22;color:${color};display:flex;align-items:center;
+          justify-content:center;font-size:14px;margin:0 auto;
+          border:1px solid ${color}44;
+          ${isToday ? 'box-shadow:0 0 8px '+color+'66;' : ''}">${icon}</div>
+        ${j.entree ? `<div style="font-size:9px;color:var(--muted);margin-top:2px;">${j.entree}</div>` : ''}
+      </td>`;
+    });
+
+    // ✅ NOUVEAU — Calculer absences NJ en soustrayant les justifiées
+    let absencesNJ = s.total_absences;
+    s.jours.forEach(jour => {
+      const jKey = `absent_justifie_${jour.date}`;
+      const jList = JSON.parse(localStorage.getItem(jKey) || '[]');
+      const fName = `${s.prenom || ''} ${s.nom || ''}`.trim();
+      if (jour.statut === 'absent' && jList.includes(fName)) {
+        absencesNJ = Math.max(0, absencesNJ - 1);
+      }
+    });
+
+    const absBg = absencesNJ >= 3 ? 'rgba(231,76,60,0.15)' : 'transparent';
+    html += `
+      <td style="text-align:center;padding:12px;">
+        <span style="background:${absBg};color:#E74C3C;padding:4px 12px;
+          border-radius:20px;font-weight:700;">${absencesNJ}
+          ${absencesNJ < s.total_absences ? `<span style="font-size:9px;color:#3E78B2;display:block;">(${s.total_absences - absencesNJ} justif.)</span>` : ''}
+        </span>
+      </td>
+      <td style="text-align:center;padding:12px;">
+        <span style="color:#F39C12;font-weight:700;">${s.total_retards}</span>
+      </td></tr>`;
+  });
+
+  html += '</tbody></table></div>';
+
+  let histDiv = document.getElementById('historiqueSection');
+  if (!histDiv) {
+    histDiv = document.createElement('div');
+    histDiv.id = 'historiqueSection';
+    document.getElementById('presenceSection').after(histDiv);
+  }
+  histDiv.innerHTML = html;
+}
+</script>
+<!-- ===== FIN BARRE DE PRÉSENCE ===== -->
+</body>
+</html>

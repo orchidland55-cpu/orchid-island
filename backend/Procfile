@@ -1,0 +1,1 @@
+web: gunicorn orchid_backend.wsgi --log-file -

@@ -1,0 +1,2134 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orchid Island — Stagiaires</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07070A; --sidebar: #24272B; --card: #24272B; --border: #4A525A;
+    --text: #F0F4F8; --muted: #B8C5D6; --primary: #004BA8; --primary-light: #3E78B2;
+    --green: #27AE60; --red: #E74C3C; --orange: #F39C12; --purple: #8E44AD;
+  }
+  /* Animated background */
+  .bg-orbs {s
+    position: fixed; inset: 0; z-index: 0;
+    pointer-events: none;
+  }
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.15;
+    animation: float 8s ease-in-out infinite;
+  }
+  .orb-1 { width: 500px; height: 500px; background: radial-gradient(circle, #004BA8, transparent); top: -100px; right: -100px; animation-delay: 0s; }
+  .orb-2 { width: 400px; height: 400px; background: radial-gradient(circle, #3E78B2, transparent); bottom: -80px; left: 10%; animation-delay: 3s; }
+  .orb-3 { width: 300px; height: 300px; background: radial-gradient(circle, #4A525A, transparent); top: 50%; left: 30%; animation-delay: 5s; }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-30px) scale(1.05); }
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; font-size: 14px; }
+  .sidebar { width: 240px; background: linear-gradient(135deg, #24272B 0%, #07070A 50%, #1A1F2E 100%); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; }
+  .sidebar-logo { padding: 24px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+  .logo-icon { width: 38px; height: 38px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 8px 32px rgba(0,75,168,0.3); animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+  .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; }
+  .logo-sub { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+  .nav-section { padding: 16px 12px 8px; }
+  .nav-label { font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; padding: 0 8px; margin-bottom: 6px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; color: var(--muted); cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-size: 13px; margin-bottom: 2px; position: relative; overflow: hidden; }
+  .nav-item::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0,75,168,0.1), transparent);
+    transition: left 0.5s;
+  }
+  .nav-item:hover::before { left: 100%; }
+  .nav-item:hover { background: rgba(0,75,168,0.08); color: var(--text); transform: translateX(5px); }
+  .nav-item.active { background: linear-gradient(135deg, rgba(0,75,168,0.15), rgba(62,120,178,0.1)); color: var(--primary-light); font-weight: 600; border: 1px solid rgba(0,75,168,0.2); box-shadow: 0 4px 20px rgba(0,75,168,0.2); }
+  .nav-badge { margin-left: auto; background: var(--red); color: white; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 20px; }
+  .main { margin-left: 240px; flex: 1; }
+  .topbar { height: 60px; background: linear-gradient(135deg, #24272B 0%, #1A1F2E 100%); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; position: sticky; top: 0; z-index: 50; backdrop-filter: blur(10px); }
+  .topbar-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; }
+  .btn-add { display: flex; align-items: center; gap: 8px; padding: 9px 18px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #F0F4F8; border: none; border-radius: 10px; font-family: 'Inter'; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(10px); }
+  .btn-add:hover { transform: translateY(-2px) scale(1.05); box-shadow: 0 8px 25px rgba(0,75,168,0.3); }
+  .content { padding: 28px; }
+
+  /* Filters bar */
+  .filters-bar { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+  .search-box { flex: 1; min-width: 220px; display: flex; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--card), #1A1F2E); border: 1px solid var(--border); border-radius: 10px; padding: 10px 16px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(10px); }
+  .search-box:focus-within { border-color: var(--primary-light); box-shadow: 0 4px 20px rgba(0,75,168,0.2); }
+  .search-box input { background: none; border: none; color: var(--text); font-family: 'Inter'; font-size: 13px; outline: none; width: 100%; }
+  .search-box input::placeholder { color: var(--muted); }
+  .filter-select { padding: 10px 14px; background: linear-gradient(135deg, var(--card), #1A1F2E); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: 'Inter'; font-size: 13px; outline: none; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(10px); }
+  .filter-select:focus { border-color: var(--primary-light); box-shadow: 0 4px 20px rgba(0,75,168,0.2); }
+
+  /* Table */
+  .table-card { background: linear-gradient(135deg, var(--card), #1A1F2E); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(10px); position: relative; }
+  .table-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light), var(--primary));
+    animation: shimmer 3s linear infinite;
+  }
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  .table-card:hover { transform: translateY(-3px) scale(1.01); box-shadow: 0 15px 40px rgba(0,75,168,0.3); border-color: var(--primary-light); }
+  .table-header-bar { display: flex; justify-content: space-between; align-items: center; padding: 18px 22px; border-bottom: 1px solid var(--border); }
+  .table-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; }
+  .table-count { font-size: 12px; color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; }
+  thead { background: rgba(255,255,255,0.02); }
+  th { padding: 12px 18px; text-align: left; font-size: 11px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; border-bottom: 1px solid var(--border); }
+  td { padding: 14px 18px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; transition: background 0.15s; }
+  tr { transition: all 0.3s ease; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  tr:last-child td { border-bottom: none; }
+  tr.fade-in { animation: fadeInRow 0.5s ease; }
+  tr.fade-out { animation: fadeOutRow 0.3s ease; }
+  @keyframes fadeInRow { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeOutRow { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(-20px); } }
+  .stagiaire-info { display: flex; align-items: center; gap: 12px; }
+  .avatar {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .stag-name { font-size: 14px; font-weight: 500; }
+  .stag-email { font-size: 12px; color: var(--muted); }
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .badge-accepte { background: rgba(34,211,160,0.12); color: var(--green); }
+  .badge-refuse { background: rgba(255,87,87,0.12); color: var(--red); }
+  .badge-attente { background: rgba(245,188,76,0.12); color: var(--gold); }
+  .badge-bloque { background: rgba(255,87,87,0.2); color: var(--red); border: 1px solid rgba(255,87,87,0.3); }
+  .absence-counter { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; }
+  .abs-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+  .abs-dot.warn { background: var(--orange); }
+  .abs-dot.danger { background: var(--red); }
+  .progress-mini { height: 4px; background: var(--border); border-radius: 2px; width: 80px; overflow: hidden; }
+  .progress-mini-fill { height: 100%; border-radius: 2px; }
+  .action-btns { display: flex; gap: 6px; }
+  
+  .btn-action {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    min-width: 70px;
+    justify-content: center;
+  }
+  
+  .btn-action-icon {
+    font-size: 14px;
+    transition: transform 0.3s ease;
+  }
+  
+  .btn-action-text {
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    transition: opacity 0.3s ease;
+  }
+  
+  /* Bouton Voir */
+  .btn-view:hover {
+    background: linear-gradient(135deg, rgba(77, 159, 255, 0.1), rgba(52, 152, 219, 0.1));
+    border-color: var(--blue);
+    color: var(--blue);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(77, 159, 255, 0.2);
+  }
+  
+  .btn-view:hover .btn-action-icon {
+    transform: scale(1.1);
+  }
+  
+  /* Bouton Modifier */
+  .btn-edit:hover {
+    background: linear-gradient(135deg, rgba(245, 188, 76, 0.1), rgba(241, 196, 15, 0.1));
+    border-color: var(--gold);
+    color: var(--gold);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(245, 188, 76, 0.2);
+  }
+  
+  .btn-edit:hover .btn-action-icon {
+    transform: rotate(15deg) scale(1.1);
+  }
+  
+  /* Bouton Supprimer */
+  .btn-delete:hover {
+    background: linear-gradient(135deg, rgba(255, 87, 87, 0.1), rgba(231, 76, 60, 0.1));
+    border-color: var(--red);
+    color: var(--red);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 87, 87, 0.2);
+  }
+  
+  .btn-delete:hover .btn-action-icon {
+    transform: scale(1.1) rotate(-5deg);
+  }
+  
+  /* Animation de brillance */
+  .btn-action::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transition: left 0.4s ease;
+  }
+  
+  .btn-action:hover::before {
+    left: 100%;
+  }
+  
+  /* États actifs */
+  .btn-action:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .btn-action-text {
+      display: none;
+    }
+    
+    .btn-action {
+      min-width: 32px;
+      padding: 6px;
+    }
+    
+    .btn-action-icon {
+      font-size: 16px;
+    }
+  }
+  .btn-icon.view:hover { border-color: var(--blue); color: var(--blue); box-shadow: 0 4px 12px rgba(0,123,255,0.2); }
+  .btn-icon.edit:hover { border-color: var(--blue); color: var(--blue); box-shadow: 0 4px 12px rgba(0,123,255,0.2); }
+  .btn-icon.del:hover { border-color: var(--red); color: var(--red); box-shadow: 0 4px 12px rgba(255,87,87,0.2); }
+
+  /* Modal */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: var(--card); border: 1px solid var(--border); border-radius: 20px; width: 540px; max-height: 85vh; overflow-y: auto; animation: modalIn 0.3s ease; position: relative; }
+  .modal.view-modal { width: 600px; }
+  .modal.delete-modal { width: 400px; }
+  @keyframes modalIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+  .modal-header { padding: 24px 28px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .modal-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; }
+  .modal-close { width: 32px; height: 32px; background: rgba(255,255,255,0.05); border: none; border-radius: 8px; color: var(--muted); font-size: 16px; cursor: pointer; transition: all 0.2s; }
+  .modal-close:hover { background: rgba(255,87,87,0.1); color: var(--red); transform: rotate(90deg); }
+  .modal-body { padding: 28px; }
+  .view-section { margin-bottom: 24px; }
+  .view-section-title { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; font-weight: 600; }
+  .view-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .view-info-item { background: rgba(255,255,255,0.02); padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border); }
+  .view-info-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .view-info-value { font-size: 14px; color: var(--text); font-weight: 500; }
+  .view-full-width { grid-column: 1 / -1; }
+  .delete-warning { 
+    text-align: center; 
+    padding: 24px; 
+    background: linear-gradient(135deg, rgba(255,87,87,0.05), rgba(231,76,60,0.02));
+    border-radius: 16px;
+    border: 1px solid rgba(255,87,87,0.15);
+    margin-bottom: 20px;
+  }
+  .delete-warning-icon { 
+    font-size: 56px; 
+    color: var(--red); 
+    margin-bottom: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    background: rgba(255,87,87,0.1);
+    border-radius: 50%;
+    box-shadow: 0 8px 32px rgba(255,87,87,0.2);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 8px 32px rgba(255,87,87,0.2); }
+    50% { transform: scale(1.05); box-shadow: 0 12px 40px rgba(255,87,87,0.3); }
+  }
+  .delete-warning-title { 
+    font-size: 20px; 
+    font-weight: 700; 
+    margin-bottom: 12px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+  }
+  .delete-warning-text { 
+    color: var(--muted); 
+    margin-bottom: 24px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .delete-info { 
+    background: linear-gradient(135deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    backdrop-filter: blur(10px);
+  }
+  .delete-info-item { 
+    display: flex; 
+    justify-content: space-between; 
+    margin-bottom: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .delete-info-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+  .delete-info-label { 
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .delete-info-value {
+    color: var(--text);
+    font-weight: 500;
+  }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .form-group { margin-bottom: 16px; }
+  .form-label { display: block; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; font-weight: 600; }
+  .form-input { width: 100%; padding: 11px 14px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: 'Inter'; font-size: 13px; outline: none; transition: all 0.2s; }
+  .form-input:focus { border-color: var(--blue); background: rgba(77,159,255,0.04); }
+  .form-select { width: 100%; padding: 11px 14px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: 'Inter'; font-size: 13px; outline: none; cursor: pointer; }
+  .modal-footer { padding: 20px 28px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 10px; }
+  .btn-cancel { padding: 10px 20px; background: transparent; border: 1px solid var(--border); border-radius: 10px; color: var(--muted); font-family: 'Inter'; font-size: 13px; cursor: pointer; }
+  .btn-save { 
+    padding: 12px 28px; 
+    background: linear-gradient(135deg, #22D3A0, #16A085); 
+    border: none; 
+    border-radius: 12px; 
+    color: white; 
+    font-family: 'Inter'; 
+    font-size: 14px; 
+    font-weight: 700; 
+    cursor: pointer; 
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 140px;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(34, 211, 160, 0.2);
+  }
+  
+  .btn-save::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+  }
+  
+  .btn-save:hover::before {
+    left: 100%;
+  }
+  
+  .btn-save:hover { 
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(34, 211, 160, 0.4);
+    background: linear-gradient(135deg, #26D398, #1AA58A);
+  }
+  
+  .btn-save:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 15px rgba(34, 211, 160, 0.3);
+  }
+  
+  .btn-icon {
+    font-size: 16px;
+    font-weight: 600;
+  }
+  
+  .btn-text {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  
+  .btn-loader {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  .pagination { display: flex; justify-content: between; align-items: center; padding: 16px 22px; border-top: 1px solid var(--border); gap: 8px; }
+  .page-btn { width: 32px; height: 32px; background: transparent; border: 1px solid var(--border); border-radius: 8px; color: var(--muted); cursor: pointer; font-family: 'Inter'; font-size: 13px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+  .page-btn.active { background: rgba(77,159,255,0.15); border-color: var(--blue); color: var(--blue); font-weight: 600; }
+  .page-btn:hover:not(.active) { border-color: rgba(255,255,255,0.2); color: var(--text); }
+  .page-info { font-size: 12px; color: var(--muted); margin-left: auto; }
+  
+  /* Sidebar footer styles */
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 16px 12px;
+    border-top: 1px solid var(--border);
+  }
+  .user-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.02);
+  }
+  .user-avatar {
+    width: 32px; height: 32px;
+    background: var(--gold);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #050A14;
+  }
+  .user-name { font-size: 13px; font-weight: 500; }
+  .user-role { font-size: 11px; color: var(--muted); }
+</style>
+<script src="../auth_roles.js"></script>
+</head>
+<body>
+<div class="bg-orbs">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div><div class="logo-text">Orchid Island</div><div class="logo-sub">REAL ESTATE RH</div></div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Principal</div>
+    <div class="nav-item" onclick="navigateTo('dashboard.html')">Tableau de Bord</div>
+    <div class="nav-item active" onclick="navigateTo('stagiaires.html')">Stagiaires <span class="nav-badge" id="badgeStagiaires">0</span></div>
+    <div class="nav-item" onclick="navigateTo('projets.html')">Projets</div>
+    <div class="nav-item" onclick="navigateTo('taches.html')">Tâches</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Gestion</div>
+    <div class="nav-item" onclick="navigateTo('pointage_qr.html')">Pointage QR</div>
+    <div class="nav-item" onclick="navigateTo('rapports.html')">Rapports <span class="nav-badge" id="badgeRapports">0</span></div>
+    <div class="nav-item" onclick="navigateTo('alertes.html')">Alertes <span class="nav-badge" id="badgeAlertes">0</span></div>
+  </div>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar" id="userAvatar">Admin</div>
+      <div>
+        <div class="user-name" id="userName">Admin Orchid</div>
+        <div class="user-role" id="userRole">Administrateur</div>
+        <div class="user-email" id="userEmail" style="font-size: 11px; color: var(--muted); margin-top: 2px;">admin@orchid-island.com</div>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="logout()" style="width: 100%; padding: 8px; background: rgba(255,87,87,0.1); border: 1px solid rgba(255,87,87,0.3); border-radius: 6px; color: var(--red); font-size: 12px; cursor: pointer; margin-top: 8px; transition: all 0.2s;">
+      <span>Logout</span> Déconnexion
+    </button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">👥 Gestion des Stagiaires</div>
+    <button class="btn-add" onclick="openModal()">+ Nouveau Stagiaire</button>
+  </div>
+  <div class="content">
+    <div class="filters-bar">
+      <div class="search-box">
+        🔍 <input type="text" placeholder="Rechercher un stagiaire..." oninput="filterTable(this.value)">
+      </div>
+      <select class="filter-select" onchange="filterStatus(this.value)">
+        <option value="all">Tous les statuts</option>
+        <option value="Accepté">Accepté</option>
+        <option value="En attente">En attente</option>
+        <option value="Refusé">Refusé</option>
+      </select>
+      <select class="filter-select" id="ecoleFilter" onchange="filterEcole(this.value)">
+        <option value="all">Toutes les écoles</option>
+      </select>
+    </div>
+
+    <div class="table-card">
+      <div class="table-header-bar">
+        <span class="table-title">Liste des Stagiaires</span>
+        <span class="table-count" id="tableCount">0 stagiaires · 0 en attente</span>
+      </div>
+      <table id="stagTable">
+        <thead>
+          <tr>
+            <th>Stagiaire</th>
+            <th>École / Formation</th>
+            <th>Département</th>
+            <th>Statut</th>
+            <th>Absences NJ</th>
+            <th>Stage</th>
+            <th>CV</th>
+            <th>Rapport Final</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+      <div class="pagination">
+        <button class="page-btn">‹</button>
+        <button class="page-btn active">1</button>
+        <button class="page-btn">2</button>
+        <button class="page-btn">3</button>
+        <button class="page-btn">›</button>
+        <span class="page-info">Affichage 1–8 de 24</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">➕ Nouveau Stagiaire</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Prénom</label><input type="text" class="form-input" placeholder="Mohamed"></div>
+        <div class="form-group"><label class="form-label">Nom</label><input type="text" class="form-input" placeholder="Alami"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" placeholder="m.alami@email.com"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Téléphone WhatsApp</label><input type="tel" class="form-input" placeholder="+212 6XX XXX XXX"></div>
+        <div class="form-group"><label class="form-label">École</label><input type="text" class="form-input" placeholder="ENSA Marrakech"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Filière / Formation</label><input type="text" class="form-input" placeholder="Génie Informatique"></div>
+        <div class="form-group"><label class="form-label">Département</label><input type="text" class="form-input" placeholder="IT / RH / Marketing"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Date début stage</label><input type="date" class="form-input"></div>
+        <div class="form-group"><label class="form-label">Date fin stage</label><input type="date" class="form-input"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Statut candidature</label>
+        <select class="form-select">
+          <option>En attente</option><option>Accepté</option><option>Refusé</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Annuler</button>
+      <button class="btn-save" onclick="saveStagiaire()">
+        <span class="btn-icon">Save</span>
+        <span class="btn-text">Enregistrer</span>
+        <span class="btn-loader" style="display: none;"></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- View Modal -->
+<div class="modal-overlay" id="viewModalOverlay">
+  <div class="modal view-modal">
+    <div class="modal-header">
+      <span class="modal-title">Fiche Stagiaire</span>
+      <button class="modal-close" onclick="closeViewModal()">×</button>
+    </div>
+    <div class="modal-body" id="viewModalBody">
+      <!-- Content will be dynamically generated -->
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeViewModal()">Fermer</button>
+      <button class="btn-save" onclick="editFromView()">
+        <span class="btn-icon">Edit</span>
+        <span class="btn-text">Modifier</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal-overlay" id="deleteModalOverlay">
+  <div class="modal delete-modal">
+    <div class="modal-header">
+      <span class="modal-title">Supprimer Stagiaire</span>
+      <button class="modal-close" onclick="closeDeleteModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="delete-warning">
+        <div class="delete-warning-icon">!</div>
+        <div class="delete-warning-title">Confirmer la suppression</div>
+        <div class="delete-warning-text">
+          Cette action est irréversible. Toutes les données du stagiaire seront définitivement perdues et ne pourront pas être récupérées.
+        </div>
+      </div>
+      
+      <div class="delete-info" id="deleteInfo">
+        <!-- Content will be dynamically generated -->
+      </div>
+      
+      <div style="text-align: center; margin-top: 20px;">
+        <div style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: rgba(255,87,87,0.1); border-radius: 8px; font-size: 12px; color: var(--red);">
+          <span>!</span>
+          <span>Cette action affectera également les rapports et tâches associés</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeDeleteModal()">Annuler</button>
+      <button class="btn-save" style="background: linear-gradient(135deg, #FF5757, #E74C3C); box-shadow: 0 4px 15px rgba(255,87,87,0.2);" onclick="confirmDelete()">
+        <span class="btn-icon">Delete</span>
+        <span class="btn-text">Supprimer définitivement</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/common.js"></script>
+<script>
+// Fonctions spécifiques à la gestion des stagiaires
+let stagiaires = [];
+
+// Nettoyer les données corrompues où le nom contient le prénom en double
+function cleanStagiaireData(stagiaire) {
+  // Initialiser les champs CV s'ils n'existent pas
+  if (!stagiaire.cv_url) stagiaire.cv_url = null;
+  if (!stagiaire.cv_name) stagiaire.cv_name = null;
+  
+  // Cas 1: Le prénom est manquant mais le nom existe
+  if (!stagiaire.prenom && stagiaire.nom) {
+    const nameParts = stagiaire.nom.trim().split(' ');
+    if (nameParts.length >= 2) {
+      // Vérifier si le premier mot est répété
+      if (nameParts[0] === nameParts[1]) {
+        // Cas: "mouad mouad benssamdia" -> prenom: "mouad", nom: "benssamdia"
+        stagiaire.prenom = nameParts[0];
+        stagiaire.nom = nameParts.slice(2).join(' ');
+      } else {
+        // Cas normal: "mouad benssamdia" -> prenom: "mouad", nom: "benssamdia"
+        stagiaire.prenom = nameParts[0];
+        stagiaire.nom = nameParts.slice(1).join(' ');
+      }
+    }
+  }
+  // Cas 2: Les deux existent mais le nom contient le prénom (données corrompues)
+  else if (stagiaire.prenom && stagiaire.nom && stagiaire.nom.includes(stagiaire.prenom)) {
+    const nameParts = stagiaire.nom.trim().split(' ');
+    // Si le nom commence par le prénom, le retirer
+    if (nameParts[0] === stagiaire.prenom) {
+      stagiaire.nom = nameParts.slice(1).join(' ');
+    }
+    // Si le prénom est répété dans le nom
+    else if (nameParts.length >= 2 && nameParts[0] === nameParts[1] && nameParts[0] === stagiaire.prenom) {
+      stagiaire.nom = nameParts.slice(2).join(' ');
+    }
+  }
+  return stagiaire;
+}
+
+// URL du backend - détecte automatiquement l'IP
+let BACKEND_URL = window.location.origin;
+if (BACKEND_URL.includes('localhost') || BACKEND_URL.includes('127.0.0.1')) {
+  BACKEND_URL = 'http://127.0.0.1:8000';
+}
+
+// Charger les données depuis l'API backend
+async function loadStagiaires() {
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/auth/stagiaires/`);
+    const data = await response.json();
+    
+    if (data.success) {
+      // Mapper les données de l'API vers le format utilisé par le frontend
+      stagiaires = data.stagiaires.map(s => ({
+        id: s.id,
+        prenom: s.first_name,
+        nom: s.last_name,
+        email: s.email,
+        telephone: s.phone || '',
+        ecole: s.ecole || 'Non spécifié',
+        formation: s.formation || 'Non spécifié',
+        departement: s.departement || 'Non spécifié',
+        debut: s.date_debut_stage ? new Date(s.date_debut_stage).toLocaleDateString('fr-FR') : '-',
+        fin: s.date_fin_stage ? new Date(s.date_fin_stage).toLocaleDateString('fr-FR') : '-',
+        statut: 'Accepté',
+        absences: 0,
+        bloque: false,
+        rapport: 'Non déposé',
+        avatar: '#' + Math.floor(Math.random()*16777215).toString(16),
+        cv_url: s.cv_url,
+        cv_name: s.cv_name
+      }));
+      
+      // Récupérer les absences depuis l'API historique
+      try {
+        const historiqueResponse = await fetch(`${BACKEND_URL}/api/presences/historique/`);
+        const historiqueData = await historiqueResponse.json();
+        
+        if (historiqueData.success && historiqueData.stagiaires) {
+          // Mettre à jour les absences pour chaque stagiaire
+          stagiaires = stagiaires.map(s => {
+            const historique = historiqueData.stagiaires.find(h => 
+              h.email === s.email || (h.prenom === s.prenom && h.nom === s.nom)
+            );
+            if (historique) {
+              return {
+                ...s,
+                absences: historique.total_absences,
+                retards: historique.total_retards
+              };
+            }
+            return s;
+          });
+        }
+      } catch (error) {
+        console.error('Erreur chargement historique:', error);
+      }
+      
+      // Sauvegarder dans localStorage
+      localStorage.setItem('stagiaires', JSON.stringify(stagiaires));
+      
+      // Sauvegarder dans orchid_shared_data
+      if (window.sharedData) {
+        window.sharedData.updateData('stagiaires', {
+          total: stagiaires.length,
+          actifs: stagiaires.filter(s => s.statut === 'Accepté').length,
+          enAttente: stagiaires.filter(s => s.statut === 'En attente').length,
+          bloques: stagiaires.filter(s => s.statut === 'Refusé').length,
+          list: stagiaires
+        });
+      }
+      
+      updateStats();
+      updateEcolesFilter();
+      updateTableCount();
+      renderTable(stagiaires);
+    } else {
+      console.error('Erreur API:', data.error);
+      // Fallback vers localStorage si l'API échoue
+      loadStagiairesFromLocalStorage();
+    }
+  } catch (error) {
+    console.error('Erreur chargement stagiaires depuis API:', error);
+    // Fallback vers localStorage si l'API échoue
+    loadStagiairesFromLocalStorage();
+  }
+}
+
+// Fallback: charger depuis localStorage
+function loadStagiairesFromLocalStorage() {
+  const data = window.sharedData.getData();
+  stagiaires = (data.stagiaires.list || []).map(s => cleanStagiaireData(s));
+  
+  data.stagiaires.list = stagiaires;
+  window.sharedData.updateData('stagiaires', data.stagiaires);
+  
+  updateStats();
+  updateEcolesFilter();
+  updateTableCount();
+  renderTable(stagiaires);
+}
+
+// Mettre à jour les statistiques
+function updateStats() {
+  // Synchroniser les données depuis localStorage vers orchid_shared_data
+  if (window.sharedData) {
+    window.sharedData.syncStagiairesData();
+  }
+  
+  const data = window.sharedData.getData();
+  const total = data.stagiaires.total || 0;
+  const actifs = data.stagiaires.actifs || 0;
+  const enAttente = data.stagiaires.enAttente || 0;
+  const bloques = data.stagiaires.bloques || 0;
+  
+  // Mettre à jour le compteur dans l'interface
+  const tableCount = document.getElementById('tableCount');
+  if (tableCount) {
+    tableCount.textContent = `${total} stagiaires · ${enAttente} en attente`;
+  }
+  
+  // Mettre à jour le badge de navigation
+  const badgeStagiaires = document.getElementById('badgeStagiaires');
+  if (badgeStagiaires) {
+    badgeStagiaires.textContent = enAttente;
+    badgeStagiaires.style.display = enAttente > 0 ? 'inline-flex' : 'none';
+  }
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById('tableBody');
+  if (data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--muted);">Aucun stagiaire trouvé</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = data.map((s, index) => {
+    // ✅ NOUVEAU — Calculer absences NJ réelles (total - justifiées)
+    const todayKey = new Date().toISOString().split('T')[0];
+    let absencesNJReelles = s.absences || 0;
+    // Parcourir les 7 derniers jours pour compter les justifiées
+    for (let d = 0; d < 7; d++) {
+      const date = new Date();
+      date.setDate(date.getDate() - d);
+      const dateKey = date.toISOString().split('T')[0];
+      const jKey = `absent_justifie_${dateKey}`;
+      const jList = JSON.parse(localStorage.getItem(jKey) || '[]');
+      const fullName = s.prenom && s.nom ? `${s.prenom} ${s.nom}` : s.nom || '';
+      if (jList.includes(fullName)) {
+        absencesNJReelles = Math.max(0, absencesNJReelles - 1);
+      }
+    }
+    const absCls = absencesNJReelles >= 3 ? 'danger' : absencesNJReelles >= 2 ? 'warn' : '';
+    const rapCls = s.rapport === 'Validé' ? 'badge-accepte' : s.rapport === 'En attente' ? 'badge-attente' : s.rapport === 'Déposé' ? 'badge-attente' : '';
+    const fullName = s.prenom && s.nom ? `${s.prenom} ${s.nom}` : s.nom || '';
+    const initials = fullName.split(' ').map(n => n[0]).join('');
+    
+    // Affichage du CV
+    let cvDisplay = '';
+    if (s.cv_url) {
+      cvDisplay = `
+        <div style="display:flex;align-items:center;gap:8px;">
+          <a href="${s.cv_url}" target="_blank" style="color:var(--primary);text-decoration:none;font-size:12px;">📄 Voir CV</a>
+          <button onclick="supprimerCV(${s.id})" style="background:rgba(255,87,87,0.1);border:1px solid rgba(255,87,87,0.3);border-radius:4px;color:var(--red);cursor:pointer;font-size:10px;padding:2px 6px;" title="Supprimer CV">🗑️</button>
+        </div>
+      `;
+    } else {
+      cvDisplay = `
+        <label for="cv-${s.id}" style="color:var(--muted);font-size:12px;cursor:pointer;">
+          📤 Uploader
+          <input type="file" id="cv-${s.id}" accept=".pdf,.doc,.docx" style="display:none;" onchange="uploaderCV(${s.id}, this)">
+        </label>
+      `;
+    }
+    
+    return `<tr class="fade-in" style="animation-delay: ${index * 0.05}s">
+      <td><div class="stagiaire-info">
+        <div class="avatar" style="background:${s.avatar}22;color:${s.avatar}">${initials}</div>
+        <div><div class="stag-name">${fullName} ${s.bloque ? '<span style="font-size:11px;color:var(--red)">⚠️ Bloqué</span>' : ''}</div><div class="stag-email">${s.email}</div></div>
+      </div></td>
+      <td><div style="font-size:13px">${s.ecole}</div><div style="font-size:11px;color:var(--muted)">${s.formation}</div></td>
+      <td><div style="font-size:13px">${s.departement}</div></td>
+      <td><span class="badge ${s.statut === 'Accepté' ? 'badge-accepte' : s.statut === 'Refusé' ? 'badge-refuse' : 'badge-attente'}">${s.statut}</span></td>
+      <td><div class="absence-counter">
+        <div class="abs-dot ${absCls}"></div>
+        ${absencesNJReelles}/3
+        ${absencesNJReelles < (s.absences || 0) ? `<span style="font-size:10px;color:#3E78B2;margin-left:4px;">(${(s.absences||0)-absencesNJReelles} justif.)</span>` : ''}
+      </div></td>
+      <td><div style="font-size:12px">${s.debut}</div><div style="font-size:11px;color:var(--muted)">${s.fin !== '-' ? '-> ' + s.fin : '-'}</div></td>
+      <td>${cvDisplay}</td>
+      <td>${s.rapport !== '-' ? `<span class="badge ${rapCls}">${s.rapport}</span>` : '<span style="color:var(--muted);font-size:12px">-</span>'}</td>
+      <td><div class="action-btns">
+        <button class="btn-icon view" onclick="viewStagiaire(${s.id})" title="Voir fiche">View</button>
+        <button class="btn-icon edit" onclick="editStagiaire(${s.id})" title="Modifier">Edit</button>
+        ${s.is_active === false ? `
+          <button onclick="debloquerCompte(${s.id}, '${s.prenom} ${s.nom}')"
+                  style="background:#27AE60;color:#fff;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;">
+            🔓 Débloquer
+          </button>` : ''}
+        <button class="btn-icon del" onclick="deleteStagiaire(${s.id})" title="Supprimer">Delete</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function filterTable(q) { 
+  const statusFilter = document.querySelector('.filter-select:nth-child(2)').value;
+  const ecoleFilter = document.getElementById('ecoleFilter').value;
+  
+  let filtered = stagiaires.filter(s => {
+    const searchLower = q.toLowerCase();
+    return s.nom.toLowerCase().includes(searchLower) || 
+           s.email.toLowerCase().includes(searchLower) ||
+           (s.prenom && s.prenom.toLowerCase().includes(searchLower)) ||
+           s.ecole.toLowerCase().includes(searchLower) ||
+           s.formation.toLowerCase().includes(searchLower);
+  });
+  
+  if (statusFilter !== 'all') {
+    filtered = filtered.filter(s => s.statut === statusFilter);
+  }
+  
+  if (ecoleFilter !== 'all') {
+    filtered = filtered.filter(s => s.ecole === ecoleFilter);
+  }
+  
+  renderTable(filtered);
+  
+  // Update table count with filtered results
+  const totalCount = document.getElementById('tableCount');
+  const enAttenteCount = filtered.filter(s => s.statut === 'En attente').length;
+  totalCount.textContent = `${filtered.length} stagiaires trouvés · ${enAttenteCount} en attente`;
+}
+
+function filterStatus(v) { 
+  const searchValue = document.querySelector('.search-box input').value;
+  const ecoleFilter = document.getElementById('ecoleFilter').value;
+  
+  let filtered = v === 'all' ? stagiaires : stagiaires.filter(s => s.statut === v);
+  
+  if (searchValue) {
+    filtered = filtered.filter(s => 
+      s.nom.toLowerCase().includes(searchValue.toLowerCase()) || 
+      s.email.toLowerCase().includes(searchValue.toLowerCase())
+    );
+  }
+  
+  if (ecoleFilter !== 'all') {
+    filtered = filtered.filter(s => s.ecole === ecoleFilter);
+  }
+  
+  renderTable(filtered);
+}
+
+function filterEcole(v) { 
+  const searchValue = document.querySelector('.search-box input').value;
+  const statusFilter = document.querySelector('.filter-select:nth-child(2)').value;
+  
+  let filtered = v === 'all' ? stagiaires : stagiaires.filter(s => s.ecole === v);
+  
+  if (searchValue) {
+    filtered = filtered.filter(s => 
+      s.nom.toLowerCase().includes(searchValue.toLowerCase()) || 
+      s.email.toLowerCase().includes(searchValue.toLowerCase())
+    );
+  }
+  
+  if (statusFilter !== 'all') {
+    filtered = filtered.filter(s => s.statut === statusFilter);
+  }
+  
+  renderTable(filtered);
+}
+
+function updateEcolesFilter() {
+  const ecoleFilter = document.getElementById('ecoleFilter');
+  const ecoles = [...new Set(stagiaires.map(s => s.ecole).filter(e => e))];
+  
+  ecoleFilter.innerHTML = '<option value="all">Toutes les écoles</option>';
+  ecoles.forEach(ecole => {
+    ecoleFilter.innerHTML += `<option value="${ecole}">${ecole}</option>`;
+  });
+}
+
+function updateTableCount() {
+  const totalCount = document.getElementById('tableCount');
+  const enAttenteCount = stagiaires.filter(s => s.statut === 'En attente').length;
+  totalCount.textContent = `${stagiaires.length} stagiaires · ${enAttenteCount} en attente`;
+}
+
+// Fonctions CRUD
+function addStagiaire(stagiaire) {
+  stagiaire.id = Date.now();
+  stagiaire.absences = 0;
+  stagiaire.bloque = false;
+  stagiaire.rapport = 'Non déposé';
+  stagiaire.avatar = '#' + Math.floor(Math.random()*16777215).toString(16);
+  stagiaire.dateCreation = new Date().toISOString(); // Ajouter la date de création pour la détection des nouveaux
+  
+  stagiaires.push(stagiaire);
+  
+  // Mettre à jour les données partagées
+  const data = window.sharedData.getData();
+  data.stagiaires.list = stagiaires;
+  data.stagiaires.total = stagiaires.length;
+  data.stagiaires.enAttente = stagiaires.filter(s => s.statut === 'En attente').length;
+  data.stagiaires.actifs = stagiaires.filter(s => s.statut === 'Accepté').length;
+  data.stagiaires.bloques = stagiaires.filter(s => s.bloque).length;
+  window.sharedData.updateData('stagiaires', data.stagiaires);
+  
+  // Rafraîchir l'affichage
+  updateEcolesFilter();
+  updateTableCount();
+  renderTable(stagiaires);
+  
+  // Ajouter une alerte dans le système d'alertes
+  const addAlertToSystem = function() {
+    if (window.alertManager && window.alertManager.addSystemAlert) {
+      window.alertManager.addSystemAlert({
+        type: 'info',
+        category: 'nouveau',
+        message: `Nouveau stagiaire: ${stagiaire.prenom} ${stagiaire.nom}`,
+        details: `Le stagiaire ${stagiaire.prenom} ${stagiaire.nom} (${stagiaire.email}) a été ajouté à la plateforme.`,
+        stagiaire: stagiaire,
+        date: new Date().toISOString(),
+        read: false
+      });
+      console.log('[STAGIAIRES] Alerte nouveau stagiaire créée avec succès');
+    } else {
+      console.warn('[STAGIAIRES] alertManager non disponible, tentative dans 500ms...');
+      // Réessayer dans 500ms si alertManager n'est pas encore chargé
+      setTimeout(addAlertToSystem, 500);
+    }
+  };
+  addAlertToSystem();
+  
+  // Ajouter une alerte dans la barre latérale
+  window.sharedData.addAlerte({
+    type: 'success',
+    icon: '!',
+    message: `Nouveau stagiaire ajouté: ${stagiaire.nom}`,
+    time: 'À l\'instant',
+    link: 'stagiaires.html'
+  });
+  
+  // Afficher un message de succès
+  showSuccessMessage(`Stagiaire "${stagiaire.prenom} ${stagiaire.nom}" ajouté avec succès !`);
+}
+
+function editStagiaire(id) {
+  const stagiaire = stagiaires.find(s => s.id === id);
+  if (!stagiaire) return;
+  
+  console.log('Modification du stagiaire:', stagiaire);
+  
+  // Séparer le nom complet en prénom et nom si possible
+  let prenom = '';
+  let nom = '';
+  if (stagiaire.prenom && stagiaire.nom) {
+    prenom = stagiaire.prenom;
+    nom = stagiaire.nom;
+  } else if (stagiaire.nom) {
+    const nameParts = stagiaire.nom.split(' ');
+    prenom = nameParts[0] || '';
+    nom = nameParts.slice(1).join(' ') || '';
+  }
+  
+  // Ouvrir d'abord le modal
+  openModal();
+  
+  // Attendre un peu que le modal soit ouvert puis remplir les champs
+  setTimeout(() => {
+    // Utiliser les mêmes sélecteurs que saveStagiaire
+    const inputs = document.querySelectorAll('.modal .form-input');
+    const select = document.querySelector('.modal .form-select');
+    
+    console.log('Inputs trouvés:', inputs.length);
+    console.log('Select trouvé:', select);
+    
+    if (inputs.length >= 9 && select) {
+      // Remplir le formulaire avec les données du stagiaire
+      inputs[0].value = prenom || ''; // Prénom
+      inputs[1].value = nom || ''; // Nom
+      inputs[2].value = stagiaire.email || ''; // Email
+      inputs[3].value = stagiaire.telephone || ''; // Téléphone
+      inputs[4].value = stagiaire.ecole || ''; // École
+      inputs[5].value = stagiaire.formation || ''; // Formation
+      inputs[6].value = stagiaire.departement || ''; // Département
+      inputs[7].value = stagiaire.debut || ''; // Date début
+      inputs[8].value = stagiaire.fin || ''; // Date fin
+      select.value = stagiaire.statut || 'En attente';
+      
+      console.log('Formulaire rempli avec les données');
+      
+      // Changer le titre du modal
+      const modalTitle = document.querySelector('.modal-title');
+      if (modalTitle) {
+        modalTitle.textContent = ' Modifier Stagiaire';
+      }
+      
+      // Modifier le bouton de sauvegarde
+      const saveBtn = document.querySelector('.btn-save');
+      if (saveBtn) {
+        saveBtn.innerHTML = '<span class="btn-icon">Edit</span><span class="btn-text">Mettre à jour</span>';
+        saveBtn.onclick = () => updateStagiaire(id);
+      }
+    } else {
+      console.log('ERREUR: Éléments du formulaire non trouvés');
+      alert('Erreur: Impossible de charger le formulaire de modification');
+    }
+  }, 100);
+}
+
+function editFromView() {
+  if (!currentViewId) return;
+  closeViewModal();
+  setTimeout(() => editStagiaire(currentViewId), 300);
+}
+
+async function updateStagiaire(id) {
+  const stagiaire = stagiaires.find(s => s.id === id);
+  if (!stagiaire) return;
+  
+  // Utiliser les mêmes sélecteurs
+  const inputs = document.querySelectorAll('.modal .form-input');
+  const select = document.querySelector('.modal .form-select');
+  
+  const prenom = inputs[0].value.trim();
+  const nom = inputs[1].value.trim();
+  const telephone = inputs[3].value.trim();
+  const ecole = inputs[4].value.trim();
+  const formation = inputs[5].value.trim();
+  const departement = inputs[6].value.trim();
+  const debut = inputs[7].value;
+  const fin = inputs[8].value;
+  
+  console.log('[MODIFIER STAGIAIRE] Modification stagiaire via API backend...');
+  
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/auth/stagiaire/${id}/modifier/`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        first_name: prenom,
+        last_name: nom,
+        phone: telephone,
+        ecole: ecole,
+        formation: formation,
+        departement: departement,
+        date_debut_stage: debut || null,
+        date_fin_stage: fin || null
+      })
+    });
+    
+    const data = await response.json();
+    console.log('[MODIFIER STAGIAIRE] Réponse backend:', data);
+    
+    if (data.success) {
+      // Fermer le modal
+      closeModal();
+      
+      // Recharger les données depuis l'API
+      await loadStagiaires();
+      
+      // Message de succès
+      showSuccessMessage(`Stagiaire "${prenom} ${nom}" modifié avec succès !`);
+    } else {
+      console.error('[MODIFIER STAGIAIRE] Erreur backend:', data.error);
+      alert('Erreur lors de la modification: ' + data.error);
+    }
+  } catch (error) {
+    console.error('[MODIFIER STAGIAIRE] Erreur modification:', error);
+    alert('Erreur: ' + error.message);
+  }
+}
+
+function deleteStagiaire(id) {
+  const stagiaire = stagiaires.find(s => s.id === id);
+  if (!stagiaire) {
+    console.log('Stagiaire non trouvé avec id:', id);
+    return;
+  }
+  
+  currentDeleteId = id;
+  const fullName = stagiaire.prenom && stagiaire.nom ? `${stagiaire.prenom} ${stagiaire.nom}` : stagiaire.nom || '';
+  
+  // Créer un modal professionnel personnalisé
+  const modalHTML = `
+    <div id="customDeleteModal" style="
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(5px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      animation: fadeIn 0.3s ease;
+    ">
+      <div style="
+        background: linear-gradient(135deg, #24272B, #1A1F2E);
+        border: 1px solid #4A525A;
+        border-radius: 20px;
+        width: 500px;
+        max-width: 90%;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        animation: slideUp 0.3s ease;
+      ">
+        <div style="
+          padding: 30px;
+          text-align: center;
+        ">
+          <div style="
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #FF5757, #E74C3C);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 36px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(255,87,87,0.3);
+            animation: pulse 2s infinite;
+          ">!</div>
+          
+          <h3 style="
+            color: #F0F4F8;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            font-family: 'Syne', sans-serif;
+          ">Supprimer le stagiaire</h3>
+          
+          <p style="
+            color: #B8C5D6;
+            margin-bottom: 25px;
+            line-height: 1.5;
+          ">Êtes-vous sûr de vouloir supprimer ce stagiaire ? Cette action est irréversible.</p>
+          
+          <div style="
+            background: rgba(255,255,255,0.05);
+            border: 1px solid #4A525A;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            text-align: left;
+          ">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+              <span style="color: #B8C5D6; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Nom</span>
+              <span style="color: #F0F4F8; font-weight: 500;">${fullName}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+              <span style="color: #B8C5D6; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Email</span>
+              <span style="color: #F0F4F8; font-weight: 500;">${stagiaire.email}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+              <span style="color: #B8C5D6; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">École</span>
+              <span style="color: #F0F4F8; font-weight: 500;">${stagiaire.ecole}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: #B8C5D6; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Statut</span>
+              <span style="
+                padding: 4px 12px;
+                border-radius: 20px;
+                font-size: 11px;
+                font-weight: 600;
+                background: ${stagiaire.statut === 'Accepté' ? 'rgba(34,211,160,0.2)' : stagiaire.statut === 'Refusé' ? 'rgba(255,87,87,0.2)' : 'rgba(245,188,76,0.2)'};
+                color: ${stagiaire.statut === 'Accepté' ? '#27AE60' : stagiaire.statut === 'Refusé' ? '#E74C3C' : '#F39C12'};
+              ">${stagiaire.statut}</span>
+            </div>
+          </div>
+          
+          <div style="
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+          ">
+            <button onclick="closeCustomDeleteModal()" style="
+              padding: 12px 24px;
+              background: transparent;
+              border: 1px solid #4A525A;
+              border-radius: 10px;
+              color: #B8C5D6;
+              font-size: 14px;
+              font-weight: 600;
+              cursor: pointer;
+              transition: all 0.3s ease;
+            ">Annuler</button>
+            <button onclick="executeCustomDelete()" style="
+              padding: 12px 24px;
+              background: linear-gradient(135deg, #FF5757, #E74C3C);
+              border: none;
+              border-radius: 10px;
+              color: white;
+              font-size: 14px;
+              font-weight: 700;
+              cursor: pointer;
+              transition: all 0.3s ease;
+              box-shadow: 0 4px 15px rgba(255,87,87,0.3);
+            ">Supprimer définitivement</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <style>
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @keyframes slideUp {
+        from { transform: translateY(30px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+      }
+    </style>
+  `;
+  
+  // Ajouter le modal à la page
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+function closeCustomDeleteModal() {
+  const modal = document.getElementById('customDeleteModal');
+  if (modal) {
+    modal.remove();
+  }
+}
+
+async function executeCustomDelete() {
+  if (!currentDeleteId) return;
+  
+  const stagiaire = stagiaires.find(s => s.id === currentDeleteId);
+  if (!stagiaire) return;
+  
+  console.log('[SUPPRIMER STAGIAIRE] Début suppression pour ID:', currentDeleteId);
+  
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/auth/stagiaire/${currentDeleteId}/`, {
+      method: 'DELETE'
+    });
+    
+    const data = await response.json();
+    console.log('[SUPPRIMER STAGIAIRE] Réponse backend:', data);
+    
+    if (data.success) {
+      // Fermer le modal
+      closeCustomDeleteModal();
+      
+      // Nettoyer les alertes liées à ce stagiaire
+      if (window.alertManager) {
+        const alerts = window.alertManager.getSystemAlerts();
+        const fullName = stagiaire.prenom && stagiaire.nom ? `${stagiaire.prenom} ${stagiaire.nom}` : stagiaire.nom || '';
+        const filteredAlerts = alerts.filter(a => {
+          // Supprimer les alertes liées à ce stagiaire
+          const isRelated = a.nom === fullName || 
+                          a.message.includes(fullName) ||
+                          (a.stagiaireId && String(a.stagiaireId) === String(id));
+          return !isRelated;
+        });
+        window.alertManager.saveSystemAlerts(filteredAlerts);
+        window.alertManager.dispatchEvent('alertes');
+        console.log('[SUPPRIMER STAGIAIRE] Alertes nettoyées pour:', fullName);
+      }
+      
+      // Nettoyer new_stagiaires si le stagiaire y est encore
+      const newStagiaires = JSON.parse(localStorage.getItem('new_stagiaires') || '[]');
+      const filteredNewStagiaires = newStagiaires.filter(s => s.id !== id);
+      localStorage.setItem('new_stagiaires', JSON.stringify(filteredNewStagiaires));
+      
+      // Recharger les données depuis l'API
+      await loadStagiaires();
+      
+      // Message de succès
+      const fullName = stagiaire.prenom && stagiaire.nom ? `${stagiaire.prenom} ${stagiaire.nom}` : stagiaire.nom || '';
+      showSuccessMessage(`Stagiaire "${fullName}" supprimé avec succès !`);
+    } else {
+      console.error('[SUPPRIMER STAGIAIRE] Erreur backend:', data.error);
+      alert('Erreur lors de la suppression: ' + data.error);
+    }
+  } catch (error) {
+    console.error('[SUPPRIMER STAGIAIRE] Erreur suppression:', error);
+    alert('Erreur: ' + error.message);
+  }
+}
+
+// Fonction de suppression directe pour contourner le problème
+function deleteStagiaireDirect(id) {
+  console.log('SUPPRESSION DIRECTE - id:', id);
+  
+  const stagiaire = stagiaires.find(s => s.id === id);
+  if (!stagiaire) {
+    console.log('Stagiaire non trouvé pour suppression directe');
+    return;
+  }
+  
+  // Supprimer directement sans modal
+  const oldLength = stagiaires.length;
+  stagiaires = stagiaires.filter(s => s.id !== id);
+  console.log('Suppression directe: avant', oldLength, 'après', stagiaires.length);
+  
+  // Mettre à jour les données
+  const data = window.sharedData.getData();
+  data.stagiaires.list = stagiaires;
+  data.stagiaires.total = stagiaires.length;
+  data.stagiaires.enAttente = stagiaires.filter(s => s.statut === 'En attente').length;
+  data.stagiaires.actifs = stagiaires.filter(s => s.statut === 'Accepté').length;
+  window.sharedData.updateData('stagiaires', data.stagiaires);
+  
+  // Synchroniser toutes les données automatiquement
+  window.sharedData.syncAllData();
+  
+  // Rafraîchir l'affichage
+  updateEcolesFilter();
+  updateTableCount();
+  renderTable(stagiaires);
+  
+  // Nettoyer les alertes liées à ce stagiaire
+  if (window.alertManager) {
+    const alerts = window.alertManager.getSystemAlerts();
+    const fullName = stagiaire.prenom && stagiaire.nom ? `${stagiaire.prenom} ${stagiaire.nom}` : stagiaire.nom || '';
+    const filteredAlerts = alerts.filter(a => {
+      const isRelated = a.nom === fullName || 
+                      a.message.includes(fullName) ||
+                      (a.stagiaireId && String(a.stagiaireId) === String(id));
+      return !isRelated;
+    });
+    window.alertManager.saveSystemAlerts(filteredAlerts);
+    window.alertManager.dispatchEvent('alertes');
+    console.log('[SUPPRIMER STAGIAIRE DIRECT] Alertes nettoyées pour:', fullName);
+  }
+  
+  // Nettoyer new_stagiaires si le stagiaire y est encore
+  const newStagiaires = JSON.parse(localStorage.getItem('new_stagiaires') || '[]');
+  const filteredNewStagiaires = newStagiaires.filter(s => s.id !== id);
+  localStorage.setItem('new_stagiaires', JSON.stringify(filteredNewStagiaires));
+  
+  // Message de succès
+  alert(`Stagiaire "${stagiaire.prenom} ${stagiaire.nom}" supprimé avec succès !`);
+}
+
+function confirmDelete() {
+  console.log('=== CONFIRM DELETE START ===');
+  console.log('currentDeleteId:', currentDeleteId);
+  console.log('stagiaires disponibles:', stagiaires);
+  
+  if (!currentDeleteId) {
+    console.log('ERREUR: currentDeleteId est null');
+    alert('Erreur: ID de suppression non trouvé');
+    return;
+  }
+  
+  const stagiaire = stagiaires.find(s => s.id === currentDeleteId);
+  if (!stagiaire) {
+    console.log('ERREUR: Stagiaire non trouvé avec id:', currentDeleteId);
+    alert('Erreur: Stagiaire non trouvé');
+    return;
+  }
+  
+  console.log('Stagiaire à supprimer:', stagiaire);
+  
+  // Fermer le modal immédiatement
+  closeDeleteModal();
+  
+  // Supprimer directement sans animation pour éviter les problèmes
+  const oldLength = stagiaires.length;
+  stagiaires = stagiaires.filter(s => s.id !== currentDeleteId);
+  console.log('Suppression effectuée: avant', oldLength, 'après', stagiaires.length);
+  
+  // Mettre à jour les données partagées
+  try {
+    const data = window.sharedData.getData();
+    data.stagiaires.list = stagiaires;
+    data.stagiaires.total = stagiaires.length;
+    data.stagiaires.enAttente = stagiaires.filter(s => s.statut === 'En attente').length;
+    data.stagiaires.actifs = stagiaires.filter(s => s.statut === 'Accepté').length;
+    window.sharedData.updateData('stagiaires', data.stagiaires);
+    console.log('Données partagées mises à jour avec succès');
+  } catch (error) {
+    console.log('ERREUR lors de la mise à jour des données:', error);
+  }
+  
+  // Rafraîchir l'affichage
+  try {
+    updateEcolesFilter();
+    updateTableCount();
+    renderTable(stagiaires);
+    console.log('Affichage rafraîchi avec succès');
+  } catch (error) {
+    console.log('ERREUR lors du rafraîchissement:', error);
+  }
+  
+  // Message de succès simple
+  const fullName = stagiaire.prenom && stagiaire.nom ? `${stagiaire.prenom} ${stagiaire.nom}` : stagiaire.nom || '';
+  alert(`Stagiaire "${fullName}" supprimé avec succès !`);
+  console.log('=== CONFIRM DELETE END ===');
+}
+
+let currentViewId = null;
+let currentDeleteId = null;
+
+// Fonction pour uploader un CV
+async function uploaderCV(userId, input) {
+  const file = input.files[0];
+  if (!file) return;
+  
+  const stagiaire = stagiaires.find(s => s.id === userId);
+  if (!stagiaire) {
+    console.error('[UPLOAD CV] Stagiaire non trouvé avec userId:', userId);
+    return;
+  }
+  
+  console.log('[UPLOAD CV] Début upload pour stagiaire:', stagiaire.email);
+  console.log('[UPLOAD CV] Fichier:', file.name, file.size);
+  
+  const formData = new FormData();
+  formData.append('email', stagiaire.email);
+  formData.append('cv', file);
+  
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/auth/cv/upload/`, {
+      method: 'POST',
+      body: formData
+    });
+    
+    const data = await response.json();
+    console.log('[UPLOAD CV] Réponse backend:', data);
+    
+    if (data.success) {
+      console.log('[UPLOAD CV] CV uploadé avec succès, rechargement des données...');
+      
+      // Recharger les données depuis l'API pour avoir les données à jour
+      await loadStagiaires();
+      showSuccessMessage('CV uploadé avec succès !');
+    } else {
+      console.error('[UPLOAD CV] Erreur backend:', data.error);
+      alert('Erreur lors de l\'upload du CV: ' + data.error);
+    }
+  } catch (error) {
+    console.error('[UPLOAD CV] Erreur upload:', error);
+    alert('Erreur: ' + error.message);
+  }
+  
+  // Réinitialiser l'input
+  input.value = '';
+}
+
+// Fonction pour supprimer un CV
+async function supprimerCV(userId) {
+  if (!confirm('Êtes-vous sûr de vouloir supprimer ce CV ?')) return;
+  
+  const stagiaire = stagiaires.find(s => s.id === userId);
+  if (!stagiaire) {
+    console.error('[SUPPRIMER CV] Stagiaire non trouvé avec userId:', userId);
+    return;
+  }
+  
+  console.log('[SUPPRIMER CV] Début suppression pour stagiaire:', stagiaire.email);
+  
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/auth/cv/delete/?email=${encodeURIComponent(stagiaire.email)}`, {
+      method: 'DELETE'
+    });
+    
+    const data = await response.json();
+    console.log('[SUPPRIMER CV] Réponse backend:', data);
+    
+    if (data.success) {
+      console.log('[SUPPRIMER CV] CV supprimé avec succès, rechargement des données...');
+      
+      // Recharger les données depuis l'API pour avoir les données à jour
+      await loadStagiaires();
+      showSuccessMessage('CV supprimé avec succès !');
+    } else {
+      console.error('[SUPPRIMER CV] Erreur backend:', data.error);
+      alert('Erreur lors de la suppression du CV: ' + data.error);
+    }
+  } catch (error) {
+    console.error('[SUPPRIMER CV] Erreur suppression:', error);
+    alert('Erreur: ' + error.message);
+  }
+}
+
+function viewStagiaire(id) {
+  const stagiaire = stagiaires.find(s => s.id === id);
+  if (!stagiaire) return;
+  
+  currentViewId = id;
+  
+  const fullName = stagiaire.prenom && stagiaire.nom ? `${stagiaire.prenom} ${stagiaire.nom}` : stagiaire.nom || '';
+  const initials = fullName.split(' ').map(n => n[0]).join('');
+  
+  const modalBody = document.getElementById('viewModalBody');
+  modalBody.innerHTML = `
+    <div class="view-section">
+      <div class="view-section-title">Informations Personnelles</div>
+      <div class="view-info-grid">
+        <div class="view-info-item">
+          <div class="view-info-label">Nom Complet</div>
+          <div class="view-info-value">${fullName}</div>
+        </div>
+        <div class="view-info-item">
+          <div class="view-info-label">Email</div>
+          <div class="view-info-value">${stagiaire.email}</div>
+        </div>
+        <div class="view-info-item">
+          <div class="view-info-label">Téléphone</div>
+          <div class="view-info-value">${stagiaire.telephone || '-'}</div>
+        </div>
+        <div class="view-info-item">
+          <div class="view-info-label">Statut</div>
+          <div class="view-info-value">
+            <span class="badge ${stagiaire.statut === 'Accepté' ? 'badge-accepte' : stagiaire.statut === 'Refusé' ? 'badge-refuse' : 'badge-attente'}">${stagiaire.statut}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="view-section">
+      <div class="view-section-title">Formation Académique</div>
+      <div class="view-info-grid">
+        <div class="view-info-item">
+          <div class="view-info-label">École</div>
+          <div class="view-info-value">${stagiaire.ecole}</div>
+        </div>
+        <div class="view-info-item">
+          <div class="view-info-label">Filière</div>
+          <div class="view-info-value">${stagiaire.formation}</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="view-section">
+      <div class="view-section-title">Stage</div>
+      <div class="view-info-grid">
+        <div class="view-info-item">
+          <div class="view-info-label">Date Début</div>
+          <div class="view-info-value">${stagiaire.debut}</div>
+        </div>
+        <div class="view-info-item">
+          <div class="view-info-label">Date Fin</div>
+          <div class="view-info-value">${stagiaire.fin || '-'}</div>
+        </div>
+        <div class="view-info-item">
+          <div class="view-info-label">Absences NJ</div>
+          <div class="view-info-value">
+            <div class="absence-counter">
+              <div class="abs-dot ${stagiaire.absences >= 3 ? 'danger' : stagiaire.absences >= 2 ? 'warn' : ''}"></div>
+              ${stagiaire.absences}/3
+            </div>
+          </div>
+        </div>
+        <div class="view-info-item">
+          <div class="view-info-label">Rapport Final</div>
+          <div class="view-info-value">
+            ${stagiaire.rapport !== '-' ? `<span class="badge ${stagiaire.rapport === 'Validé' ? 'badge-accepte' : 'badge-attente'}">${stagiaire.rapport}</span>` : '<span style="color:var(--muted);font-size:12px">-</span>'}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="view-section">
+      <div class="view-section-title">CV</div>
+      <div class="view-info-grid">
+        <div class="view-info-item view-full-width">
+          <div class="view-info-label">Document CV</div>
+          <div class="view-info-value">
+            ${stagiaire.cv_url ? `
+              <div style="display:flex;align-items:center;gap:12px;">
+                <a href="${stagiaire.cv_url}" target="_blank" style="color:var(--primary);text-decoration:none;display:flex;align-items:center;gap:6px;padding:8px 16px;background:rgba(0,75,168,0.1);border:1px solid rgba(0,75,168,0.2);border-radius:6px;font-size:13px;">
+                  📄 Voir le CV
+                </a>
+                <button onclick="supprimerCV(${stagiaire.id});closeViewModal();" style="background:rgba(255,87,87,0.1);border:1px solid rgba(255,87,87,0.3);border-radius:6px;color:var(--red);cursor:pointer;font-size:12px;padding:6px 12px;" title="Supprimer CV">🗑️ Supprimer</button>
+              </div>
+            ` : `
+              <div style="color:var(--muted);font-size:13px;">Aucun CV disponible</div>
+            `}
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    ${stagiaire.bloque ? `
+    <div class="view-section">
+      <div class="view-section-title" style="color: var(--red);">⚠️ Statut Spécial</div>
+      <div class="view-info-item view-full-width" style="background: rgba(255,87,87,0.1); border-color: rgba(255,87,87,0.2);">
+        <div class="view-info-value" style="color: var(--red);">Ce stagiaire est actuellement bloqué</div>
+      </div>
+    </div>
+    ` : ''}
+  `;
+  
+  document.getElementById('viewModalOverlay').classList.add('show');
+}
+
+function openModal() { 
+  // Réinitialiser le formulaire pour l'ajout
+  document.querySelector('.modal-title').textContent = 'Nouveau Stagiaire';
+  document.querySelector('.btn-save').textContent = 'Enregistrer';
+  document.querySelector('.btn-save').onclick = saveStagiaire;
+  
+  // Vider les champs du formulaire
+  const inputs = document.querySelectorAll('.modal .form-input');
+  const select = document.querySelector('.modal .form-select');
+  
+  inputs.forEach(field => {
+    field.value = '';
+  });
+  
+  if (select) {
+    select.selectedIndex = 0;
+  }
+  
+  document.getElementById('modalOverlay').classList.add('show'); 
+}
+
+function closeModal() { document.getElementById('modalOverlay').classList.remove('show'); }
+function closeViewModal() { document.getElementById('viewModalOverlay').classList.remove('show'); currentViewId = null; }
+function closeDeleteModal() { document.getElementById('deleteModalOverlay').classList.remove('show'); currentDeleteId = null; }
+
+function showSuccessMessage(message) {
+  // Créer l'élément de message s'il n'existe pas
+  let successMessage = document.getElementById('successMessage');
+  if (!successMessage) {
+    successMessage = document.createElement('div');
+    successMessage.id = 'successMessage';
+    successMessage.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #22D3A0, #16A085);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(34, 211, 160, 0.3);
+      z-index: 10000;
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transform: translateX(400px);
+      transition: transform 0.3s ease;
+      max-width: 350px;
+    `;
+    successMessage.innerHTML = '<span style="font-size: 18px;">&#10003;</span><span id="successMessageText"></span>';
+    document.body.appendChild(successMessage);
+  }
+  
+  // Mettre à jour le message et afficher
+  document.getElementById('successMessageText').textContent = message;
+  successMessage.style.transform = 'translateX(0)';
+  
+  // Masquer automatiquement après 3 secondes
+  setTimeout(() => {
+    successMessage.style.transform = 'translateX(400px)';
+    setTimeout(() => {
+      if (successMessage.parentNode) {
+        successMessage.parentNode.removeChild(successMessage);
+      }
+    }, 300);
+  }, 3000);
+}
+
+async function saveStagiaire() {
+  // Utiliser des sélecteurs plus précis basés sur les labels
+  const inputs = document.querySelectorAll('.modal .form-input');
+  const select = document.querySelector('.modal .form-select');
+  
+  const prenom = inputs[0].value.trim(); // Prénom
+  const nom = inputs[1].value.trim(); // Nom
+  const email = inputs[2].value.trim(); // Email
+  const telephone = inputs[3].value.trim(); // Téléphone
+  const ecole = inputs[4].value.trim(); // École
+  const formation = inputs[5].value.trim(); // Formation
+  const departement = inputs[6].value.trim(); // Département
+  const debut = inputs[7].value; // Date début
+  const fin = inputs[8].value; // Date fin
+  const statut = select.value;
+  
+  console.log('Données du formulaire:', { prenom, nom, email, telephone, ecole, formation, debut, fin, statut });
+  
+  // Validation complète des champs obligatoires
+  const errors = [];
+  
+  if (!prenom) errors.push('Le prénom est obligatoire');
+  if (!nom) errors.push('Le nom est obligatoire');
+  if (!email) errors.push('L\'email est obligatoire');
+  else if (!isValidEmail(email)) errors.push('L\'email n\'est pas valide');
+  if (!ecole) errors.push('L\'école est obligatoire');
+  if (!formation) errors.push('La formation est obligatoire');
+  if (!debut) errors.push('La date de début est obligatoire');
+  if (!fin) errors.push('La date de fin est obligatoire');
+  else if (debut && fin && new Date(fin) < new Date(debut)) errors.push('La date de fin doit être après la date de début');
+  
+  if (errors.length > 0) {
+    showErrorMessage(errors.join('\n'));
+    return;
+  }
+  
+  console.log('[AJOUT STAGIAIRE] Création stagiaire via API backend...');
+  
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/auth/stagiaire/creer/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: email,
+        first_name: prenom,
+        last_name: nom,
+        phone: telephone,
+        ecole: ecole,
+        formation: formation,
+        departement: departement,
+        date_debut_stage: debut || null,
+        date_fin_stage: fin || null
+      })
+    });
+    
+    const data = await response.json();
+    console.log('[AJOUT STAGIAIRE] Réponse backend:', data);
+    
+    if (data.success) {
+      // Ajouter le stagiaire à new_stagiaires pour générer une alerte
+      const newStagiaires = JSON.parse(localStorage.getItem('new_stagiaires') || '[]');
+      newStagiaires.push({
+        id: data.id,
+        prenom: prenom,
+        nom: nom,
+        email: email,
+        telephone: telephone,
+        ecole: ecole,
+        formation: formation,
+        departement: departement,
+        date: new Date().toISOString()
+      });
+      localStorage.setItem('new_stagiaires', JSON.stringify(newStagiaires));
+      
+      // Générer l'alerte immédiatement si alertManager est disponible
+      if (window.alertManager) {
+        window.alertManager.checkNewStagiaires();
+      }
+      
+      // Fermer le modal
+      closeModal();
+      
+      // Recharger les données depuis l'API
+      await loadStagiaires();
+      
+      // Synchroniser toutes les données automatiquement
+      if (window.sharedData) {
+        window.sharedData.syncAllData();
+      }
+
+      // Message de succès
+      showSuccessMessage(`Stagiaire "${prenom} ${nom}" créé avec succès ! Mot de passe par défaut: Stagiaire123`);
+
+      // Déclencher l'alerte nouveau stagiaire
+      if (window.alertManager) {
+        window.alertManager.alertNouveauStagiaire(prenom, nom, ecole);
+      }
+    } else {
+      console.error('[AJOUT STAGIAIRE] Erreur backend:', data.error);
+      alert('Erreur lors de la création: ' + data.error);
+    }
+  } catch (error) {
+    console.error('[AJOUT STAGIAIRE] Erreur création:', error);
+    
+    // Fallback: sauvegarder dans localStorage et sharedData
+    console.log('[AJOUT STAGIAIRE] Fallback vers localStorage...');
+    
+    const newStagiaire = {
+      id: Date.now(),
+      prenom: prenom,
+      nom: nom,
+      email: email,
+      telephone: telephone,
+      ecole: ecole,
+      formation: formation,
+      departement: departement,
+      debut: debut ? new Date(debut).toLocaleDateString('fr-FR') : '-',
+      fin: fin ? new Date(fin).toLocaleDateString('fr-FR') : '-',
+      statut: 'Accepté',
+      absences: 0,
+      bloque: false,
+      rapport: 'Non déposé',
+      avatar: '#' + Math.floor(Math.random()*16777215).toString(16),
+      cv_url: null,
+      cv_name: null
+    };
+    
+    // Sauvegarder dans localStorage
+    const stagiairesList = JSON.parse(localStorage.getItem('stagiaires') || '[]');
+    stagiairesList.push(newStagiaire);
+    localStorage.setItem('stagiaires', JSON.stringify(stagiairesList));
+    
+    // Sauvegarder dans sharedData
+    if (window.sharedData) {
+      const sharedData = window.sharedData.getData();
+      sharedData.stagiaires.list.push(newStagiaire);
+      sharedData.stagiaires.total = sharedData.stagiaires.list.length;
+      sharedData.stagiaires.actifs = sharedData.stagiaires.list.filter(s => s.statut === 'Accepté').length;
+      window.sharedData.updateData('stagiaires', sharedData.stagiaires);
+      // Synchroniser toutes les données automatiquement
+      window.sharedData.syncAllData();
+    }
+    
+    // Ajouter le stagiaire à new_stagiaires pour générer une alerte
+    const newStagiaires = JSON.parse(localStorage.getItem('new_stagiaires') || '[]');
+    newStagiaires.push({
+      id: newStagiaire.id,
+      prenom: prenom,
+      nom: nom,
+      email: email,
+      telephone: telephone,
+      ecole: ecole,
+      formation: formation,
+      departement: departement,
+      date: new Date().toISOString()
+    });
+    localStorage.setItem('new_stagiaires', JSON.stringify(newStagiaires));
+    
+    // Générer l'alerte immédiatement si alertManager est disponible
+    if (window.alertManager) {
+      window.alertManager.checkNewStagiaires();
+    }
+    
+    // Fermer le modal
+    closeModal();
+    
+    // Recharger depuis localStorage
+    loadStagiairesFromLocalStorage();
+    
+    // Message d'avertissement
+    alert(`⚠️ Stagiaire "${prenom} ${nom}" sauvegardé localement (mode hors-ligne).\n\n⚠️ IMPORTANT: Ce stagiaire ne pourra PAS faire de pointage tant qu'il n'est pas créé dans le backend.\n\nVeuillez vérifier votre connexion et réessayer, ou contacter l'administrateur.`);
+  }
+}
+
+function isValidEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+// Fonction pour synchroniser les stagiaires localStorage vers le backend
+async function syncStagiairesToBackend() {
+  console.log('[SYNC] Synchronisation des stagiaires locaux vers le backend...');
+  
+  try {
+    // Récupérer les stagiaires depuis localStorage
+    const localStagiaires = JSON.parse(localStorage.getItem('stagiaires') || '[]');
+    
+    // Récupérer les stagiaires depuis le backend
+    const response = await fetch(`${BACKEND_URL}/api/auth/stagiaires/`);
+    const data = await response.json();
+    
+    if (data.success) {
+      const backendStagiaires = data.stagiaires || [];
+      const backendEmails = new Set(backendStagiaires.map(s => s.email));
+      
+      // Trouver les stagiaires qui sont dans localStorage mais pas dans le backend
+      const toSync = localStagiaires.filter(s => !backendEmails.has(s.email));
+      
+      if (toSync.length === 0) {
+        console.log('[SYNC] Tous les stagiaires sont synchronisés');
+        return;
+      }
+      
+      console.log(`[SYNC] ${toSync.length} stagiaire(s) à synchroniser`);
+      
+      // Synchroniser chaque stagiaire
+      for (const stagiaire of toSync) {
+        try {
+          const syncResponse = await fetch(`${BACKEND_URL}/api/auth/stagiaire/creer/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: stagiaire.email,
+              first_name: stagiaire.prenom,
+              last_name: stagiaire.nom,
+              phone: stagiaire.telephone || '',
+              ecole: stagiaire.ecole || '',
+              formation: stagiaire.formation || '',
+              departement: stagiaire.departement || '',
+              date_debut_stage: stagiaire.debut !== '-' ? new Date(stagiaire.debut).toISOString().split('T')[0] : null,
+              date_fin_stage: stagiaire.fin !== '-' ? new Date(stagiaire.fin).toISOString().split('T')[0] : null
+            })
+          });
+          
+          const syncData = await syncResponse.json();
+          if (syncData.success) {
+            console.log(`[SYNC] ✅ ${stagiaire.prenom} ${stagiaire.nom} synchronisé`);
+          } else {
+            console.error(`[SYNC] ❌ Erreur sync ${stagiaire.prenom} ${stagiaire.nom}:`, syncData.error);
+          }
+        } catch (error) {
+          console.error(`[SYNC] ❌ Erreur sync ${stagiaire.prenom} ${stagiaire.nom}:`, error);
+        }
+      }
+      
+      // Recharger depuis l'API après synchronisation
+      await loadStagiaires();
+      
+    }
+  } catch (error) {
+    console.error('[SYNC] Erreur lors de la synchronisation:', error);
+  }
+}
+
+// Ajouter un bouton de synchronisation dans l'interface
+function addSyncButton() {
+  const header = document.querySelector('.topbar');
+  if (header && !document.getElementById('syncBtn')) {
+    const syncBtn = document.createElement('button');
+    syncBtn.id = 'syncBtn';
+    syncBtn.textContent = '🔄 Sync Backend';
+    syncBtn.style.cssText = 'background:var(--primary);color:white;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:12px;margin-left:10px;';
+    syncBtn.onclick = syncStagiairesToBackend;
+    header.appendChild(syncBtn);
+  }
+}
+
+// Générer des alertes pour les stagiaires existants qui n'ont pas d'alerte
+function generateAlertsForExistingStagiaires() {
+  console.log('[ALERTES] Génération d\'alertes pour les stagiaires existants...');
+  
+  try {
+    const stagiairesList = JSON.parse(localStorage.getItem('stagiaires') || '[]');
+    const existingAlerts = window.alertManager ? window.alertManager.getSystemAlerts() : [];
+    const newStagiaires = JSON.parse(localStorage.getItem('new_stagiaires') || '[]');
+    
+    // Trouver les stagiaires qui n'ont pas d'alerte de type 'nouveau'
+    const stagiairesWithoutAlert = stagiairesList.filter(s => {
+      return !existingAlerts.some(a => 
+        a.category === 'nouveau' && 
+        a.message.includes(s.prenom) && 
+        a.message.includes(s.nom)
+      );
+    });
+    
+    console.log(`[ALERTES] ${stagiairesWithoutAlert.length} stagiaires sans alerte`);
+    
+    // Ajouter ces stagiaires à new_stagiaires pour générer les alertes
+    stagiairesWithoutAlert.forEach(s => {
+      newStagiaires.push({
+        id: s.id,
+        prenom: s.prenom,
+        nom: s.nom,
+        email: s.email,
+        telephone: s.telephone,
+        ecole: s.ecole,
+        formation: s.formation,
+        departement: s.departement,
+        date: new Date().toISOString()
+      });
+    });
+    
+    localStorage.setItem('new_stagiaires', JSON.stringify(newStagiaires));
+    
+    // Générer les alertes
+    if (window.alertManager) {
+      window.alertManager.checkNewStagiaires();
+      alert(`✅ ${stagiairesWithoutAlert.length} alerte(s) générée(s) pour les stagiaires existants`);
+    } else {
+      alert('⚠️ AlertManager non disponible');
+    }
+  } catch (error) {
+    console.error('[ALERTES] Erreur génération alertes:', error);
+    alert('Erreur lors de la génération des alertes: ' + error.message);
+  }
+}
+
+function showErrorMessage(message) {
+  // Créer l'élément de message d'erreur s'il n'existe pas
+  let errorMessage = document.getElementById('errorMessage');
+  if (!errorMessage) {
+    errorMessage = document.createElement('div');
+    errorMessage.id = 'errorMessage';
+    errorMessage.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, #FF5757, #E74C3C);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(255, 87, 87, 0.3);
+      z-index: 10000;
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transform: translateX(400px);
+      transition: transform 0.3s ease;
+      max-width: 350px;
+      white-space: pre-line;
+    `;
+    errorMessage.innerHTML = '<span style="font-size: 18px;">&#10005;</span><span id="errorMessageText"></span>';
+    document.body.appendChild(errorMessage);
+  }
+  
+  // Mettre à jour le message et afficher
+  document.getElementById('errorMessageText').textContent = message;
+  errorMessage.style.transform = 'translateX(0)';
+  
+  // Masquer automatiquement après 5 secondes
+  setTimeout(() => {
+    errorMessage.style.transform = 'translateX(400px)';
+    setTimeout(() => {
+      if (errorMessage.parentNode) {
+        errorMessage.parentNode.removeChild(errorMessage);
+      }
+    }, 300);
+  }, 5000);
+}
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', function() {
+  // Vérifier les droits d'accès et filtrer la navigation
+  const currentUser = checkRoleAccess();
+  filterNavByRole();
+  
+  loadStagiaires();
+  addSyncButton();
+  
+  // Modal event listeners
+  document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+  document.getElementById('viewModalOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeViewModal(); });
+  document.getElementById('deleteModalOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeDeleteModal(); });
+  
+  // Keyboard shortcuts
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (document.getElementById('viewModalOverlay').classList.contains('show')) closeViewModal();
+      else if (document.getElementById('deleteModalOverlay').classList.contains('show')) closeDeleteModal();
+      else if (document.getElementById('modalOverlay').classList.contains('show')) closeModal();
+    }
+  });
+  
+  // Écouter les mises à jour de données (désactivé pour éviter la boucle infinie)
+  // window.addEventListener('dataUpdated', (event) => {
+  //   if (event.detail.section === 'stagiaires') {
+  //     loadStagiaires();
+  //   }
+  // });
+});
+</script>
+</body>
+</html>

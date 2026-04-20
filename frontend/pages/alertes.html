@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orchid Island — Alertes</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07070A; --sidebar: #24272B; --card: #24272B; --border: #4A525A;
+    --text: #F0F4F8; --muted: #B8C5D6; --primary: #004BA8; --primary-light: #3E78B2;
+    --green: #27AE60; --red: #E74C3C; --orange: #F39C12; --purple: #8E44AD;
+  }
+  /* Animated background */
+  .bg-orbs {
+    position: fixed; inset: 0; z-index: 0;
+    pointer-events: none;
+  }
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.15;
+    animation: float 8s ease-in-out infinite;
+  }
+  .orb-1 { width: 500px; height: 500px; background: radial-gradient(circle, #004BA8, transparent); top: -100px; right: -100px; animation-delay: 0s; }
+  .orb-2 { width: 400px; height: 400px; background: radial-gradient(circle, #3E78B2, transparent); bottom: -80px; left: 10%; animation-delay: 3s; }
+  .orb-3 { width: 300px; height: 300px; background: radial-gradient(circle, #4A525A, transparent); top: 50%; left: 30%; animation-delay: 5s; }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-30px) scale(1.05); }
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; font-size: 14px; }
+  .sidebar { width: 240px; background: linear-gradient(135deg, #24272B 0%, #07070A 50%, #1A1F2E 100%); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; bottom: 0; }
+  .sidebar-logo { padding: 24px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+  .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; }
+  .logo-sub { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+  .nav-section { padding: 16px 12px 8px; }
+  .nav-label { font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; padding: 0 8px; margin-bottom: 6px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; color: var(--muted); cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-size: 13px; margin-bottom: 2px; position: relative; overflow: hidden; }
+  .nav-item::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0,75,168,0.1), transparent);
+    transition: left 0.5s;
+  }
+  .nav-item:hover::before { left: 100%; }
+  .nav-item:hover { background: rgba(0,75,168,0.08); color: var(--text); transform: translateX(5px); }
+  .nav-item.active { background: linear-gradient(135deg, rgba(0,75,168,0.15), rgba(62,120,178,0.1)); color: var(--primary-light); font-weight: 600; border: 1px solid rgba(0,75,168,0.2); box-shadow: 0 4px 20px rgba(0,75,168,0.2); }
+  .nav-badge { margin-left: auto; background: var(--red); color: white; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 20px; }
+  .main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; }
+  .topbar { height: 60px; background: linear-gradient(135deg, #24272B 0%, #1A1F2E 100%); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; position: sticky; top: 0; z-index: 50; backdrop-filter: blur(10px); }
+  .topbar-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; }
+  .content { padding: 28px; flex: 1; overflow-y: auto; }
+  
+  /* Alertes styles */
+  .alertes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  .alertes-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .alertes-stats {
+    display: flex;
+    gap: 16px;
+  }
+  .stat-card {
+    background: linear-gradient(135deg, var(--card), #1A1F2E);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    min-width: 140px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light), var(--primary));
+    animation: shimmer 2s linear infinite;
+  }
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  .stat-card:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 15px 40px rgba(0,75,168,0.3); border-color: var(--primary-light); }
+  .stat-number {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .stat-label {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .alertes-filters {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .filter-btn {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, var(--card), #1A1F2E);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+  }
+  .filter-btn.active {
+    background: linear-gradient(135deg, rgba(0,75,168,0.15), rgba(62,120,178,0.1));
+    border-color: var(--primary-light);
+    color: var(--primary-light);
+    font-weight: 600;
+    box-shadow: 0 4px 20px rgba(0,75,168,0.2);
+  }
+  .filter-btn:hover:not(.active) {
+    border-color: rgba(0,75,168,0.3);
+    color: var(--text);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,75,168,0.2);
+  }
+  .alertes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .alerte-card {
+    background: linear-gradient(135deg, var(--card), #1A1F2E);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+  }
+  .alerte-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light), var(--primary));
+    animation: shimmer 3s linear infinite;
+  }
+  .alerte-card:hover { transform: translateY(-3px) scale(1.01); box-shadow: 0 15px 40px rgba(0,75,168,0.3); border-color: var(--primary-light); }
+  .alerte-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+  .alerte-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: #050A14;
+  }
+  .user-info {
+    flex: 1;
+  }
+  .user-name {
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+  .user-role {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .alerte-badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .badge-critique {
+    background: rgba(255,87,87,0.12);
+    color: var(--red);
+  }
+  .badge-avertissement {
+    background: rgba(245,188,76,0.12);
+    color: var(--gold);
+  }
+  .badge-info {
+    background: rgba(77,159,255,0.12);
+    color: var(--blue);
+  }
+  .alerte-time {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .alerte-message {
+    color: var(--text);
+    line-height: 1.4;
+    margin-bottom: 12px;
+  }
+  .alerte-actions {
+    display: flex;
+    gap: 8px;
+  }
+  .action-btn {
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .action-btn:hover {
+    border-color: var(--blue);
+    color: var(--blue);
+  }
+  .btn-resolved {
+    background: rgba(34,211,160,0.12);
+    color: var(--green);
+    border-color: rgba(34,211,160,0.3);
+  }
+  .btn-dismiss {
+    background: rgba(90,112,144,0.12);
+    color: var(--muted);
+    border-color: rgba(90,112,144,0.3);
+  }
+
+  /* Sidebar footer styles */
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 16px 12px;
+    border-top: 1px solid var(--border);
+  }
+  .user-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.02);
+  }
+  .user-avatar {
+    width: 32px; height: 32px;
+    background: var(--gold);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #050A14;
+  }
+  .user-name { font-size: 13px; font-weight: 500; }
+  .user-role { font-size: 11px; color: var(--muted); }
+</style>
+<script src="../auth_roles.js"></script>
+</head>
+<body>
+<div class="bg-orbs">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div><div class="logo-text">Orchid Island</div><div class="logo-sub">REAL ESTATE RH</div></div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Principal</div>
+    <div class="nav-item" onclick="navigateTo('dashboard.html')">Tableau de Bord</div>
+    <div class="nav-item" onclick="navigateTo('stagiaires.html')">Stagiaires <span class="nav-badge" id="badgeStagiaires">0</span></div>
+    <div class="nav-item" onclick="navigateTo('projets.html')">Projets</div>
+    <div class="nav-item" onclick="navigateTo('taches.html')">Tâches</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Gestion</div>
+    <div class="nav-item" onclick="navigateTo('pointage_qr.html')">Pointage QR</div>
+    <div class="nav-item" onclick="navigateTo('rapports.html')">Rapports <span class="nav-badge" id="badgeRapports">0</span></div>
+    <div class="nav-item active" onclick="navigateTo('alertes.html')">Alertes <span class="nav-badge" id="badgeAlertes">0</span></div>
+  </div>
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar" id="userAvatar">Admin</div>
+      <div>
+        <div class="user-name" id="userName">Admin Orchid</div>
+        <div class="user-role" id="userRole">Administrateur</div>
+        <div class="user-email" id="userEmail" style="font-size: 11px; color: var(--muted); margin-top: 2px;">admin@orchid-island.com</div>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="logout()" style="width: 100%; padding: 8px; background: rgba(255,87,87,0.1); border: 1px solid rgba(255,87,87,0.3); border-radius: 6px; color: var(--red); font-size: 12px; cursor: pointer; margin-top: 8px; transition: all 0.2s;">
+      <span>Logout</span> Déconnexion
+    </button>
+  </div>
+</div>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">🔔 Alertes Actives</div>
+  </div>
+  <div class="content">
+    <div class="alertes-header">
+      <div class="alertes-title">Alertes</div>
+      <div class="alertes-stats">
+        <div class="stat-card">
+          <div class="stat-number" id="totalAlertes">0</div>
+          <div class="stat-label">Total alertes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="unreadAlertes" style="color: var(--red)">0</div>
+          <div class="stat-label">Non lues</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="criticalAlertes" style="color: var(--gold)">0</div>
+          <div class="stat-label">Critiques</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="infoAlertes" style="color: var(--blue);">0</div>
+          <div class="stat-label">Info</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="alertes-filters">
+      <button class="filter-btn active" onclick="filterAlertes('toutes')">Voir tout</button>
+      <button class="filter-btn" onclick="filterAlertes('critiques')">🚫 Critiques</button>
+      <button class="filter-btn" onclick="filterAlertes('avertissements')">⚠️ Avertissements</button>
+      <button class="filter-btn" onclick="filterAlertes('info')">📁 Info</button>
+    </div>
+
+    <div class="alertes-list" id="alertesList">
+      <!-- Les alertes seront générées dynamiquement par JavaScript -->
+    </div>
+  </div>
+</div>
+
+<!-- Modal pour gérer une absence -->
+<div id="absenceModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(5,10,20,0.9);z-index:1000;align-items:center;justify-content:center">
+  <div style="background:linear-gradient(145deg, #0B1322, #0F1A2D);border:1px solid var(--border);border-radius:20px;padding:30px;max-width:500px;width:90%;box-shadow:0 25px 50px rgba(0,0,0,0.5)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--gold)">⚠️ Absence détectée</div>
+      <button onclick="closeAbsenceModal()" style="background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer">×</button>
+    </div>
+    
+    <div id="absenceModalContent" style="margin-bottom:25px;color:var(--text)">
+      <!-- Contenu dynamique -->
+    </div>
+    
+    <div style="margin-bottom:20px">
+      <div style="font-weight:600;margin-bottom:15px;color:var(--text)">Cette personne a-t-elle une justification ?</div>
+      <div style="display:flex;gap:15px">
+        <button onclick="showJustificationUpload(true)" id="btnHasJustif" style="flex:1;padding:15px;border:2px solid var(--border);border-radius:12px;background:transparent;color:var(--text);cursor:pointer;transition:all 0.2s">
+          <div style="font-size:24px;margin-bottom:5px">✅</div>
+          <div style="font-weight:600">Oui</div>
+          <div style="font-size:12px;color:var(--muted)">Justification disponible</div>
+        </button>
+        <button onclick="showJustificationUpload(false)" id="btnNoJustif" style="flex:1;padding:15px;border:2px solid var(--border);border-radius:12px;background:transparent;color:var(--text);cursor:pointer;transition:all 0.2s">
+          <div style="font-size:24px;margin-bottom:5px">❌</div>
+          <div style="font-weight:600">Non</div>
+          <div style="font-size:12px;color:var(--muted)">Absence non justifiée</div>
+        </button>
+      </div>
+    </div>
+    
+    <div id="justificationUploadSection" style="display:none;margin-bottom:20px">
+      <div style="font-weight:600;margin-bottom:10px;color:var(--text)">Déposer la justification (PDF)</div>
+      <div style="border:2px dashed var(--gold);border-radius:12px;padding:20px;text-align:center;background:rgba(245,188,76,0.05)">
+        <div style="font-size:40px;margin-bottom:10px">📄</div>
+        <div style="color:var(--muted);margin-bottom:10px;font-size:14px">Glissez-déposez un fichier PDF ou Word</div>
+        <input type="file" id="justificationFile" accept=".pdf,.doc,.docx" style="display:none" onchange="handleJustificationFile(this)">
+        <button onclick="document.getElementById('justificationFile').click()" style="background:var(--gold);color:#000;border:none;padding:10px 20px;border-radius:8px;font-weight:600;cursor:pointer">Choisir un fichier</button>
+        <div id="selectedFileName" style="margin-top:10px;color:var(--green);font-size:13px"></div>
+      </div>
+    </div>
+    
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button onclick="closeAbsenceModal()" style="background:transparent;border:1px solid var(--border);color:var(--text);padding:10px 20px;border-radius:8px;cursor:pointer">Annuler</button>
+      <button onclick="confirmAbsenceAction()" id="btnConfirmAbsence" style="background:var(--red);color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:600;cursor:pointer">Confirmer absence</button>
+    </div>
+  </div>
+</div>
+
+<script src="../assets/common.js"></script>
+<script>
+// Fonctions pour la gestion des alertes
+function filterAlertes(type) {
+  document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  const alerts = window.alertManager ? window.alertManager.getSystemAlerts() : [];
+  renderAlertes(alerts, type === 'toutes' ? null : type);
+}
+
+function renderAlertes(alerts, filterType = null) {
+  const container = document.getElementById('alertesList');
+  
+  // Filtrer si nécessaire
+  const filteredAlerts = filterType ? alerts.filter(a => a.type === filterType) : alerts;
+  
+  // Mettre à jour les stats
+  document.getElementById('totalAlertes').textContent = alerts.length;
+  document.getElementById('unreadAlertes').textContent = alerts.filter(a => !a.read).length;
+  document.getElementById('criticalAlertes').textContent = alerts.filter(a => a.type === 'critique').length;
+  document.getElementById('infoAlertes').textContent = alerts.filter(a => a.type === 'info').length;
+  
+  if (filteredAlerts.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)"><div style="font-size:60px;margin-bottom:20px">✅</div><div>Aucune alerte</div></div>';
+    return;
+  }
+  
+  container.innerHTML = filteredAlerts.map(alert => createAlertCard(alert)).join('');
+  
+  // Animation
+  document.querySelectorAll('.alerte-card').forEach((card, i) => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(20px)';
+    setTimeout(() => {
+      card.style.transition = 'all 0.3s ease';
+      card.style.opacity = '1';
+      card.style.transform = 'translateY(0)';
+    }, i * 100);
+  });
+}
+
+function createAlertCard(alert) {
+  const colors = { critique: 'var(--red)', avertissement: 'var(--gold)', info: 'var(--blue)' };
+  const badges = { critique: '🚫 Critique', avertissement: '⚠️ Avertissement', info: '📁 Info' };
+  const initial = alert.nom ? alert.nom[0].toUpperCase() : '📌';
+  const time = new Date(alert.date).toLocaleString('fr-FR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' });
+
+  let actions = `<button class="action-btn btn-resolved" onclick="resolveAlert(${alert.id})">✅ Résolu</button>`;
+  if (alert.requiresJustification) {
+    actions = `<button class="action-btn" style="background:var(--blue);color:white" onclick="justifyAlert(${alert.id})">📄 Justifier</button>
+               <button class="action-btn" style="background:var(--red);color:white" onclick="supprimerAbsenceAlert(${alert.id})">🗑️ Suppr. absence</button>` + actions;
+  }
+  
+  return `
+    <div class="alerte-card" data-type="${alert.type}" style="${alert.read ? 'opacity:0.6' : ''}">
+      <div class="alerte-header">
+        <div class="alerte-user">
+          <div class="user-avatar" style="background:${colors[alert.type]}">${initial}</div>
+          <div class="user-info">
+            <div class="user-name">${alert.nom || 'Système'}</div>
+            <div class="user-role">${alert.category || 'Alerte'}</div>
+          </div>
+        </div>
+        <div class="alerte-badge badge-${alert.type}">${badges[alert.type]}</div>
+      </div>
+      <div class="alerte-time">${time}</div>
+      <div class="alerte-message"><strong>${alert.message}</strong>${alert.details ? ' — ' + alert.details : ''}</div>
+      <div class="alerte-actions">${actions}<button class="action-btn btn-dismiss" onclick="dismissAlert(${alert.id})">🗑️</button></div>
+    </div>
+  `;
+}
+
+function resolveAlert(id) {
+  if (window.alertManager) {
+    // Supprimer automatiquement les alertes non-absence (rapport, info, projet, fin_stage…)
+    const alert = window.alertManager.getSystemAlerts().find(a => String(a.id) === String(id));
+    if (alert && !alert.requiresJustification) {
+      window.alertManager.deleteAlert(id);
+    } else {
+      window.alertManager.markAlertAsRead(id);
+    }
+    refreshAlertes();
+  }
+}
+
+function dismissAlert(id) {
+  if (confirm('Supprimer cette alerte ?')) {
+    if (window.alertManager) {
+      window.alertManager.deleteAlert(id);
+      refreshAlertes();
+    }
+  }
+}
+
+// Variables pour la gestion des absences
+let currentAbsenceAlertId = null;
+let currentAbsenceStagiaireId = null;
+let currentAbsenceStagiaireName = null;
+let selectedJustificationFile = null;
+let hasJustification = false;
+
+// Ouvrir la modal de gestion d'absence
+function justifyAlert(id) {
+  const alert = window.alertManager ? window.alertManager.getSystemAlerts().find(a => a.id === id) : null;
+  if (!alert) return;
+  
+  currentAbsenceAlertId = id;
+  currentAbsenceStagiaireId = alert.stagiaireId;
+  currentAbsenceStagiaireName = alert.nom;
+  selectedJustificationFile = null;
+  hasJustification = false;
+  
+  // Remplir le contenu
+  const content = document.getElementById('absenceModalContent');
+  content.innerHTML = `
+    <div style="display:flex;align-items:center;gap:15px;margin-bottom:15px">
+      <div style="width:50px;height:50px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:20px">⚠️</div>
+      <div>
+        <div style="font-weight:600;font-size:16px">${alert.nom || 'Stagiaire'}</div>
+        <div style="color:var(--muted);font-size:14px">Absent aujourd'hui (${new Date().toLocaleDateString('fr-FR')})</div>
+      </div>
+    </div>
+    <div style="background:rgba(255,87,87,0.1);border-left:3px solid var(--red);padding:12px;border-radius:0 8px 8px 0">
+      <div style="color:var(--red);font-weight:600;margin-bottom:5px">⚠️ Alerte d'absence</div>
+      <div style="font-size:14px">Cette personne est marquée comme absente sans justification. Veuillez indiquer si une justification existe.</div>
+    </div>
+  `;
+  
+  // Reset UI
+  document.getElementById('justificationUploadSection').style.display = 'none';
+  document.getElementById('selectedFileName').textContent = '';
+  document.getElementById('btnHasJustif').style.borderColor = 'var(--border)';
+  document.getElementById('btnNoJustif').style.borderColor = 'var(--border)';
+  document.getElementById('btnConfirmAbsence').textContent = 'Confirmer';
+  document.getElementById('btnConfirmAbsence').style.background = 'var(--muted)';
+  
+  // Afficher la modal
+  document.getElementById('absenceModal').style.display = 'flex';
+}
+
+// Afficher/masquer la section d'upload
+function showJustificationUpload(hasJustif) {
+  hasJustification = hasJustif;
+  const uploadSection = document.getElementById('justificationUploadSection');
+  const btnHas = document.getElementById('btnHasJustif');
+  const btnNo = document.getElementById('btnNoJustif');
+  const btnConfirm = document.getElementById('btnConfirmAbsence');
+  
+  if (hasJustif) {
+    uploadSection.style.display = 'block';
+    btnHas.style.borderColor = 'var(--gold)';
+    btnHas.style.background = 'rgba(245,188,76,0.1)';
+    btnNo.style.borderColor = 'var(--border)';
+    btnNo.style.background = 'transparent';
+    btnConfirm.textContent = 'Déposer justification';
+    btnConfirm.style.background = 'var(--blue)';
+  } else {
+    uploadSection.style.display = 'none';
+    btnHas.style.borderColor = 'var(--border)';
+    btnHas.style.background = 'transparent';
+    btnNo.style.borderColor = 'var(--red)';
+    btnNo.style.background = 'rgba(255,87,87,0.1)';
+    btnConfirm.textContent = 'Confirmer absence non justifiée';
+    btnConfirm.style.background = 'var(--red)';
+  }
+}
+
+// Gérer la sélection de fichier
+function handleJustificationFile(input) {
+  if (input.files && input.files[0]) {
+    selectedJustificationFile = input.files[0];
+    document.getElementById('selectedFileName').textContent = '✅ ' + selectedJustificationFile.name;
+  }
+}
+
+// Confirmer l'action sur l'absence
+async function confirmAbsenceAction() {
+  const BACKEND_URL = 'http://192.168.11.249:8000';
+
+  if (!hasJustification) {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/presences/absence/creer/`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          nom: currentAbsenceStagiaireName.split(' ')[1] || '',
+          prenom: currentAbsenceStagiaireName.split(' ')[0] || '',
+          date: new Date().toISOString().split('T')[0],
+          justifiee: false
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        if (window.alertManager && currentAbsenceAlertId) {
+          window.alertManager.markAlertAsRead(currentAbsenceAlertId);
+        }
+        
+        // Si bloqué, ouvrir WhatsApp automatiquement
+        if (data.bloque && data.whatsapp_url) {
+          alert(`⚠️ ATTENTION: ${currentAbsenceStagiaireName} a été BLOQUÉ automatiquement (${data.nb_absences_nj} absences non justifiées).\n\nUn message WhatsApp va s'ouvrir pour notifier l'admin.`);
+          window.open(data.whatsapp_url, '_blank');
+          
+          // Ajouter alerte de blocage
+          if (window.alertManager) {
+            window.alertManager.addSystemAlert({
+              type: 'critique',
+              category: 'blocage',
+              nom: currentAbsenceStagiaireName,
+              message: `🔒 Compte bloqué: ${currentAbsenceStagiaireName}`,
+              details: `${data.nb_absences_nj} absences non justifiées - Compte bloqué automatiquement`,
+              date: new Date().toISOString(),
+              read: false
+            });
+          }
+        } else {
+          alert(`Absence non justifiée enregistrée (${data.nb_absences_nj}/3)`);
+        }
+      }
+    } catch(e) {
+      alert('Erreur: ' + e.message);
+    }
+    
+    closeAbsenceModal();
+    refreshAlertes();
+    return;
+  }
+
+  // Avec justification
+  if (!selectedJustificationFile) {
+    alert('Veuillez sélectionner un fichier de justification');
+    return;
+  }
+
+  const formData = new FormData();
+  const nameParts = currentAbsenceStagiaireName.split(' ');
+  formData.append('prenom', nameParts[0] || '');
+  formData.append('nom', nameParts[1] || '');
+  formData.append('date', new Date().toISOString().split('T')[0]);
+  formData.append('justification', selectedJustificationFile);
+
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/presences/absence/justification/`, {
+      method: 'POST',
+      body: formData
+    });
+    const data = await response.json();
+
+    if (data.success) {
+      if (window.alertManager && currentAbsenceAlertId) {
+        const alerts = window.alertManager.getSystemAlerts();
+        const alerte = alerts.find(a => String(a.id) === String(currentAbsenceAlertId));
+        if (alerte) {
+          alerte.justifiee = true;
+          alerte.read = true;
+          alerte.message = alerte.message.replace('Absence détectée', 'Absence justifiée');
+          alerte.details = `Justification déposée le ${new Date().toLocaleDateString('fr-FR')}`;
+          alerte.requiresJustification = false;
+          window.alertManager.saveSystemAlerts(alerts);
+          window.alertManager.updateAlertesBadge();
+        }
+      }
+
+      // ✅ NOUVEAU — Stocker la justification
+      const todayKey = new Date().toISOString().split('T')[0];
+      const justifiedKey = `absent_justifie_${todayKey}`;
+      const justified = JSON.parse(localStorage.getItem(justifiedKey) || '[]');
+      if (!justified.includes(currentAbsenceStagiaireName)) {
+        justified.push(currentAbsenceStagiaireName);
+        localStorage.setItem(justifiedKey, JSON.stringify(justified));
+      }
+
+      // ✅ NOUVEAU — Appeler le backend pour décrémenter les absences NJ
+      try {
+        const nameParts = currentAbsenceStagiaireName.split(' ');
+        await fetch(`${BACKEND_URL}/api/presences/absence/justifier/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prenom: nameParts[0] || '',
+            nom: nameParts.slice(1).join(' ') || '',
+            date: todayKey
+          })
+        });
+      } catch(e) {
+        console.error('Erreur décrémentation absences NJ:', e);
+      }
+
+      // ✅ NOUVEAU — Mettre à jour stagiaires dans localStorage (décrémenter absences)
+      try {
+        const stagiaires = JSON.parse(localStorage.getItem('stagiaires') || '[]');
+        const nameParts = currentAbsenceStagiaireName.split(' ');
+        const prenom = nameParts[0] || '';
+        const nom = nameParts.slice(1).join(' ') || '';
+        const idx = stagiaires.findIndex(s =>
+          (s.prenom && s.prenom.toLowerCase() === prenom.toLowerCase() &&
+           s.nom && s.nom.toLowerCase() === nom.toLowerCase()) ||
+          s.email === (alerte && alerte.email ? alerte.email : '')
+        );
+        if (idx !== -1 && stagiaires[idx].absences > 0) {
+          stagiaires[idx].absences = Math.max(0, stagiaires[idx].absences - 1);
+          localStorage.setItem('stagiaires', JSON.stringify(stagiaires));
+          console.log('[JUSTIF] Absences NJ décrémentées pour:', currentAbsenceStagiaireName);
+        }
+      } catch(e) {
+        console.error('Erreur MAJ localStorage stagiaires:', e);
+      }
+
+      alert('✅ Justification déposée');
+      closeAbsenceModal();
+      refreshAlertes();
+    }
+  } catch(e) {
+    alert('Erreur: ' + e.message);
+  }
+}
+
+// Nouvelle fonction supprimerAbsenceAlert
+async function supprimerAbsenceAlert(alertId) {
+  if (!confirm('Supprimer cette absence du système ?')) return;
+  const BACKEND_URL = 'http://192.168.11.249:8000';
+  const alert = window.alertManager.getSystemAlerts().find(a => a.id === alertId);
+  if (!alert || !alert.absenceBackendId) {
+    window.alertManager.deleteAlert(alertId);
+    refreshAlertes();
+    return;
+  }
+  await fetch(`${BACKEND_URL}/api/presences/absence/${alert.absenceBackendId}/`, { method: 'DELETE' });
+  window.alertManager.deleteAlert(alertId);
+  refreshAlertes();
+}
+
+// Fermer la modal
+function closeAbsenceModal() {
+  document.getElementById('absenceModal').style.display = 'none';
+  currentAbsenceAlertId = null;
+  currentAbsenceStagiaireId = null;
+  currentAbsenceStagiaireName = null;
+  selectedJustificationFile = null;
+  hasJustification = false;
+  document.getElementById('justificationFile').value = '';
+}
+
+function refreshAlertes() {
+  if (window.alertManager) {
+    renderAlertes(window.alertManager.getSystemAlerts());
+  }
+}
+
+// Initialisation
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('[ALERTES] Initialisation de la page alertes...');
+  
+  // Vérifier les droits d'accès et filtrer la navigation
+  const currentUser = checkRoleAccess();
+  filterNavByRole();
+  
+  // Attendre que alertManager soit disponible
+  const initAlertes = function() {
+    if (window.alertManager) {
+      console.log('[ALERTES] alertManager trouvé, chargement des alertes...');
+      // Ne pas appeler generateDailyAlerts ici pour éviter les doublons
+      // Les alertes sont générées en temps réel lors des actions
+      const alerts = window.alertManager.getSystemAlerts();
+      console.log('[ALERTES] Nombre d\'alertes chargées:', alerts.length);
+      renderAlertes(alerts);
+      
+      // Écouter les événements de mise à jour des données
+      window.addEventListener('dataUpdated', (event) => {
+        if (event.detail && event.detail.section === 'alertes') {
+          console.log('[ALERTES] Événement dataUpdated reçu pour alertes');
+          const alerts = window.alertManager.getSystemAlerts();
+          renderAlertes(alerts);
+        }
+      });
+    } else {
+      console.warn('[ALERTES] alertManager non disponible, attente...');
+      setTimeout(initAlertes, 500);
+    }
+  };
+  
+  initAlertes();
+});
+</script>
+</body>
+</html>

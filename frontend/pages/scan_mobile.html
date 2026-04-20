@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Orchid Island - Pointage</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07070A;
+    --card: #13171F;
+    --border: #2A3140;
+    --text: #F0F4F8;
+    --muted: #8899AA;
+    --green: #22C55E;
+    --orange: #F97316;
+    --blue: #3B82F6;
+    --red: #EF4444;
+    --gold: #F5BC4C;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0;
+  }
+
+  .bg-grad {
+    position: fixed; inset: 0; z-index: 0;
+    background: radial-gradient(ellipse at top, #0D1A2E 0%, #07070A 60%);
+    pointer-events: none;
+  }
+  .bg-glow {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.2;
+    pointer-events: none;
+  }
+  .glow-1 { width: 300px; height: 300px; background: var(--blue); top: -80px; right: -60px; animation: pulse 4s ease-in-out infinite; }
+  .glow-2 { width: 250px; height: 250px; background: var(--green); bottom: 100px; left: -80px; animation: pulse 4s ease-in-out infinite 2s; }
+  @keyframes pulse { 0%,100%{opacity:0.15;transform:scale(1);} 50%{opacity:0.25;transform:scale(1.1);} }
+
+  .container {
+    width: 100%;
+    max-width: 440px;
+    padding: 24px 20px 40px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 28px;
+    animation: fadeDown 0.5s ease;
+  }
+  .logo-wrap {
+    width: 64px; height: 64px;
+    background: linear-gradient(135deg, #004BA8, #3E78B2);
+    border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    margin: 0 auto 14px;
+    box-shadow: 0 12px 40px rgba(0,75,168,0.4);
+  }
+  .brand-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #F5BC4C, #FFD97D);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 4px;
+  }
+  .brand-sub { font-size: 12px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+
+  .type-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.5s ease 0.1s both;
+  }
+  .type-btn {
+    padding: 14px 10px;
+    border-radius: 14px;
+    border: 2px solid var(--border);
+    background: var(--card);
+    color: var(--muted);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .type-btn .type-icon { font-size: 24px; }
+  .type-btn.active-entree {
+    border-color: var(--green);
+    background: rgba(34,197,94,0.1);
+    color: var(--green);
+    box-shadow: 0 0 0 1px rgba(34,197,94,0.2), 0 8px 24px rgba(34,197,94,0.15);
+  }
+  .type-btn.active-sortie {
+    border-color: var(--orange);
+    background: rgba(249,115,22,0.1);
+    color: var(--orange);
+    box-shadow: 0 0 0 1px rgba(249,115,22,0.2), 0 8px 24px rgba(249,115,22,0.15);
+  }
+
+  .form-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px 20px;
+    margin-bottom: 16px;
+    animation: fadeUp 0.5s ease 0.2s both;
+  }
+  .form-card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .form-group { margin-bottom: 16px; }
+  .form-group:last-child { margin-bottom: 0; }
+  .form-label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .form-input {
+    width: 100%;
+    padding: 15px 16px;
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    outline: none;
+    transition: all 0.2s;
+    -webkit-appearance: none;
+  }
+  .form-input:focus {
+    border-color: var(--blue);
+    background: rgba(59,130,246,0.05);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+  }
+  .form-input::placeholder { color: var(--muted); }
+
+  .datetime-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .btn-submit {
+    width: 100%;
+    padding: 18px;
+    border-radius: 16px;
+    border: none;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    animation: fadeUp 0.5s ease 0.3s both;
+    -webkit-appearance: none;
+    letter-spacing: 0.3px;
+  }
+  .btn-submit.entree {
+    background: linear-gradient(135deg, #16A34A, #22C55E);
+    color: white;
+    box-shadow: 0 8px 30px rgba(34,197,94,0.35);
+  }
+  .btn-submit.sortie {
+    background: linear-gradient(135deg, #EA580C, #F97316);
+    color: white;
+    box-shadow: 0 8px 30px rgba(249,115,22,0.35);
+  }
+  .btn-submit:active { transform: scale(0.97); }
+  .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .success-screen {
+    display: none;
+    text-align: center;
+    padding: 40px 20px;
+    animation: fadeUp 0.5s ease;
+  }
+  .success-icon {
+    width: 88px; height: 88px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 42px;
+    margin: 0 auto 20px;
+    animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .success-icon.entree { background: rgba(34,197,94,0.15); box-shadow: 0 0 0 8px rgba(34,197,94,0.08); }
+  .success-icon.sortie { background: rgba(249,115,22,0.15); box-shadow: 0 0 0 8px rgba(249,115,22,0.08); }
+  @keyframes popIn { from{transform:scale(0.5);opacity:0;} to{transform:scale(1);opacity:1;} }
+  .success-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+  .success-subtitle { font-size: 14px; color: var(--muted); margin-bottom: 28px; line-height: 1.5; }
+
+  .summary-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: left;
+    margin-bottom: 20px;
+  }
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 14px;
+  }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-label { color: var(--muted); font-size: 12px; }
+  .summary-value { font-weight: 600; text-align: right; }
+
+  .wa-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 20px;
+  }
+  .wa-status.sent { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.25); color: var(--green); }
+  .wa-status.pending { background: rgba(245,188,76,0.1); border: 1px solid rgba(245,188,76,0.25); color: var(--gold); }
+  .wa-icon { font-size: 22px; }
+  
+  .wa-button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 20px;
+    background: rgba(37,211,102,0.1);
+    border: 1px solid rgba(37,211,102,0.25);
+    color: var(--green);
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .wa-button:hover {
+    background: rgba(37,211,102,0.2);
+    transform: translateY(-2px);
+  }
+
+  .btn-new {
+    width: 100%;
+    padding: 15px;
+    border-radius: 14px;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    -webkit-appearance: none;
+  }
+  .btn-new:active { background: rgba(255,255,255,0.04); }
+
+  .spinner {
+    width: 20px; height: 20px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-16px);} to{opacity:1;transform:translateY(0);} }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(16px);} to{opacity:1;transform:translateY(0);} }
+
+  .time-display {
+    text-align: center;
+    margin-bottom: 20px;
+    animation: fadeUp 0.5s ease 0.15s both;
+  }
+  .time-big {
+    font-family: 'Syne', sans-serif;
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--text);
+  }
+  .date-small { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+  /* Navigation Bar */
+  .nav-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+  }
+  
+  .nav-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 500;
+    transition: all 0.2s;
+    padding: 4px 12px;
+    border-radius: 8px;
+  }
+  
+  .nav-link.active {
+    color: var(--blue);
+    background: rgba(59,130,246,0.1);
+  }
+  
+  .nav-link:hover {
+    color: var(--text);
+    background: rgba(255,255,255,0.05);
+  }
+  
+  .nav-icon {
+    font-size: 18px;
+    line-height: 1;
+  }
+  
+  .nav-text {
+    line-height: 1;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  /* Adjust container padding for bottom nav */
+  .container {
+    padding-bottom: 80px;
+  }
+</style>
+<script src="../auth_roles.js"></script>
+</head>
+<body>
+<div class="bg-grad"></div>
+<div class="bg-glow glow-1"></div>
+<div class="bg-glow glow-2"></div>
+
+<!-- Navigation -->
+  <div class="nav-bar">
+    <a href="dashboard.html" class="nav-link">
+      <span class="nav-icon">?</span>
+      <span class="nav-text">Accueil</span>
+    </a>
+    <a href="pointage_qr.html" class="nav-link active">
+      <span class="nav-icon">?</span>
+      <span class="nav-text">Pointage</span>
+    </a>
+    <a href="stagiaires.html" class="nav-link">
+      <span class="nav-icon">?</span>
+      <span class="nav-text">Stagiaires</span>
+    </a>
+  </div>
+
+<div class="container">
+  <div id="formScreen">
+    <div class="header">
+      <div class="logo-wrap">OI</div>
+      <div class="brand-name">Orchid Island</div>
+      <div class="brand-sub">Pointage - Real Estate RH</div>
+    </div>
+
+    <div class="time-display">
+      <div class="time-big" id="clock">--:--:--</div>
+      <div class="date-small" id="dateDisplay"></div>
+    </div>
+
+    <div class="type-selector">
+      <button class="type-btn active-entree" id="btnEntree" onclick="selectType('entree')">
+        <span class="type-icon">+</span>
+        Entrée
+      </button>
+      <button class="type-btn" id="btnSortie" onclick="selectType('sortie')">
+        <span class="type-icon">-</span>
+        Sortie
+      </button>
+    </div>
+
+    <div class="form-card">
+      <div class="form-card-title">Informations du Stagiaire</div>
+
+      <div class="form-group">
+        <label class="form-label">Nom de famille</label>
+        <input type="text" id="nom" class="form-input" placeholder="Ex: Amrani" autocomplete="family-name" autocapitalize="words">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Prénom</label>
+        <input type="text" id="prenom" class="form-input" placeholder="Ex: Youssef" autocomplete="given-name" autocapitalize="words">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" id="email" class="form-input" placeholder="Ex: stagiaire@example.com" autocomplete="email">
+      </div>
+    </div>
+
+    <button class="btn-submit entree" id="btnSubmit" onclick="submitPointage()">
+      <span id="btnIcon">✓</span>
+      <span id="btnText">Confirmer l'Entrée</span>
+    </button>
+  </div>
+
+  <div class="success-screen" id="successScreen">
+    <div class="success-icon entree" id="successIcon">✓</div>
+    <div class="success-title" id="successTitle">Pointage Enregistré !</div>
+    <div class="success-subtitle" id="successSubtitle">Votre pointage a été enregistré avec succès.</div>
+
+    <div class="summary-card" id="summaryCard"></div>
+
+    <div class="wa-status sent" id="waStatus">
+      <span class="wa-icon">✓</span>
+      <div>
+        <strong>WhatsApp envoyé</strong><br>
+        <span style="font-size:12px;opacity:0.8">Message envoyé au responsable RH</span>
+      </div>
+    </div>
+
+    <button class="btn-new" onclick="resetForm()">Nouveau Pointage</button>
+  </div>
+</div>
+
+<script>
+  // Vérifier les droits d'accès (stagiaire uniquement)
+  const currentUser = checkRoleAccess();
+  
+  let currentType = 'entree';
+  const WA_NUMBER = '212681314877';
+
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('clock').textContent = now.toLocaleTimeString('fr-FR');
+    document.getElementById('dateDisplay').textContent = now.toLocaleDateString('fr-FR', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('dateDebut').value = today;
+  document.getElementById('dateFin').value = today;
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const typeFromUrl = urlParams.get('type');
+  if (typeFromUrl === 'sortie') selectType('sortie');
+
+  function selectType(type) {
+    currentType = type;
+    const btnEntree = document.getElementById('btnEntree');
+    const btnSortie = document.getElementById('btnSortie');
+    const btnSubmit = document.getElementById('btnSubmit');
+    const btnIcon   = document.getElementById('btnIcon');
+    const btnText   = document.getElementById('btnText');
+
+    btnEntree.className = 'type-btn';
+    btnSortie.className = 'type-btn';
+
+    if (type === 'entree') {
+      btnEntree.className = 'type-btn active-entree';
+      btnSubmit.className = 'btn-submit entree';
+      btnIcon.textContent = 'V';
+      btnText.textContent = "Confirmer l'Entrée";
+    } else {
+      btnSortie.className = 'type-btn active-sortie';
+      btnSubmit.className = 'btn-submit sortie';
+      btnIcon.textContent = 'V';
+      btnText.textContent = "Confirmer la Sortie";
+    }
+  }
+
+  function submitPointage() {
+    const nom    = document.getElementById('nom').value.trim();
+    const prenom = document.getElementById('prenom').value.trim();
+    const email  = document.getElementById('email').value.trim() || '';
+
+    if (!nom || !prenom) {
+      shakefield(!nom ? 'nom' : 'prenom');
+      return;
+    }
+
+    const btn = document.getElementById('btnSubmit');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div><span>Envoi en cours...</span>';
+
+    const now = new Date();
+    const heure = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const dateAuj = now.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+    // Vérifier si le stagiaire existe dans la liste
+    const stagiairesList = JSON.parse(localStorage.getItem('stagiaires') || '[]');
+    console.log('[POINTAGE] Liste des stagiaires:', stagiairesList.length, 'stagiaires');
+    console.log('[POINTAGE] Recherche:', nom, prenom);
+    
+    const stagiaireExists = stagiairesList.some(s => {
+      const stagiaireNom = s.nom ? s.nom.trim().toLowerCase() : '';
+      const stagiairePrenom = s.prenom ? s.prenom.trim().toLowerCase() : '';
+      const inputNom = nom.trim().toLowerCase();
+      const inputPrenom = prenom.trim().toLowerCase();
+      
+      const match = stagiaireNom === inputNom && stagiairePrenom === inputPrenom;
+      if (match) {
+        console.log('[POINTAGE] Stagiaire trouvé:', s);
+      }
+      return match;
+    });
+
+    console.log('[POINTAGE] Stagiaire existe:', stagiaireExists);
+
+    const typeLabel = currentType === 'entree' ? 'ARRIVÉE' : 'DÉPART';
+
+    const message = 
+`*Pointage ${typeLabel} - Orchid Island Real Estate*
+
+*Stagiaire :* ${prenom} ${nom}
+
+*Heure de ${currentType === 'entree' ? "l'arrivée" : "départ"} :* ${heure}
+*Date :* ${dateAuj}
+
+Pointage enregistré automatiquement via QR Code
+Orchid Island - Système RH`;
+
+    const waUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(message)}`;
+
+    console.log('URL WhatsApp:', waUrl);
+    console.log('Message:', message);
+    console.log('Stagiaire dans la liste:', stagiaireExists);
+
+    setTimeout(async () => {
+      showSuccess(nom, prenom, heure, dateAuj, waUrl, stagiaireExists);
+
+      // Envoyer les données au backend API
+      try {
+        const pointageData = {
+          nom: nom,
+          prenom: prenom,
+          email: email,
+          type: currentType,
+          heure: heure,
+          wa: true
+        };
+        console.log('Envoi au backend:', pointageData);
+
+        // URL du backend configurée
+        const backendUrl = 'http://192.168.11.249:8000';  // URL du backend Django
+
+        // Utiliser uniquement fetch pour éviter les doublons
+        const response = await fetch(`${backendUrl}/api/presences/pointage/`, {
+          method: 'POST',
+          mode: 'cors',
+          cache: 'no-cache',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify(pointageData)
+        });
+
+        const result = await response.json();
+        console.log('Réponse backend:', result);
+        
+        // Afficher l'écran de succès avec le bouton WhatsApp
+        showSuccess(nom, prenom, heure, dateAuj, result.whatsapp_url, true);
+
+      } catch (error) {
+        console.error('Erreur lors de l\'envoi au backend:', error);
+        alert('✗ Erreur: ' + error.message + '\n\nDétails: Vérifiez que vous êtes sur le même WiFi');
+        // Fallback: sauvegarder localement
+        if (typeof(Storage) !== "undefined") {
+          const logs = JSON.parse(localStorage.getItem('pointageLogs') || '[]');
+          logs.unshift({
+            nom: nom,
+            prenom: prenom,
+            email: email || '',
+            type: currentType,
+            heure: heure,
+            wa: true,
+            timestamp: Date.now()
+          });
+          localStorage.setItem('pointageLogs', JSON.stringify(logs.slice(0, 15)));
+        }
+      }
+    }, 1200);
+  }
+
+  function showSuccess(nom, prenom, heure, dateAuj, waUrl, stagiaireExists) {
+    document.getElementById('formScreen').style.display = 'none';
+    const ss = document.getElementById('successScreen');
+    ss.style.display = 'block';
+
+    const ico   = document.getElementById('successIcon');
+    const title = document.getElementById('successTitle');
+    const sub   = document.getElementById('successSubtitle');
+    ico.className   = `success-icon ${currentType}`;
+    ico.textContent = 'V';
+    title.textContent = currentType === 'entree' ? 'Arrivée Enregistrée !' : 'Départ Enregistré !';
+    sub.textContent   = `Bonjour ${prenom}, votre pointage ${currentType === 'entree' ? "d'entrée" : "de sortie"} a bien été enregistré.`;
+
+    document.getElementById('summaryCard').innerHTML = `
+      <div class="summary-row">
+        <span class="summary-label">Stagiaire</span>
+        <span class="summary-value">${prenom} ${nom}</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Type</span>
+        <span class="summary-value" style="color:${currentType === 'entree' ? 'var(--green)' : 'var(--orange)'}">
+          ${currentType === 'entree' ? 'Entrée' : 'Sortie'}
+        </span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Heure</span>
+        <span class="summary-value" style="font-family:monospace;font-size:16px">${heure}</span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Date</span>
+        <span class="summary-value">${dateAuj}</span>
+      </div>
+    `;
+
+    // Afficher un avertissement si le stagiaire n'est pas dans la liste
+    if (!stagiaireExists) {
+      document.getElementById('waStatus').innerHTML = `
+        <span class="wa-icon" style="background:var(--orange)">⚠️</span>
+        <div>
+          <strong>Stagiaire non reconnu</strong><br>
+          <span style="font-size:12px;opacity:0.8">Ce stagiaire n'est pas dans la liste officielle</span>
+        </div>
+      `;
+      console.log('Stagiaire non reconnu - WhatsApp non envoyé');
+    } else {
+      // Afficher le bouton WhatsApp si le stagiaire est reconnu
+      document.getElementById('waStatus').innerHTML = `
+        <a href="${waUrl}" target="_blank" class="wa-button">
+          <span class="wa-icon">📱</span>
+          <div>
+            <strong>Envoyer WhatsApp</strong><br>
+            <span style="font-size:12px;opacity:0.8">Cliquez pour envoyer le message</span>
+          </div>
+        </a>
+      `;
+      console.log('Bouton WhatsApp affiché');
+    }
+  }
+
+  function resetForm() {
+    document.getElementById('successScreen').style.display = 'none';
+    document.getElementById('formScreen').style.display   = 'block';
+    document.getElementById('nom').value    = '';
+    document.getElementById('prenom').value = '';
+    document.getElementById('email').value  = '';
+    const btn = document.getElementById('btnSubmit');
+    btn.disabled = false;
+    selectType('entree');
+  }
+
+  function shakefield(id) {
+    const el = document.getElementById(id);
+    el.style.borderColor = 'var(--red)';
+    el.style.animation = 'shake 0.4s ease';
+    el.focus();
+    setTimeout(() => {
+      el.style.animation = '';
+      el.style.borderColor = '';
+    }, 500);
+  }
+
+  const s = document.createElement('style');
+  s.textContent = `@keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-8px);}40%{transform:translateX(8px);}60%{transform:translateX(-6px);}80%{transform:translateX(6px);}}`;
+  document.head.appendChild(s);
+  
+</script>
+</body>
+</html>
