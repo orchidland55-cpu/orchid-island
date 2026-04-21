@@ -1,47 +1,41 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "pages/*.html",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "assets/**",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "auth_roles.js",
-      "use": "@vercel/static"
-    }
-  ],
   "routes": [
     {
       "src": "/",
       "dest": "/pages/authentification.html"
     },
     {
-      "src": "/dashboard",
+      "src": "/dashboard.html",
       "dest": "/pages/dashboard.html"
     },
     {
-      "src": "/stagiaires",
+      "src": "/stagiaires.html",
       "dest": "/pages/stagiaires.html"
     },
     {
-      "src": "/alertes",
+      "src": "/alertes.html",
       "dest": "/pages/alertes.html"
     },
     {
-      "src": "/pointage",
+      "src": "/pointage_qr.html",
       "dest": "/pages/pointage_qr.html"
     },
     {
-      "src": "/rapports",
+      "src": "/rapports.html",
       "dest": "/pages/rapports.html"
     },
     {
-      "src": "/scan",
+      "src": "/scan_mobile.html",
       "dest": "/pages/scan_mobile.html"
+    },
+    {
+      "src": "/projets.html",
+      "dest": "/pages/projets.html"
+    },
+    {
+      "src": "/taches.html",
+      "dest": "/pages/taches.html"
     },
     {
       "src": "/(.*)",
