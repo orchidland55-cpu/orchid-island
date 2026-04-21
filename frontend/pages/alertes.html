@@ -401,6 +401,7 @@
   </div>
 </div>
 
+<script src="../assets/config.js"></script>
 <script src="../assets/common.js"></script>
 <script>
 // Fonctions pour la gestion des alertes
@@ -579,7 +580,7 @@ function handleJustificationFile(input) {
 
 // Confirmer l'action sur l'absence
 async function confirmAbsenceAction() {
-  const BACKEND_URL = 'http://192.168.11.249:8000';
+  const BACKEND_URL = window.BACKEND_URL || 'https://orchid-island-api.onrender.com';
 
   if (!hasJustification) {
     try {
@@ -723,7 +724,7 @@ async function confirmAbsenceAction() {
 // Nouvelle fonction supprimerAbsenceAlert
 async function supprimerAbsenceAlert(alertId) {
   if (!confirm('Supprimer cette absence du système ?')) return;
-  const BACKEND_URL = 'http://192.168.11.249:8000';
+  const BACKEND_URL = window.BACKEND_URL || 'https://orchid-island-api.onrender.com';
   const alert = window.alertManager.getSystemAlerts().find(a => a.id === alertId);
   if (!alert || !alert.absenceBackendId) {
     window.alertManager.deleteAlert(alertId);

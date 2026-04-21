@@ -544,6 +544,7 @@
   </div>
 </div>
 
+<script src="../assets/config.js"></script>
 <script src="../assets/common.js"></script>
 <script>
   // Charger les données depuis le système partagé pour synchroniser avec la gestion de projet
@@ -569,7 +570,7 @@
   // Fonction pour mettre à jour les KPIs
   async function updateKPIs() {
     console.log('[KPI] Début de updateKPIs');
-    const BACKEND_URL = 'http://192.168.11.249:8000';
+    const BACKEND_URL = window.BACKEND_URL || 'https://orchid-island-api.onrender.com';
     
     let stagiairesSuccess = false;
     let stagiairesCount = 0;
@@ -752,7 +753,7 @@
   // Fonction pour charger les données depuis le backend
   async function loadBackendData() {
     try {
-      const BACKEND_URL = 'http://192.168.11.249:8000';
+      const BACKEND_URL = window.BACKEND_URL || 'https://orchid-island-api.onrender.com';
       console.log('[BACKEND] Début du chargement des données depuis le backend...');
       
       // Charger les stagiaires
@@ -818,7 +819,7 @@
   // Fonction pour synchroniser les pointages depuis le backend
   async function syncPointagesFromBackend() {
     try {
-      const BACKEND_URL = 'http://192.168.11.249:8000';
+      const BACKEND_URL = window.BACKEND_URL || 'https://orchid-island-api.onrender.com';
       const response = await fetch(`${BACKEND_URL}/api/presences/pointages/`);
       const data = await response.json();
       if (data.success && data.pointages) {

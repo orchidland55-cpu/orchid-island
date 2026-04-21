@@ -374,7 +374,8 @@
     padding-bottom: 80px;
   }
 </style>
-<script src="../auth_roles.js"></script>
+<script src="/assets/config.js"></script>
+<script src="/auth_roles.js"></script>
 </head>
 <body>
 <div class="bg-grad"></div>
@@ -571,10 +572,8 @@ Orchid Island - Système RH`;
     console.log('Message:', message);
     console.log('Stagiaire dans la liste:', stagiaireExists);
 
-    setTimeout(async () => {
-      showSuccess(nom, prenom, heure, dateAuj, waUrl, stagiaireExists);
-
-      // Envoyer les données au backend API
+    // Envoyer les données au backend API immédiatement
+    (async () => {
       try {
         const pointageData = {
           nom: nom,
@@ -586,8 +585,12 @@ Orchid Island - Système RH`;
         };
         console.log('Envoi au backend:', pointageData);
 
-        // URL du backend configurée
-        const backendUrl = 'http://192.168.11.249:8000';  // URL du backend Django
+        // URL du backend configurée via config.js
+        const backendUrl = window.BACKEND_URL || 'http://192.168.11.249:8000';
+
+        console.log('[POINTAGE] URL backend:', backendUrl);
+        console.log('[POINTAGE] Endpoint complet:', `${backendUrl}/api/presences/pointage/`);
+        console.log('[POINTAGE] Données à envoyer:', pointageData);
 
         // Utiliser uniquement fetch pour éviter les doublons
         const response = await fetch(`${backendUrl}/api/presences/pointage/`, {
@@ -601,15 +604,30 @@ Orchid Island - Système RH`;
           body: JSON.stringify(pointageData)
         });
 
+        console.log('[POINTAGE] Response status:', response.status);
+        console.log('[POINTAGE] Response ok:', response.ok);
+        
         const result = await response.json();
-        console.log('Réponse backend:', result);
+        console.log('[POINTAGE] Réponse backend:', result);
+        
+        // Réactiver le bouton
+        const btn = document.getElementById('btnSubmit');
+        btn.disabled = false;
+        btn.innerHTML = '<span id="btnIcon">✓</span><span id="btnText">Confirmer l\'Entrée</span>';
         
         // Afficher l'écran de succès avec le bouton WhatsApp
-        showSuccess(nom, prenom, heure, dateAuj, result.whatsapp_url, true);
+        showSuccess(nom, prenom, heure, dateAuj, result.whatsapp_url || waUrl, true);
 
       } catch (error) {
         console.error('Erreur lors de l\'envoi au backend:', error);
-        alert('✗ Erreur: ' + error.message + '\n\nDétails: Vérifiez que vous êtes sur le même WiFi');
+        
+        // Réactiver le bouton
+        const btn = document.getElementById('btnSubmit');
+        btn.disabled = false;
+        btn.innerHTML = '<span id="btnIcon">✓</span><span id="btnText">Confirmer l\'Entrée</span>';
+        
+        alert('✗ Erreur de connexion au serveur\n\nVeuillez accéder à cette page via:\nhttp://192.168.11.249:8000/scan/\n\nErreur: ' + error.message);
+        
         // Fallback: sauvegarder localement
         if (typeof(Storage) !== "undefined") {
           const logs = JSON.parse(localStorage.getItem('pointageLogs') || '[]');

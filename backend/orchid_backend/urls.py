@@ -16,10 +16,21 @@ def serve_frontend(request, page='pointage_qr.html'):
         return FileResponse(open(file_path, 'rb'))
     return FileResponse(open(os.path.join(frontend_dir, 'pointage_qr.html'), 'rb'))
 
+def serve_frontend_js(request, path):
+    """Sert les fichiers JavaScript du frontend"""
+    frontend_dir = '/Users/mac/Desktop/orchid-island/frontend'
+    file_path = os.path.join(frontend_dir, path)
+    if os.path.exists(file_path):
+        return FileResponse(open(file_path, 'rb'), content_type='application/javascript')
+    return FileResponse(open(os.path.join(frontend_dir, 'assets', path)), content_type='application/javascript')
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/auth/", include('users.urls')),
     path("api/presences/", include('presences.urls')),
+    # Frontend JavaScript files - servir depuis assets/ et racine
+    re_path(r'^assets/(?P<path>[\w\-\.]+\.js)$', serve_frontend_js),
+    re_path(r'^(?P<path>[\w\-\.]+\.js)$', serve_frontend_js),
     # Frontend pages - URL spécifiques
     path("", serve_frontend, name='pointage'),
     path("pointage/", serve_frontend, name='pointage_qr'),

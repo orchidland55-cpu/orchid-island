@@ -9,3 +9,5 @@ python-dotenv
 Pillow
 twilio
 dj-database-url>=2.0.0
+cloudinary
+django-cloudinary-storage
