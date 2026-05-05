@@ -6,9 +6,11 @@ from django.conf import settings
 from django.conf.urls.static import static
 import os
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 def serve_frontend(request, page='pointage_qr.html'):
     """Sert les fichiers HTML du frontend"""
-    frontend_dir = '/Users/mac/Desktop/orchid-island/frontend/pages'
+    frontend_dir = os.path.join(BASE_DIR, '..', 'frontend', 'pages')
     # Sécurité: s'assurer que le fichier demandé est dans le dossier pages
     safe_page = os.path.basename(page)
     file_path = os.path.join(frontend_dir, safe_page)
@@ -18,7 +20,7 @@ def serve_frontend(request, page='pointage_qr.html'):
 
 def serve_frontend_js(request, path):
     """Sert les fichiers JavaScript du frontend"""
-    frontend_dir = '/Users/mac/Desktop/orchid-island/frontend'
+    frontend_dir = os.path.join(BASE_DIR, '..', 'frontend')
     file_path = os.path.join(frontend_dir, path)
     if os.path.exists(file_path):
         return FileResponse(open(file_path, 'rb'), content_type='application/javascript')
