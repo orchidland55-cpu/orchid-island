@@ -1,18 +1,15 @@
 import os
 import dj_database_url
+from dotenv import load_dotenv
 from pathlib import Path
+
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-key-changeme')
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    '.render.com',
-    '.vercel.app',
-    '*',  # temporaire pour les tests
-]
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'orchid-island-api.onrender.com').split(',')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -102,29 +99,26 @@ REST_FRAMEWORK = {
     ],
 }
 
-# CORS — autorise Vercel et localhost
+# CORS — autoriser Vercel
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
+    "https://orchid-island.vercel.app",
+    "https://orchid-island-git-main-mbns10s-projects.vercel.app",
     "http://localhost:5500",
     "http://127.0.0.1:5500",
-    "http://127.0.0.1:8000",
+    "http://192.168.11.215:5500",
+    "http://192.168.11.215:8000",
 ]
-CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^https://.*\.vercel\.app$",
-    r"^https://.*\.render\.com$",
-]
-CORS_ALLOW_ALL_ORIGINS = True  # simplifier pour le déploiement
+CORS_ALLOW_ALL_ORIGINS = DEBUG  # True seulement en dev local
 CORS_ALLOW_CREDENTIALS = True
 
 # Fichiers statiques
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-STATICFILES_DIRS = [
-    BASE_DIR / 'static',
-    BASE_DIR.parent / 'frontend' / 'assets',
-    BASE_DIR.parent / 'frontend',
-]
+STATICFILES_DIRS = []
+for d in [BASE_DIR / 'static']:
+    if d.exists():
+        STATICFILES_DIRS.append(d)
 
 # Fichiers media — Cloudinary en prod
 CLOUDINARY_STORAGE = {

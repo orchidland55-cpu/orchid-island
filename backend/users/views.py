@@ -122,6 +122,7 @@ def lister_stagiaires(request):
                 # ── NOUVEAU ──
                 'absences_non_justifiees': s.absences_non_justifiees,
                 'is_active': s.is_active,
+                'statut': getattr(s, 'statut', 'Accepté'),
             })
         return Response({'success': True, 'stagiaires': data})
     except Exception as e:
@@ -139,16 +140,27 @@ def creer_stagiaire(request):
         return Response({'error': 'Accès refusé. Réservé Admin/RH.'}, status=403)
 
     try:
-        email = request.data.get('email')
+        email = request.data.get('email', '').strip().lower()
         if not email:
             return Response({'success': False, 'error': 'Email requis'}, status=400)
-        if CustomUser.objects.filter(email=email).exists():
-            return Response({'success': False, 'error': 'Cet email est déjà utilisé'}, status=400)
+        # ✅ Vérifier doublon par email (insensible à la casse)
+        if CustomUser.objects.filter(email__iexact=email).exists():
+            return Response({
+                'success': False,
+                'error': f'Un compte avec l\'email {email} existe déjà.'
+            }, status=409)
+
+        password = request.data.get('password', '').strip()
+        if not password:
+            return Response({
+                'success': False,
+                'error': 'Mot de passe requis'
+            }, status=400)
 
         stagiaire = CustomUser.objects.create_user(
             username=email,
             email=email,
-            password='Stagiaire123',
+            password=password,  # ✅ Vrai mot de passe
             first_name=request.data.get('first_name', ''),
             last_name=request.data.get('last_name', ''),
             phone=request.data.get('phone', ''),
@@ -169,6 +181,7 @@ def creer_stagiaire(request):
 
         return Response({
             'success': True,
+            'id': stagiaire.id,
             'message': 'Stagiaire créé avec succès',
             'stagiaire': {'id': stagiaire.id, 'email': stagiaire.email}
         })
@@ -187,23 +200,73 @@ def modifier_stagiaire(request, user_id):
         return Response({'error': 'Accès refusé. Réservé Admin/RH.'}, status=403)
 
     try:
+        import json
+        data = json.loads(request.body)
         stagiaire = CustomUser.objects.get(id=user_id, role='stagiaire')
-        fields = ['first_name', 'last_name', 'phone', 'ecole', 'formation', 'departement']
-        for f in fields:
-            val = request.data.get(f)
-            if val:
-                setattr(stagiaire, f, val)
+        
+        # Champs de base
+        if 'first_name' in data:
+            stagiaire.first_name = data['first_name']
+        if 'last_name' in data:
+            stagiaire.last_name = data['last_name']
+        if 'phone' in data and hasattr(stagiaire, 'phone'):
+            stagiaire.phone = data['phone']
+        if 'ecole' in data and hasattr(stagiaire, 'ecole'):
+            stagiaire.ecole = data['ecole']
+        if 'formation' in data and hasattr(stagiaire, 'formation'):
+            stagiaire.formation = data['formation']
+        if 'departement' in data and hasattr(stagiaire, 'departement'):
+            stagiaire.departement = data['departement']
 
         from datetime import datetime
-        for df in ['date_debut_stage', 'date_fin_stage']:
-            val = request.data.get(df)
-            if val and val != 'null':
-                setattr(stagiaire, df, datetime.strptime(val, '%Y-%m-%d').date())
+
+        def parse_date(d):
+            if not d or d in ('null', '', None):
+                return None
+            # Format YYYY-MM-DD (depuis input date HTML)
+            try:
+                return datetime.strptime(d, '%Y-%m-%d').date()
+            except ValueError:
+                pass
+            # Format DD/MM/YYYY (ancien format FR)
+            try:
+                return datetime.strptime(d, '%d/%m/%Y').date()
+            except ValueError:
+                pass
+            return None
+
+        if 'date_debut_stage' in data:
+            stagiaire.date_debut_stage = parse_date(data['date_debut_stage'])
+        if 'date_fin_stage' in data:
+            stagiaire.date_fin_stage = parse_date(data['date_fin_stage'])
+        
+        # ✅ Gestion du statut
+        statut = data.get('statut', None)
+        if statut:
+            if statut == 'Accepté':
+                stagiaire.is_active = True
+                if hasattr(stagiaire, 'statut'):
+                    stagiaire.statut = 'Accepté'
+            elif statut == 'En attente':
+                stagiaire.is_active = True  # ← Toujours actif, juste en attente
+                if hasattr(stagiaire, 'statut'):
+                    stagiaire.statut = 'En attente'
+            elif statut in ['Refusé', 'Bloqué']:
+                stagiaire.is_active = False
+                if hasattr(stagiaire, 'statut'):
+                    stagiaire.statut = statut
+        
         stagiaire.save()
-        return Response({'success': True, 'message': 'Stagiaire modifié avec succès'})
-    except CustomUser.DoesNotExist:
-        return Response({'success': False, 'error': 'Stagiaire non trouvé'}, status=404)
+        
+        return Response({
+            'success': True,
+            'message': f'Stagiaire modifié avec succès',
+            'is_active': stagiaire.is_active
+        })
+        
     except Exception as e:
+        import traceback
+        print('[ERREUR MODIFIER]', traceback.format_exc())
         return Response({'success': False, 'error': str(e)}, status=500)
 
 
@@ -539,3 +602,59 @@ def register_view(request):
         return Response({'success': True, 'message': 'Compte créé avec succès'})
     except Exception as e:
         return Response({'error': str(e)}, status=400)
+
+
+# ─────────────────────────────────────────────
+# RÉVOCATION TOKENS (Admin/RH seulement)
+# ─────────────────────────────────────────────
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def revoke_stagiaire_tokens(request, stagiaire_id):
+    """Révoque tous les tokens JWT d'un stagiaire lors de sa suppression."""
+    if request.user.role not in ['admin', 'rh']:
+        return Response({'success': False, 'error': 'Accès refusé'}, status=403)
+    
+    try:
+        stagiaire = CustomUser.objects.get(id=stagiaire_id)
+        
+        # Méthode 1 : Si vous utilisez simplejwt avec blacklist
+        try:
+            from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
+            tokens = OutstandingToken.objects.filter(user=stagiaire)
+            for token in tokens:
+                BlacklistedToken.objects.get_or_create(token=token)
+        except Exception:
+            pass  # simplejwt blacklist non configuré
+        
+        # Méthode 2 : Désactiver le compte (bloque toute nouvelle auth)
+        stagiaire.is_active = False
+        stagiaire.save()
+        
+        return Response({'success': True, 'message': f'Tokens révoqués pour {stagiaire.email}'})
+    
+    except CustomUser.DoesNotExist:
+        return Response({'success': False, 'error': 'Stagiaire non trouvé'}, status=404)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def reset_absences_stagiaire(request, stagiaire_id):
+    """Remet à zéro les absences d'un stagiaire."""
+    if request.user.role not in ['admin', 'rh']:
+        return Response({'success': False, 'error': 'Accès refusé'}, status=403)
+    
+    try:
+        stagiaire = CustomUser.objects.get(id=stagiaire_id, role='stagiaire')
+        stagiaire.absences_non_justifiees = 0
+        stagiaire.save()
+        
+        # Supprimer aussi les absences liées
+        from presences.models import Absence, Pointage
+        Absence.objects.filter(stagiaire=stagiaire).delete()
+        
+        return Response({
+            'success': True,
+            'message': f'Absences remises à 0 pour {stagiaire.first_name} {stagiaire.last_name}'
+        })
+    except CustomUser.DoesNotExist:
+        return Response({'success': False, 'error': 'Stagiaire non trouvé'}, status=404)

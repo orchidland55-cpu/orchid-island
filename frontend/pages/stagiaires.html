@@ -12,7 +12,7 @@
     --green: #27AE60; --red: #E74C3C; --orange: #F39C12; --purple: #8E44AD;
   }
   /* Animated background */
-  .bg-orbs {s
+  .bg-orbs {
     position: fixed; inset: 0; z-index: 0;
     pointer-events: none;
   }
@@ -21,21 +21,20 @@
     border-radius: 50%;
     filter: blur(80px);
     opacity: 0.15;
-    animation: float 8s ease-in-out infinite;
   }
-  .orb-1 { width: 500px; height: 500px; background: radial-gradient(circle, #004BA8, transparent); top: -100px; right: -100px; animation-delay: 0s; }
-  .orb-2 { width: 400px; height: 400px; background: radial-gradient(circle, #3E78B2, transparent); bottom: -80px; left: 10%; animation-delay: 3s; }
-  .orb-3 { width: 300px; height: 300px; background: radial-gradient(circle, #4A525A, transparent); top: 50%; left: 30%; animation-delay: 5s; }
+  .orb-1 { width: 500px; height: 500px; background: radial-gradient(circle, #004BA8, transparent); top: -100px; right: -100px; }
+  .orb-2 { width: 400px; height: 400px; background: radial-gradient(circle, #3E78B2, transparent); bottom: -80px; left: 10%; }
+  .orb-3 { width: 300px; height: 300px; background: radial-gradient(circle, #4A525A, transparent); top: 50%; left: 30%; }
   @keyframes float {
     0%, 100% { transform: translateY(0) scale(1); }
     50% { transform: translateY(-30px) scale(1.05); }
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; font-size: 14px; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; font-size: 14px; overflow-x: hidden; }
   .sidebar { width: 240px; background: linear-gradient(135deg, #24272B 0%, #07070A 50%, #1A1F2E 100%); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; }
   .sidebar-logo { padding: 24px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
-  .logo-icon { width: 38px; height: 38px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 8px 32px rgba(0,75,168,0.3); animation: pulse 2s ease-in-out infinite; }
+  .logo-icon { width: 38px; height: 38px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 8px 32px rgba(0,75,168,0.3); }
   @keyframes pulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.05); }
@@ -44,64 +43,36 @@
   .logo-sub { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
   .nav-section { padding: 16px 12px 8px; }
   .nav-label { font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; padding: 0 8px; margin-bottom: 6px; }
-  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; color: var(--muted); cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); font-size: 13px; margin-bottom: 2px; position: relative; overflow: hidden; }
-  .nav-item::before {
-    content: '';
-    position: absolute;
-    top: 0; left: -100%;
-    width: 100%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(0,75,168,0.1), transparent);
-    transition: left 0.5s;
-  }
-  .nav-item:hover::before { left: 100%; }
-  .nav-item:hover { background: rgba(0,75,168,0.08); color: var(--text); transform: translateX(5px); }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; color: var(--muted); cursor: pointer; font-size: 13px; margin-bottom: 2px; position: relative; overflow: hidden; }
+  .nav-item:hover { background: rgba(0,75,168,0.08); color: var(--text); }
   .nav-item.active { background: linear-gradient(135deg, rgba(0,75,168,0.15), rgba(62,120,178,0.1)); color: var(--primary-light); font-weight: 600; border: 1px solid rgba(0,75,168,0.2); box-shadow: 0 4px 20px rgba(0,75,168,0.2); }
   .nav-badge { margin-left: auto; background: var(--red); color: white; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 20px; }
-  .main { margin-left: 240px; flex: 1; }
-  .topbar { height: 60px; background: linear-gradient(135deg, #24272B 0%, #1A1F2E 100%); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; position: sticky; top: 0; z-index: 50; backdrop-filter: blur(10px); }
+  .main { margin-left: 240px; flex: 1; overflow-x: hidden; }
+  .topbar { height: 60px; background: linear-gradient(135deg, #24272B 0%, #1A1F2E 100%); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; position: fixed; top: 0; right: 0; left: 240px; z-index: 50; backdrop-filter: blur(10px); }
   .topbar-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; }
-  .btn-add { display: flex; align-items: center; gap: 8px; padding: 9px 18px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #F0F4F8; border: none; border-radius: 10px; font-family: 'Inter'; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(10px); }
-  .btn-add:hover { transform: translateY(-2px) scale(1.05); box-shadow: 0 8px 25px rgba(0,75,168,0.3); }
-  .content { padding: 28px; }
+  .btn-add { display: flex; align-items: center; gap: 8px; padding: 9px 18px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: #F0F4F8; border: none; border-radius: 10px; font-family: 'Inter'; font-size: 13px; font-weight: 700; cursor: pointer; backdrop-filter: blur(10px); }
+  .content { padding: 28px; padding-top: 88px; }
 
   /* Filters bar */
   .filters-bar { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
-  .search-box { flex: 1; min-width: 220px; display: flex; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--card), #1A1F2E); border: 1px solid var(--border); border-radius: 10px; padding: 10px 16px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(10px); }
+  .search-box { flex: 1; min-width: 220px; display: flex; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--card), #1A1F2E); border: 1px solid var(--border); border-radius: 10px; padding: 10px 16px; backdrop-filter: blur(10px); }
   .search-box:focus-within { border-color: var(--primary-light); box-shadow: 0 4px 20px rgba(0,75,168,0.2); }
   .search-box input { background: none; border: none; color: var(--text); font-family: 'Inter'; font-size: 13px; outline: none; width: 100%; }
   .search-box input::placeholder { color: var(--muted); }
-  .filter-select { padding: 10px 14px; background: linear-gradient(135deg, var(--card), #1A1F2E); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: 'Inter'; font-size: 13px; outline: none; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(10px); }
+  .filter-select { padding: 10px 14px; background: linear-gradient(135deg, var(--card), #1A1F2E); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: 'Inter'; font-size: 13px; outline: none; cursor: pointer; backdrop-filter: blur(10px); }
   .filter-select:focus { border-color: var(--primary-light); box-shadow: 0 4px 20px rgba(0,75,168,0.2); }
 
   /* Table */
-  .table-card { background: linear-gradient(135deg, var(--card), #1A1F2E); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(10px); position: relative; }
-  .table-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0;
-    right: 0; height: 2px;
-    background: linear-gradient(90deg, var(--primary), var(--primary-light), var(--primary));
-    animation: shimmer 3s linear infinite;
-  }
-  @keyframes shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-  }
-  .table-card:hover { transform: translateY(-3px) scale(1.01); box-shadow: 0 15px 40px rgba(0,75,168,0.3); border-color: var(--primary-light); }
+  .table-card { background: linear-gradient(135deg, var(--card), #1A1F2E); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; position: relative; }
   .table-header-bar { display: flex; justify-content: space-between; align-items: center; padding: 18px 22px; border-bottom: 1px solid var(--border); }
   .table-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; }
   .table-count { font-size: 12px; color: var(--muted); }
-  table { width: 100%; border-collapse: collapse; }
+  table { width: 100%; border-collapse: collapse; min-width: 1100px; }
   thead { background: rgba(255,255,255,0.02); }
   th { padding: 12px 18px; text-align: left; font-size: 11px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; border-bottom: 1px solid var(--border); }
-  td { padding: 14px 18px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; transition: background 0.15s; }
-  tr { transition: all 0.3s ease; }
+  td { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
   tr:hover td { background: rgba(255,255,255,0.02); }
   tr:last-child td { border-bottom: none; }
-  tr.fade-in { animation: fadeInRow 0.5s ease; }
-  tr.fade-out { animation: fadeOutRow 0.3s ease; }
-  @keyframes fadeInRow { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  @keyframes fadeOutRow { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(-20px); } }
   .stagiaire-info { display: flex; align-items: center; gap: 12px; }
   .avatar {
     width: 36px; height: 36px;
@@ -494,7 +465,7 @@
       </select>
     </div>
 
-    <div class="table-card">
+    <div class="table-card" style="overflow-x:auto;">
       <div class="table-header-bar">
         <span class="table-title">Liste des Stagiaires</span>
         <span class="table-count" id="tableCount">0 stagiaires · 0 en attente</span>
@@ -509,8 +480,9 @@
             <th>Absences NJ</th>
             <th>Stage</th>
             <th>CV</th>
+            <th>Mot de passe</th>
             <th>Rapport Final</th>
-            <th>Actions</th>
+            <th style="min-width:280px;">Actions</th>
           </tr>
         </thead>
         <tbody id="tableBody"></tbody>
@@ -540,6 +512,7 @@
         <div class="form-group"><label class="form-label">Nom</label><input type="text" class="form-input" placeholder="Alami"></div>
       </div>
       <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" placeholder="m.alami@email.com"></div>
+      <div class="form-group"><label class="form-label">Mot de passe</label><input type="password" class="form-input" id="stagPassword" placeholder="Mot de passe (min. 6 caractères)" minlength="6"></div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">Téléphone WhatsApp</label><input type="tel" class="form-input" placeholder="+212 6XX XXX XXX"></div>
         <div class="form-group"><label class="form-label">École</label><input type="text" class="form-input" placeholder="ENSA Marrakech"></div>
@@ -554,7 +527,9 @@
       </div>
       <div class="form-group"><label class="form-label">Statut candidature</label>
         <select class="form-select">
-          <option>En attente</option><option>Accepté</option><option>Refusé</option>
+          <option value="En attente">En attente</option>
+          <option value="Accepté">Accepté</option>
+          <option value="Refusé">Refusé</option>
         </select>
       </div>
     </div>
@@ -670,12 +645,13 @@ function cleanStagiaireData(stagiaire) {
 }
 
 // URL du backend - utilise config.js
-const BACKEND_URL = window.BACKEND_URL || 'https://orchid-island-api.onrender.com';
+const BACKEND_URL = window.BACKEND_URL || 'http://192.168.11.147:8000';
 
 // Charger les données depuis l'API backend
 async function loadStagiaires() {
   try {
-    const response = await fetch(`${BACKEND_URL}/api/auth/stagiaires/`);
+    const response = await fetchWithAuth('/api/auth/stagiaires/');
+    if (!response) return;
     const data = await response.json();
     
     if (data.success) {
@@ -691,42 +667,23 @@ async function loadStagiaires() {
         departement: s.departement || 'Non spécifié',
         debut: s.date_debut_stage ? new Date(s.date_debut_stage).toLocaleDateString('fr-FR') : '-',
         fin: s.date_fin_stage ? new Date(s.date_fin_stage).toLocaleDateString('fr-FR') : '-',
-        statut: 'Accepté',
-        absences: 0,
-        bloque: false,
+        statut: s.is_active === false ? 'Bloqué' : (s.statut || 'Accepté'),
+        // ✅ Utiliser directement le champ du backend
+        absences: s.absences_non_justifiees ?? 0,
+        bloque: s.is_active === false,
         rapport: 'Non déposé',
         avatar: '#' + Math.floor(Math.random()*16777215).toString(16),
         cv_url: s.cv_url,
         cv_name: s.cv_name
       }));
       
-      // Récupérer les absences depuis l'API historique
-      try {
-        const historiqueResponse = await fetch(`${BACKEND_URL}/api/presences/historique/`);
-        const historiqueData = await historiqueResponse.json();
-        
-        if (historiqueData.success && historiqueData.stagiaires) {
-          // Mettre à jour les absences pour chaque stagiaire
-          stagiaires = stagiaires.map(s => {
-            const historique = historiqueData.stagiaires.find(h => 
-              h.email === s.email || (h.prenom === s.prenom && h.nom === s.nom)
-            );
-            if (historique) {
-              return {
-                ...s,
-                absences: historique.total_absences,
-                retards: historique.total_retards
-              };
-            }
-            return s;
-          });
-        }
-      } catch (error) {
-        console.error('Erreur chargement historique:', error);
-      }
-      
       // Sauvegarder dans localStorage
       localStorage.setItem('stagiaires', JSON.stringify(stagiaires));
+
+      // Déclencher la vérification des alertes d'absence
+      window.dispatchEvent(new CustomEvent('dataUpdated', {
+        detail: { section: 'alertes' }
+      }));
       
       // Sauvegarder dans orchid_shared_data
       if (window.sharedData) {
@@ -799,26 +756,15 @@ function updateStats() {
 function renderTable(data) {
   const tbody = document.getElementById('tableBody');
   if (data.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--muted);">Aucun stagiaire trouvé</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--muted);">Aucun stagiaire trouvé</td></tr>';
     return;
   }
   
   tbody.innerHTML = data.map((s, index) => {
     // ✅ NOUVEAU — Calculer absences NJ réelles (total - justifiées)
     const todayKey = new Date().toISOString().split('T')[0];
-    let absencesNJReelles = s.absences || 0;
-    // Parcourir les 7 derniers jours pour compter les justifiées
-    for (let d = 0; d < 7; d++) {
-      const date = new Date();
-      date.setDate(date.getDate() - d);
-      const dateKey = date.toISOString().split('T')[0];
-      const jKey = `absent_justifie_${dateKey}`;
-      const jList = JSON.parse(localStorage.getItem(jKey) || '[]');
-      const fullName = s.prenom && s.nom ? `${s.prenom} ${s.nom}` : s.nom || '';
-      if (jList.includes(fullName)) {
-        absencesNJReelles = Math.max(0, absencesNJReelles - 1);
-      }
-    }
+    // ✅ Utiliser directement absences_non_justifiees du backend
+    const absencesNJReelles = s.absences ?? 0;
     const absCls = absencesNJReelles >= 3 ? 'danger' : absencesNJReelles >= 2 ? 'warn' : '';
     const rapCls = s.rapport === 'Validé' ? 'badge-accepte' : s.rapport === 'En attente' ? 'badge-attente' : s.rapport === 'Déposé' ? 'badge-attente' : '';
     const fullName = s.prenom && s.nom ? `${s.prenom} ${s.nom}` : s.nom || '';
@@ -849,7 +795,11 @@ function renderTable(data) {
       </div></td>
       <td><div style="font-size:13px">${s.ecole}</div><div style="font-size:11px;color:var(--muted)">${s.formation}</div></td>
       <td><div style="font-size:13px">${s.departement}</div></td>
-      <td><span class="badge ${s.statut === 'Accepté' ? 'badge-accepte' : s.statut === 'Refusé' ? 'badge-refuse' : 'badge-attente'}">${s.statut}</span></td>
+      <td><span class="badge ${
+  s.statut === 'Accepté' ? 'badge-accepte' : 
+  s.statut === 'Bloqué' || s.statut === 'Refusé' ? 'badge-refuse' : 
+  'badge-attente'
+}">${s.statut}</span></td>
       <td><div class="absence-counter">
         <div class="abs-dot ${absCls}"></div>
         ${absencesNJReelles}/3
@@ -857,17 +807,63 @@ function renderTable(data) {
       </div></td>
       <td><div style="font-size:12px">${s.debut}</div><div style="font-size:11px;color:var(--muted)">${s.fin !== '-' ? '-> ' + s.fin : '-'}</div></td>
       <td>${cvDisplay}</td>
+      <td>${(() => {
+        const passwds = JSON.parse(localStorage.getItem('stagiaires_passwords') || '{}');
+        const mdp = passwds[s.email];
+        if (mdp) {
+          return `
+            <div style="display:flex;flex-direction:column;gap:3px;">
+              <span style="font-size:10px;color:var(--muted)">${s.email}</span>
+              <span style="font-family:monospace;font-size:11px;background:rgba(0,75,168,0.1);
+                padding:3px 8px;border-radius:4px;color:var(--primary-light);
+                border:1px solid rgba(0,75,168,0.2);">${mdp}</span>
+            </div>`;
+        }
+        return '<span style="color:var(--muted);font-size:11px">—</span>';
+      })()}</td>
       <td>${s.rapport !== '-' ? `<span class="badge ${rapCls}">${s.rapport}</span>` : '<span style="color:var(--muted);font-size:12px">-</span>'}</td>
-      <td><div class="action-btns">
-        <button class="btn-icon view" onclick="viewStagiaire(${s.id})" title="Voir fiche">View</button>
-        <button class="btn-icon edit" onclick="editStagiaire(${s.id})" title="Modifier">Edit</button>
-        ${s.is_active === false ? `
+      <td>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+          <button onclick="viewStagiaire(${s.id})"
+            style="padding:6px 12px;border:1px solid #3E78B2;border-radius:8px;
+            background:rgba(62,120,178,0.1);color:#3E78B2;cursor:pointer;font-size:12px;
+            font-family:'Inter';font-weight:600;transition:all 0.2s;"
+            onmouseover="this.style.background='rgba(62,120,178,0.25)'"
+            onmouseout="this.style.background='rgba(62,120,178,0.1)'">
+            👁️ Voir
+          </button>
+          <button onclick="editStagiaire(${s.id})"
+            style="padding:6px 12px;border:1px solid #F39C12;border-radius:8px;
+            background:rgba(243,156,18,0.1);color:#F39C12;cursor:pointer;font-size:12px;
+            font-family:'Inter';font-weight:600;transition:all 0.2s;"
+            onmouseover="this.style.background='rgba(243,156,18,0.25)'"
+            onmouseout="this.style.background='rgba(243,156,18,0.1)'">
+            ✏️ Modifier
+          </button>
+          ${s.is_active === false ? `
           <button onclick="debloquerCompte(${s.id}, '${s.prenom} ${s.nom}')"
-                  style="background:#27AE60;color:#fff;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;">
+            style="padding:6px 12px;border:1px solid #27AE60;border-radius:8px;
+            background:rgba(39,174,96,0.1);color:#27AE60;cursor:pointer;font-size:12px;
+            font-family:'Inter';font-weight:600;">
             🔓 Débloquer
           </button>` : ''}
-        <button class="btn-icon del" onclick="deleteStagiaire(${s.id})" title="Supprimer">Delete</button>
-      </div></td>
+          <button onclick="resetAbsences(${s.id}, '${s.prenom} ${s.nom}')"
+            style="padding:6px 12px;border:1px solid rgba(243,156,18,0.4);border-radius:8px;
+            background:rgba(243,156,18,0.08);color:#F39C12;cursor:pointer;font-size:11px;
+            font-family:'Inter';"
+            title="Remettre absences à 0">
+            ↺ Reset
+          </button>
+          <button onclick="deleteStagiaire(${s.id})"
+            style="padding:6px 12px;border:1px solid #E74C3C;border-radius:8px;
+            background:rgba(231,76,60,0.1);color:#E74C3C;cursor:pointer;font-size:12px;
+            font-family:'Inter';font-weight:600;transition:all 0.2s;"
+            onmouseover="this.style.background='rgba(231,76,60,0.25)'"
+            onmouseout="this.style.background='rgba(231,76,60,0.1)'">
+            🗑️ Supprimer
+          </button>
+        </div>
+      </td>
     </tr>`;
   }).join('');
 }
@@ -1046,17 +1042,25 @@ function editStagiaire(id) {
     console.log('Inputs trouvés:', inputs.length);
     console.log('Select trouvé:', select);
     
-    if (inputs.length >= 9 && select) {
+    if (inputs.length >= 10 && select) {
       // Remplir le formulaire avec les données du stagiaire
       inputs[0].value = prenom || ''; // Prénom
       inputs[1].value = nom || ''; // Nom
       inputs[2].value = stagiaire.email || ''; // Email
-      inputs[3].value = stagiaire.telephone || ''; // Téléphone
-      inputs[4].value = stagiaire.ecole || ''; // École
-      inputs[5].value = stagiaire.formation || ''; // Formation
-      inputs[6].value = stagiaire.departement || ''; // Département
-      inputs[7].value = stagiaire.debut || ''; // Date début
-      inputs[8].value = stagiaire.fin || ''; // Date fin
+      // inputs[3] = password, laisser vide en modification
+      inputs[3].value = '';
+      inputs[4].value = stagiaire.telephone || ''; // Téléphone
+      inputs[5].value = stagiaire.ecole || ''; // École
+      inputs[6].value = stagiaire.formation || ''; // Formation
+      inputs[7].value = stagiaire.departement || ''; // Département
+      // Convertir DD/MM/YYYY → YYYY-MM-DD pour l'input date
+      function frToISO(d) {
+        if (!d || d === '-') return '';
+        const p = d.split('/');
+        return p.length === 3 ? `${p[2]}-${p[1]}-${p[0]}` : d;
+      }
+      inputs[8].value = frToISO(stagiaire.debut);
+      inputs[9].value = frToISO(stagiaire.fin);
       select.value = stagiaire.statut || 'En attente';
       
       console.log('Formulaire rempli avec les données');
@@ -1096,19 +1100,21 @@ async function updateStagiaire(id) {
   
   const prenom = inputs[0].value.trim();
   const nom = inputs[1].value.trim();
-  const telephone = inputs[3].value.trim();
-  const ecole = inputs[4].value.trim();
-  const formation = inputs[5].value.trim();
-  const departement = inputs[6].value.trim();
-  const debut = inputs[7].value;
-  const fin = inputs[8].value;
+  // ✅ inputs[3] = password, skippé
+  const telephone = inputs[4].value.trim();
+  const ecole = inputs[5].value.trim();
+  const formation = inputs[6].value.trim();
+  const departement = inputs[7].value.trim();
+  const debut = inputs[8].value;
+  const fin = inputs[9].value;
+  const statut = select ? select.value : 'Accepté';
+  console.log('[MODIFIER] Statut envoyé au backend:', statut);
   
   console.log('[MODIFIER STAGIAIRE] Modification stagiaire via API backend...');
   
   try {
-    const response = await fetch(`${BACKEND_URL}/api/auth/stagiaire/${id}/modifier/`, {
+    const response = await fetchWithAuth(`/api/auth/stagiaire/${id}/modifier/`, {
       method: 'PUT',
-      headers: authHeaders(),
       body: JSON.stringify({
         first_name: prenom,
         last_name: nom,
@@ -1117,9 +1123,11 @@ async function updateStagiaire(id) {
         formation: formation,
         departement: departement,
         date_debut_stage: debut || null,
-        date_fin_stage: fin || null
+        date_fin_stage: fin || null,
+        statut: select ? select.value : 'Accepté'
       })
     });
+    if (!response) return;
     
     const data = await response.json();
     console.log('[MODIFIER STAGIAIRE] Réponse backend:', data);
@@ -1140,6 +1148,27 @@ async function updateStagiaire(id) {
   } catch (error) {
     console.error('[MODIFIER STAGIAIRE] Erreur modification:', error);
     alert('Erreur: ' + error.message);
+  }
+}
+
+async function resetAbsences(id, nom) {
+  if (!confirm(`Remettre les absences de "${nom}" à 0 ?`)) return;
+  
+  try {
+    const response = await fetchWithAuth(`/api/auth/stagiaire/${id}/reset-absences/`, {
+      method: 'POST'
+    });
+    if (!response) return;
+    const data = await response.json();
+    
+    if (data.success) {
+      showSuccessMessage(`Absences de "${nom}" remises à 0 !`);
+      await loadStagiaires(); // Recharger la liste
+    } else {
+      alert('Erreur: ' + data.error);
+    }
+  } catch (e) {
+    alert('Erreur de connexion: ' + e.message);
   }
 }
 
@@ -1310,56 +1339,118 @@ async function executeCustomDelete() {
   const stagiaire = stagiaires.find(s => s.id === currentDeleteId);
   if (!stagiaire) return;
   
-  console.log('[SUPPRIMER STAGIAIRE] Début suppression pour ID:', currentDeleteId);
+  const deletedId = currentDeleteId; // ← sauvegarder avant reset
+  const fullName = stagiaire.prenom && stagiaire.nom 
+    ? `${stagiaire.prenom} ${stagiaire.nom}` 
+    : stagiaire.nom || '';
+  
+  console.log('[SUPPRIMER STAGIAIRE] Début suppression pour ID:', deletedId);
   
   try {
-    const response = await fetch(`${BACKEND_URL}/api/auth/stagiaire/${currentDeleteId}/`, {
-      method: 'DELETE',
-      headers: authHeaders()
+    const response = await fetchWithAuth(`/api/auth/stagiaire/${deletedId}/`, {
+      method: 'DELETE'
     });
+    if (!response) return;
     
     const data = await response.json();
     console.log('[SUPPRIMER STAGIAIRE] Réponse backend:', data);
     
     if (data.success) {
-      // Fermer le modal
       closeCustomDeleteModal();
       
-      // Nettoyer les alertes liées à ce stagiaire
+      // ── 1. Nettoyer les alertes liées à ce stagiaire ──
       if (window.alertManager) {
         const alerts = window.alertManager.getSystemAlerts();
-        const fullName = stagiaire.prenom && stagiaire.nom ? `${stagiaire.prenom} ${stagiaire.nom}` : stagiaire.nom || '';
         const filteredAlerts = alerts.filter(a => {
-          // Supprimer les alertes liées à ce stagiaire
-          const isRelated = a.nom === fullName || 
-                          a.message.includes(fullName) ||
-                          (a.stagiaireId && String(a.stagiaireId) === String(id));
-          return !isRelated;
+          return !(
+            a.nom === fullName || 
+            (a.message && a.message.includes(fullName)) ||
+            (a.stagiaireId && String(a.stagiaireId) === String(deletedId))
+          );
         });
         window.alertManager.saveSystemAlerts(filteredAlerts);
-        window.alertManager.dispatchEvent('alertes');
+        window.alertManager.updateAlertesBadge();
+        window.dispatchEvent(new CustomEvent('dataUpdated', { detail: { section: 'alertes' } }));
         console.log('[SUPPRIMER STAGIAIRE] Alertes nettoyées pour:', fullName);
       }
       
-      // Nettoyer new_stagiaires si le stagiaire y est encore
-      const newStagiaires = JSON.parse(localStorage.getItem('new_stagiaires') || '[]');
-      const filteredNewStagiaires = newStagiaires.filter(s => s.id !== id);
-      localStorage.setItem('new_stagiaires', JSON.stringify(filteredNewStagiaires));
+      // ── 2. Nettoyer les projets liés à ce stagiaire ──
+      try {
+        const orchidData = JSON.parse(localStorage.getItem('orchidData') || '{"projets":{"list":[]}}');
+        const projetsAvant = orchidData.projets.list.length;
+        orchidData.projets.list = orchidData.projets.list.filter(p => 
+          p.resp !== fullName && 
+          p.resp !== stagiaire.prenom && 
+          p.resp !== `${stagiaire.prenom} ${stagiaire.nom}` &&
+          p.resp !== `${stagiaire.nom} ${stagiaire.prenom}` 
+        );
+        localStorage.setItem('orchidData', JSON.stringify(orchidData));
+        console.log(`[SUPPRIMER STAGIAIRE] Projets: ${projetsAvant} → ${orchidData.projets.list.length}`);
+        if (window.sharedData) window.sharedData.syncProjetsData();
+      } catch(e) {
+        console.error('[SUPPRIMER STAGIAIRE] Erreur nettoyage projets:', e);
+      }
       
-      // Recharger les données depuis l'API
+      // ── 3. Nettoyer new_stagiaires ──
+      const newStagiaires = JSON.parse(localStorage.getItem('new_stagiaires') || '[]');
+      localStorage.setItem('new_stagiaires', JSON.stringify(
+        newStagiaires.filter(s => s.id !== deletedId && s.email !== stagiaire.email)
+      ));
+      
+      // ── 4. Nettoyer les mots de passe ──
+      const passwds = JSON.parse(localStorage.getItem('stagiaires_passwords') || '{}');
+      delete passwds[stagiaire.email];
+      localStorage.setItem('stagiaires_passwords', JSON.stringify(passwds));
+
+      // ── 4b. Supprimer les pointages du stagiaire ──
+      try {
+        const response = await fetchWithAuth(`/api/presences/pointages/supprimer/?stagiaire_id=${deletedId}`, {
+          method: 'DELETE'
+        });
+        if (!response) return;
+        console.log('[DELETE] Pointages supprimés');
+      } catch (e) {
+        console.warn('[DELETE] Erreur suppression pointages:', e);
+      }
+
+      // ── 4c. Supprimer les absences du stagiaire ──
+      try {
+        const response = await fetchWithAuth(`/api/presences/absences/supprimer/?stagiaire_id=${deletedId}`, {
+          method: 'DELETE'
+        });
+        if (!response) return;
+        console.log('[DELETE] Absences supprimées');
+      } catch (e) {
+        console.warn('[DELETE] Erreur suppression absences:', e);
+      }
+
+      // ── 4d. Révoquer les tokens du stagiaire ──
+      try {
+        const response = await fetchWithAuth(`/api/auth/stagiaire/${deletedId}/revoke-tokens/`, {
+          method: 'POST'
+        });
+        if (!response) return;
+        console.log('[DELETE] Tokens révoqués');
+      } catch (e) {
+        console.warn('[DELETE] Révocation tokens échouée:', e);
+      }
+      
+      // ── 5. Recharger la liste ──
       await loadStagiaires();
       
-      // Message de succès
-      const fullName = stagiaire.prenom && stagiaire.nom ? `${stagiaire.prenom} ${stagiaire.nom}` : stagiaire.nom || '';
       showSuccessMessage(`Stagiaire "${fullName}" supprimé avec succès !`);
     } else {
       console.error('[SUPPRIMER STAGIAIRE] Erreur backend:', data.error);
       alert('Erreur lors de la suppression: ' + data.error);
     }
   } catch (error) {
-    console.error('[SUPPRIMER STAGIAIRE] Erreur suppression:', error);
-    alert('Erreur: ' + error.message);
+    console.error('[SUPPRIMER STAGIAIRE] Erreur:', error);
+    // Ne pas utiliser le fallback offline - afficher l'erreur à l'utilisateur
+    closeCustomDeleteModal();
+    alert('Erreur lors de la suppression: ' + error.message + '\n\nLe stagiaire n\'a pas été supprimé de la base de données.');
   }
+  
+  currentDeleteId = null;
 }
 
 // Fonction de suppression directe pour contourner le problème
@@ -1481,32 +1572,37 @@ let currentDeleteId = null;
 async function uploaderCV(userId, input) {
   const file = input.files[0];
   if (!file) return;
-  
+
   const stagiaire = stagiaires.find(s => s.id === userId);
   if (!stagiaire) {
     console.error('[UPLOAD CV] Stagiaire non trouvé avec userId:', userId);
     return;
   }
-  
+
   console.log('[UPLOAD CV] Début upload pour stagiaire:', stagiaire.email);
   console.log('[UPLOAD CV] Fichier:', file.name, file.size);
-  
+
   const formData = new FormData();
   formData.append('email', stagiaire.email);
   formData.append('cv', file);
-  
+
   try {
+    // ✅ Utiliser fetch directement (PAS fetchWithAuth)
+    // pour ne pas écraser le Content-Type multipart
+    const token = localStorage.getItem('access_token');
     const response = await fetch(`${BACKEND_URL}/api/auth/cv/upload/`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${getToken()}`
+        'Authorization': `Bearer ${token}`
+        // ⚠️ PAS de Content-Type ici — le navigateur le définit
+        // automatiquement avec le boundary correct pour FormData
       },
       body: formData
     });
-    
+
     const data = await response.json();
     console.log('[UPLOAD CV] Réponse backend:', data);
-    
+
     if (data.success) {
       console.log('[UPLOAD CV] CV uploadé avec succès, rechargement des données...');
       
@@ -1529,21 +1625,28 @@ async function uploaderCV(userId, input) {
 // Fonction pour supprimer un CV
 async function supprimerCV(userId) {
   if (!confirm('Êtes-vous sûr de vouloir supprimer ce CV ?')) return;
-  
+
   const stagiaire = stagiaires.find(s => s.id === userId);
   if (!stagiaire) {
     console.error('[SUPPRIMER CV] Stagiaire non trouvé avec userId:', userId);
     return;
   }
-  
+
   console.log('[SUPPRIMER CV] Début suppression pour stagiaire:', stagiaire.email);
-  
+
   try {
-    const response = await fetch(`${BACKEND_URL}/api/auth/cv/delete/?email=${encodeURIComponent(stagiaire.email)}`, {
-      method: 'DELETE',
-      headers: authHeaders()
-    });
-    
+    const token = localStorage.getItem('access_token');
+    const response = await fetch(
+      `${BACKEND_URL}/api/auth/cv/delete/?email=${encodeURIComponent(stagiaire.email)}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
     const data = await response.json();
     console.log('[SUPPRIMER CV] Réponse backend:', data);
     
@@ -1745,6 +1848,12 @@ function showSuccessMessage(message) {
 }
 
 async function saveStagiaire() {
+  // ✅ Empêcher double soumission
+  const saveBtn = document.querySelector('.modal-footer .btn-save');
+  if (saveBtn.disabled) return;  // Déjà en cours
+  saveBtn.disabled = true;
+  saveBtn.innerHTML = '<div style="width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top:2px solid white;border-radius:50%;animation:spin 0.7s linear infinite;"></div> Enregistrement...';
+
   // Utiliser des sélecteurs plus précis basés sur les labels
   const inputs = document.querySelectorAll('.modal .form-input');
   const select = document.querySelector('.modal .form-select');
@@ -1752,12 +1861,14 @@ async function saveStagiaire() {
   const prenom = inputs[0].value.trim(); // Prénom
   const nom = inputs[1].value.trim(); // Nom
   const email = inputs[2].value.trim(); // Email
-  const telephone = inputs[3].value.trim(); // Téléphone
-  const ecole = inputs[4].value.trim(); // École
-  const formation = inputs[5].value.trim(); // Formation
-  const departement = inputs[6].value.trim(); // Département
-  const debut = inputs[7].value; // Date début
-  const fin = inputs[8].value; // Date fin
+  const password = document.getElementById('stagPassword').value; // Mot de passe
+  // ⚠️ inputs[3] = champ password (skippé car récupéré via getElementById)
+  const telephone = inputs[4].value.trim(); // Téléphone
+  const ecole = inputs[5].value.trim(); // École
+  const formation = inputs[6].value.trim(); // Formation
+  const departement = inputs[7].value.trim(); // Département
+  const debut = inputs[8].value; // Date début
+  const fin = inputs[9].value; // Date fin
   const statut = select.value;
   
   console.log('Données du formulaire:', { prenom, nom, email, telephone, ecole, formation, debut, fin, statut });
@@ -1769,6 +1880,8 @@ async function saveStagiaire() {
   if (!nom) errors.push('Le nom est obligatoire');
   if (!email) errors.push('L\'email est obligatoire');
   else if (!isValidEmail(email)) errors.push('L\'email n\'est pas valide');
+  if (!password) errors.push('Le mot de passe est obligatoire');
+  else if (password.length < 6) errors.push('Le mot de passe doit avoir au moins 6 caractères');
   if (!ecole) errors.push('L\'école est obligatoire');
   if (!formation) errors.push('La formation est obligatoire');
   if (!debut) errors.push('La date de début est obligatoire');
@@ -1776,6 +1889,8 @@ async function saveStagiaire() {
   else if (debut && fin && new Date(fin) < new Date(debut)) errors.push('La date de fin doit être après la date de début');
   
   if (errors.length > 0) {
+    saveBtn.disabled = false;
+    saveBtn.innerHTML = '<span class="btn-icon">Save</span><span class="btn-text">Enregistrer</span>';
     showErrorMessage(errors.join('\n'));
     return;
   }
@@ -1783,11 +1898,11 @@ async function saveStagiaire() {
   console.log('[AJOUT STAGIAIRE] Création stagiaire via API backend...');
   
   try {
-    const response = await fetch(`${BACKEND_URL}/api/auth/stagiaire/creer/`, {
+    const response = await fetchWithAuth('/api/auth/stagiaire/creer/', {
       method: 'POST',
-      headers: authHeaders(),
       body: JSON.stringify({
         email: email,
+        password: password,
         first_name: prenom,
         last_name: nom,
         phone: telephone,
@@ -1798,11 +1913,29 @@ async function saveStagiaire() {
         date_fin_stage: fin || null
       })
     });
+
+    if (!response) return; // logout déjà fait
     
-    const data = await response.json();
+    let data;
+    try {
+      data = await response.json();
+    } catch(e) {
+      const text = await response.text();
+      console.error('[DEBUG] Réponse non-JSON:', text);
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = '<span class="btn-icon">Save</span><span class="btn-text">Enregistrer</span>';
+      alert('Erreur serveur (réponse invalide). Voir console pour détails.');
+      return;
+    }
+    console.log('[DEBUG] Réponse complète backend:', JSON.stringify(data));
     console.log('[AJOUT STAGIAIRE] Réponse backend:', data);
     
     if (data.success) {
+      // Sauvegarder le mot de passe initial en clair dans localStorage
+      const passwds = JSON.parse(localStorage.getItem('stagiaires_passwords') || '{}');
+      passwds[email] = password;
+      localStorage.setItem('stagiaires_passwords', JSON.stringify(passwds));
+
       // Ajouter le stagiaire à new_stagiaires pour générer une alerte
       const newStagiaires = JSON.parse(localStorage.getItem('new_stagiaires') || '[]');
       newStagiaires.push({
@@ -1843,78 +1976,18 @@ async function saveStagiaire() {
       }
     } else {
       console.error('[AJOUT STAGIAIRE] Erreur backend:', data.error);
-      alert('Erreur lors de la création: ' + data.error);
+      // ✅ Réactiver le bouton en cas d'erreur
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = '<span class="btn-icon">Save</span><span class="btn-text">Enregistrer</span>';
+      const errMsg = data.error || data.message || data.detail || JSON.stringify(data);
+      alert('Erreur lors de la création: ' + errMsg);
     }
   } catch (error) {
-    console.error('[AJOUT STAGIAIRE] Erreur création:', error);
-    
-    // Fallback: sauvegarder dans localStorage et sharedData
-    console.log('[AJOUT STAGIAIRE] Fallback vers localStorage...');
-    
-    const newStagiaire = {
-      id: Date.now(),
-      prenom: prenom,
-      nom: nom,
-      email: email,
-      telephone: telephone,
-      ecole: ecole,
-      formation: formation,
-      departement: departement,
-      debut: debut ? new Date(debut).toLocaleDateString('fr-FR') : '-',
-      fin: fin ? new Date(fin).toLocaleDateString('fr-FR') : '-',
-      statut: 'Accepté',
-      absences: 0,
-      bloque: false,
-      rapport: 'Non déposé',
-      avatar: '#' + Math.floor(Math.random()*16777215).toString(16),
-      cv_url: null,
-      cv_name: null
-    };
-    
-    // Sauvegarder dans localStorage
-    const stagiairesList = JSON.parse(localStorage.getItem('stagiaires') || '[]');
-    stagiairesList.push(newStagiaire);
-    localStorage.setItem('stagiaires', JSON.stringify(stagiairesList));
-    
-    // Sauvegarder dans sharedData
-    if (window.sharedData) {
-      const sharedData = window.sharedData.getData();
-      sharedData.stagiaires.list.push(newStagiaire);
-      sharedData.stagiaires.total = sharedData.stagiaires.list.length;
-      sharedData.stagiaires.actifs = sharedData.stagiaires.list.filter(s => s.statut === 'Accepté').length;
-      window.sharedData.updateData('stagiaires', sharedData.stagiaires);
-      // Synchroniser toutes les données automatiquement
-      window.sharedData.syncAllData();
-    }
-    
-    // Ajouter le stagiaire à new_stagiaires pour générer une alerte
-    const newStagiaires = JSON.parse(localStorage.getItem('new_stagiaires') || '[]');
-    newStagiaires.push({
-      id: newStagiaire.id,
-      prenom: prenom,
-      nom: nom,
-      email: email,
-      telephone: telephone,
-      ecole: ecole,
-      formation: formation,
-      departement: departement,
-      date: new Date().toISOString()
-    });
-    localStorage.setItem('new_stagiaires', JSON.stringify(newStagiaires));
-    
-    // Générer l'alerte immédiatement si alertManager est disponible
-    if (window.alertManager) {
-      window.alertManager.checkNewStagiaires();
-    }
-    
-    // Fermer le modal
-    closeModal();
-    
-    // Recharger depuis localStorage
-    loadStagiairesFromLocalStorage();
-    
-    // Message d'avertissement
-    alert(`⚠️ Stagiaire "${prenom} ${nom}" sauvegardé localement (mode hors-ligne).\n\n⚠️ IMPORTANT: Ce stagiaire ne pourra PAS faire de pointage tant qu'il n'est pas créé dans le backend.\n\nVeuillez vérifier votre connexion et réessayer, ou contacter l'administrateur.`);
+    console.error('[AJOUT STAGIAIRE] Erreur:', error);
+    saveBtn.disabled = false;
+    saveBtn.innerHTML = '<span class="btn-icon">Save</span><span class="btn-text">Enregistrer</span>';
+    alert('❌ Erreur de connexion au serveur.\nVeuillez vous reconnecter et réessayer.\n\nDétail: ' + error.message);
+    return; // ← Ne pas faire le fallback local
   }
 }
 
@@ -1932,7 +2005,7 @@ async function syncStagiairesToBackend() {
     const localStagiaires = JSON.parse(localStorage.getItem('stagiaires') || '[]');
     
     // Récupérer les stagiaires depuis le backend
-    const response = await fetch(`${BACKEND_URL}/api/auth/stagiaires/`);
+    const response = await fetchWithAuth('/api/auth/stagiaires/');
     const data = await response.json();
     
     if (data.success) {
@@ -1952,21 +2025,22 @@ async function syncStagiairesToBackend() {
       // Synchroniser chaque stagiaire
       for (const stagiaire of toSync) {
         try {
-          const syncResponse = await fetch(`${BACKEND_URL}/api/auth/stagiaire/creer/`, {
+          const syncResponse = await fetchWithAuth('/api/auth/stagiaire/creer/', {
             method: 'POST',
-            headers: authHeaders(),
             body: JSON.stringify({
               email: stagiaire.email,
+              password: stagiaire.password,
               first_name: stagiaire.prenom,
               last_name: stagiaire.nom,
-              phone: stagiaire.telephone || '',
-              ecole: stagiaire.ecole || '',
-              formation: stagiaire.formation || '',
-              departement: stagiaire.departement || '',
-              date_debut_stage: stagiaire.debut !== '-' ? new Date(stagiaire.debut).toISOString().split('T')[0] : null,
-              date_fin_stage: stagiaire.fin !== '-' ? new Date(stagiaire.fin).toISOString().split('T')[0] : null
+              phone: stagiaire.telephone,
+              ecole: stagiaire.ecole,
+              formation: stagiaire.formation,
+              departement: stagiaire.departement,
+              date_debut_stage: stagiaire.debut ? new Date(stagiaire.debut.split('/')[2], stagiaire.debut.split('/')[1]-1, stagiaire.debut.split('/')[0]).toISOString().split('T')[0] : null,
+              date_fin_stage: stagiaire.fin ? new Date(stagiaire.fin.split('/')[2], stagiaire.fin.split('/')[1]-1, stagiaire.fin.split('/')[0]).toISOString().split('T')[0] : null
             })
           });
+          if (!syncResponse) continue;
           
           const syncData = await syncResponse.json();
           if (syncData.success) {
@@ -1998,6 +2072,17 @@ function addSyncButton() {
     syncBtn.style.cssText = 'background:var(--primary);color:white;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:12px;margin-left:10px;';
     syncBtn.onclick = syncStagiairesToBackend;
     header.appendChild(syncBtn);
+
+    // Bouton pour afficher les mots de passe existants
+    const pwBtn = document.createElement('button');
+    pwBtn.textContent = '🔑 Mots de passe';
+    pwBtn.style.cssText = 'background:#8E44AD;color:white;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:12px;margin-left:10px;';
+    pwBtn.onclick = () => {
+      const passwds = JSON.parse(localStorage.getItem('stagiaires_passwords') || '{}');
+      const info = stagiaires.map(s => `${s.email}: ${passwds[s.email] || '(non enregistré)'}`).join('\n');
+      alert('Mots de passe enregistrés:\n\n' + info);
+    };
+    header.appendChild(pwBtn);
   }
 }
 
@@ -2103,7 +2188,10 @@ document.addEventListener('DOMContentLoaded', function() {
   filterNavByRole();
   
   loadStagiaires();
-  addSyncButton();
+  // addSyncButton(); // Supprimé - synchronisation automatique
+  
+  // Synchronisation automatique au chargement
+  syncStagiairesToBackend();
   
   // Modal event listeners
   document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });

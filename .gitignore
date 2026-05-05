@@ -1,0 +1,76 @@
+# Environnement virtuel
+env/
+venv/
+
+# Variables d'environnement
+.env
+*.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Django
+backend/staticfiles/
+backend/media/
+backend/db.sqlite3
+backend/backup_orchid.sql
+server.log
+backend/server.log
+
+# Mac
+.DS_Store
+**/.DS_Store
+
+# Fichiers inutiles en prod
+backend/create_test_accounts.py
+backend/create_users.py# Environnement virtuel
+env/
+venv/
+.venv/
+
+# Variables d'environnement (TRÈS IMPORTANT)
+.env
+*.env
+.env.local
+.env.production
+
+# Python
+__pycache__/
+*.pyc# Environnement virtuel
+env/
+venv/
+.venv/
+
+# Variables d'environnement (TRÈS IMPORTANT)
+.env
+*.env
+.env.local
+.env.production
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+
+# Django
+backend/staticfiles/
+backend/media/
+backend/db.sqlite3
+backend/logs/
+server.log
+
+# Mac
+.DS_Store
+.AppleDouble
+**/.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.pyo
+*.pyd

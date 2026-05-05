@@ -332,6 +332,7 @@
   .status-retard { background: rgba(255,87,87,0.1); color: var(--red); }
   .status-done { background: rgba(34,211,160,0.1); color: var(--green); }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="../auth_roles.js"></script>
 </head>
 <body>
@@ -395,100 +396,49 @@
     <!-- KPI CARDS -->
     <div class="kpi-grid">
       <div class="kpi-card gold">
-        <div class="kpi-icon">🎓</div>
-        <div class="kpi-value" id="kpiStagiaires">0</div>
+        <div class="kpi-icon" style="font-size:28px">🎓</div>
+        <div class="kpi-value" id="kpiStagiaires">—</div>
         <div class="kpi-label">Stagiaires</div>
-        <span class="kpi-trend up">↑ +0 ce mois</span>
+        <span class="kpi-trend up" id="trendStagiaires">↑ Chargement...</span>
       </div>
       <div class="kpi-card purple">
-        <div class="kpi-icon">✅</div>
-        <div class="kpi-value" id="kpiActifs">0</div>
+        <div class="kpi-icon" style="font-size:28px">✅</div>
+        <div class="kpi-value" id="kpiActifs">—</div>
         <div class="kpi-label">Stagiaires Actifs (Présents)</div>
         <span class="kpi-trend up">↑ Aujourd'hui</span>
       </div>
       <div class="kpi-card blue">
-        <div class="kpi-icon">📁</div>
-        <div class="kpi-value" id="kpiProjets">0</div>
+        <div class="kpi-icon" style="font-size:28px">📁</div>
+        <div class="kpi-value" id="kpiProjets">—</div>
         <div class="kpi-label">Projets En Cours</div>
         <span class="kpi-trend up">↑ 0% avancement</span>
       </div>
       <div class="kpi-card green">
-        <div class="kpi-icon">📝</div>
-        <div class="kpi-value" id="kpiRapports">0</div>
+        <div class="kpi-icon" style="font-size:28px">📝</div>
+        <div class="kpi-value" id="kpiRapports">—</div>
         <div class="kpi-label">Rapports Déposés</div>
         <span class="kpi-trend down">↓ 0 manquants</span>
       </div>
       <div class="kpi-card red">
-        <div class="kpi-icon">🚫</div>
-        <div class="kpi-value" id="kpiBloques">0</div>
-        <div class="kpi-label">Comptes Bloqués</div>
-        <span class="kpi-trend down">⚠ Aucun problème</span>
+        <div class="kpi-icon" style="font-size:28px">🔔</div>
+        <div class="kpi-value" id="kpiBloques">—</div>
+        <div class="kpi-label">Alertes non lues</div>
+        <span class="kpi-trend down" id="trendAlertes">⚠ Chargement...</span>
       </div>
     </div>
 
     <!-- CHARTS ROW -->
     <div class="charts-row">
-      <!-- Bar Chart: Présences semaine -->
+      <!-- Présences Mensuelles par semaine -->
       <div class="chart-card">
         <div class="chart-header">
           <span class="chart-title">Présences Mensuelles</span>
           <span class="chart-badge" id="presenceCountBadge">0 présents</span>
           <span class="chart-badge">Mois en cours</span>
         </div>
-        <div class="bar-chart" id="presenceChart">
-          <div class="bar-group">
-            <div class="bars">
-              <div class="bar" style="height:0px;background:var(--green);"></div>
-              <div class="bar" style="height:0px;background:var(--red);"></div>
-            </div>
-            <div class="bar-label">Jan</div>
-          </div>
-          <div class="bar-group">
-            <div class="bars">
-              <div class="bar" style="height:0px;background:var(--green);"></div>
-              <div class="bar" style="height:0px;background:var(--red);"></div>
-            </div>
-            <div class="bar-label">Fév</div>
-          </div>
-          <div class="bar-group">
-            <div class="bars">
-              <div class="bar" style="height:0px;background:var(--green);"></div>
-              <div class="bar" style="height:0px;background:var(--red);"></div>
-            </div>
-            <div class="bar-label">Mar</div>
-          </div>
-          <div class="bar-group">
-            <div class="bars">
-              <div class="bar" style="height:0px;background:var(--green);"></div>
-              <div class="bar" style="height:0px;background:var(--red);"></div>
-            </div>
-            <div class="bar-label">Avr</div>
-          </div>
-          <div class="bar-group">
-            <div class="bars">
-              <div class="bar" style="height:0px;background:var(--green);"></div>
-              <div class="bar" style="height:0px;background:var(--red);"></div>
-            </div>
-            <div class="bar-label">Mai</div>
-          </div>
-          <div class="bar-group">
-            <div class="bars">
-              <div class="bar" style="height:0px;background:rgba(34,211,160,0.3);"></div>
-              <div class="bar" style="height:0px;background:rgba(255,87,87,0.3);"></div>
-            </div>
-            <div class="bar-label">Juin</div>
-          </div>
-          <div class="bar-group">
-            <div class="bars">
-              <div class="bar" style="height:0;background:transparent;"></div>
-              <div class="bar" style="height:0;background:transparent;"></div>
-            </div>
-            <div class="bar-label">Juil</div>
-          </div>
-        </div>
-        <div style="display:flex;gap:20px;margin-top:12px;font-size:11px;color:var(--muted)">
-          <span style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:10px;height:10px;background:var(--green);border-radius:2px;"></span>Présents</span>
-          <span style="display:flex;align-items:center;gap:6px;"><span style="display:inline-block;width:10px;height:10px;background:var(--red);border-radius:2px;"></span>Absents</span>
+        <div id="presencesMensuelles"></div>
+        <div style="position:relative; height:120px; width:100%; margin-top:8px;">
+          <canvas id="presenceChart"></canvas>
         </div>
       </div>
 
@@ -509,10 +459,11 @@
               stroke-dasharray="0 251" stroke-dashoffset="0" stroke-linecap="round"/>
           </svg>
           <div class="donut-legend">
-            <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div><span class="legend-label">Acceptés</span><span class="legend-val" id="legendAcceptes">0</span></div>
-            <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div><span class="legend-label">Refusés</span><span class="legend-val" id="legendRefuses">0</span></div>
-            <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div><span class="legend-label">En attente</span><span class="legend-val" id="legendAttente">0</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div><span class="legend-label">Acceptés</span><span class="legend-val" id="legendAcceptes">0</span><span id="acceptesCandidatures" style="display:none">0</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div><span class="legend-label">Refusés</span><span class="legend-val" id="legendRefuses">0</span><span id="refusesCandidatures" style="display:none">0</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div><span class="legend-label">En attente</span><span class="legend-val" id="legendAttente">0</span><span id="attentesCandidatures" style="display:none">0</span></div>
           </div>
+          <span id="totalCandidatures" style="display:none">0</span>
         </div>
       </div>
     </div>
@@ -525,9 +476,7 @@
           <span class="chart-title">🔔 Alertes Actives</span>
           <span class="view-all" onclick="navigateTo('alertes.html')" style="cursor:pointer;">Voir tout →</span>
         </div>
-        <div id="alertesContainer">
-          <!-- Les alertes seront ajoutées dynamiquement ici -->
-        </div>
+        <div id="dashboardAlertesList"></div>
       </div>
 
       <!-- Projets avancement -->
@@ -536,8 +485,10 @@
           <span class="chart-title">📁 Avancement Projets</span>
           <span class="view-all" onclick="navigateTo('projets.html')" style="cursor:pointer;">Voir tout →</span>
         </div>
-        <div id="projetsContainer">
-          <!-- Les projets seront ajoutés dynamiquement ici -->
+        <div id="dashboardProjetsList"></div>
+        <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
+          <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:10px">Stagiaires récents</div>
+          <div id="dashboardStagiairesList"></div>
         </div>
       </div>
     </div>
@@ -564,191 +515,262 @@
     }
   }
 
-  // Utiliser les données partagées du système pour les autres données
-  let dashboardData = window.sharedData.getData();
-
   // Fonction pour mettre à jour les KPIs
   async function updateKPIs() {
-    console.log('[KPI] Début de updateKPIs');
-    const BACKEND_URL = window.BACKEND_URL || 'https://orchid-island-api.onrender.com';
-    
-    let stagiairesSuccess = false;
-    let stagiairesCount = 0;
-    
-    try {
-      // 1. Charger les stagiaires depuis la gestion des stagiaires
-      console.log('[KPI] Appel API stagiaires...');
-      
-      try {
-        const stagiairesResponse = await fetch(`${BACKEND_URL}/api/auth/stagiaires/`);
-        const stagiairesData = await stagiairesResponse.json();
-        console.log('[KPI] Réponse stagiaires:', stagiairesData);
-        
-        if (stagiairesData.success) {
-          stagiairesSuccess = true;
-          stagiairesCount = stagiairesData.stagiaires.length;
-          console.log('[KPI] Nombre de stagiaires depuis API:', stagiairesCount);
-          
-          // Sauvegarder dans localStorage pour fallback
-          localStorage.setItem('stagiaires_count', stagiairesCount);
-        } else {
-          console.error('[KPI] Erreur API stagiaires:', stagiairesData.error);
-          throw new Error(stagiairesData.error);
-        }
-      } catch (apiError) {
-        console.error('[KPI] Erreur appel API stagiaires, utilisation du fallback:', apiError);
-        // Fallback: utiliser localStorage
-        const stagiaires = JSON.parse(localStorage.getItem('stagiaires') || '[]');
-        stagiairesCount = stagiaires.length;
-        console.log('[KPI] Nombre de stagiaires depuis localStorage:', stagiairesCount);
-      }
-      
-      // Stagiaires KPI
-      const stagiairesEl = document.getElementById('kpiStagiaires');
-      console.log('[KPI] Element kpiStagiaires:', stagiairesEl);
-      if (stagiairesEl) {
-        stagiairesEl.textContent = stagiairesCount;
-        console.log('[KPI] Stagiaires KPI mis à jour:', stagiairesCount);
-      } else {
-        console.error('[KPI] Element kpiStagiaires non trouvé!');
-      }
-      
-      // 2. Charger les stagiaires actifs depuis le pointage (présents aujourd'hui)
-      console.log('[KPI] Appel API pointages...');
-      const pointagesResponse = await fetch(`${BACKEND_URL}/api/presences/pointages/`);
-      const pointagesData = await pointagesResponse.json();
-      console.log('[KPI] Réponse pointages:', pointagesData);
-      
-      if (pointagesData.success) {
-        const today = new Date().toISOString().split('T')[0];
-        console.log('[KPI] Date d\'aujourd\'hui:', today);
-        console.log('[KPI] Format des dates de pointage:', pointagesData.pointages.map(p => p.date));
-        
-        // Gérer différents formats de date (YYYY-MM-DD ou YYYY-MM-DDTHH:MM:SSZ)
-        const todayPointages = pointagesData.pointages.filter(p => {
-          const pointageDate = p.date.split('T')[0]; // Extraire YYYY-MM-DD
-          return pointageDate === today;
-        });
-        
-        console.log('[KPI] Pointages d\'aujourd\'hui:', todayPointages.length);
-        const uniquePresents = new Set(todayPointages.map(p => `${p.nom}_${p.prenom}`)).size;
-        
-        // Stagiaires Actifs KPI (présents aujourd'hui)
-        const actifsEl = document.getElementById('kpiActifs');
-        console.log('[KPI] Element kpiActifs:', actifsEl);
-        if (actifsEl) {
-          actifsEl.textContent = uniquePresents;
-          console.log('[KPI] Stagiaires Actifs KPI mis à jour:', uniquePresents);
-        } else {
-          console.error('[KPI] Element kpiActifs non trouvé!');
-        }
-      } else {
-        console.error('[KPI] Erreur API pointages:', pointagesData.error);
-      }
-      
-      // 3. Charger les projets depuis la gestion de projet via loadProjetsData
-      console.log('[KPI] Chargement des projets via loadProjetsData...');
-      const projetsData = loadProjetsData();
-      const projetsList = projetsData.list || [];
-      console.log('[KPI] Projets via loadProjetsData:', projetsList.length);
-      const projetsEnCours = projetsData.enCours;
-      console.log('[KPI] Projets en cours:', projetsEnCours);
-      
-      // Projets KPI
-      const projetsEl = document.getElementById('kpiProjets');
-      console.log('[KPI] Element kpiProjets:', projetsEl);
-      if (projetsEl) {
-        projetsEl.textContent = projetsEnCours;
-        console.log('[KPI] Projets KPI mis à jour:', projetsEnCours);
-      } else {
-        console.error('[KPI] Element kpiProjets non trouvé!');
-      }
-      
-      // 4. Charger les rapports depuis la gestion de rapport via sharedData
-      console.log('[KPI] Chargement des rapports depuis sharedData...');
-      const rapportsData = window.sharedData.getData().rapports || { list: [], finaux: [] };
-      const journaliers = rapportsData.list || [];
-      const finaux = rapportsData.finaux || [];
-      console.log('[KPI] Rapports dans sharedData:', journaliers.length);
-      
-      // Rapports Déposés KPI
-      const rapportsEl = document.getElementById('kpiRapports');
-      console.log('[KPI] Element kpiRapports:', rapportsEl);
-      if (rapportsEl) {
-        rapportsEl.textContent = journaliers.length;
-        console.log('[KPI] Rapports KPI mis à jour:', journaliers.length);
-      } else {
-        console.error('[KPI] Element kpiRapports non trouvé!');
-      }
-      
-      // Mettre à jour les légendes du graphique
-      const acceptesEl = document.getElementById('legendAcceptes');
-      if (acceptesEl) {
-        acceptesEl.textContent = stagiairesCount;
-      }
-      
-      const refusesEl = document.getElementById('legendRefuses');
-      if (refusesEl) {
-        refusesEl.textContent = 0;
-      }
-      
-      const attenteEl = document.getElementById('legendAttente');
-      if (attenteEl) {
-        attenteEl.textContent = 0;
-      }
-      
-      // Mettre à jour le total des candidatures
-      const candidaturesTotal = document.getElementById('candidaturesTotal');
-      if (candidaturesTotal) {
-        candidaturesTotal.textContent = `Total: ${stagiairesCount}`;
-      }
-      
-    } catch (error) {
-      console.error('[KPI] Erreur lors du chargement des données:', error);
-    }
-    
-    // Comptes bloqués KPI
-    const bloquesEl = document.getElementById('kpiBloques');
-    if (bloquesEl) {
-      bloquesEl.textContent = 0; // Aucun compte bloqué pour le moment
-    }
+  console.log('[DASHBOARD] updateKPIs appelé');
+  const BACKEND_URL = window.BACKEND_URL || 'https://orchid-island-api.onrender.com';
+
+  // Synchroniser les données depuis sharedData
+  if (window.sharedData) {
+    window.sharedData.syncAllData();
   }
+
+  // Récupérer les données synchronisées
+  const sharedData = window.sharedData ? window.sharedData.getData() : null;
+
+  // --- Stagiaires ---
+  // Lire localStorage en premier pour affichage immédiat
+  const localStags = JSON.parse(localStorage.getItem('stagiaires') || '[]');
+  console.log('[DASHBOARD] localStags:', localStags.length, localStags);
+  if (localStags.length > 0) {
+    document.getElementById('kpiStagiaires').textContent = localStags.length;
+    const trendEl = document.getElementById('trendStagiaires');
+    if (trendEl) trendEl.textContent = `↑ ${localStags.length} stagiaires`;
+  } else {
+    console.log('[DASHBOARD] Aucun stagiaire dans localStorage');
+  }
+
+  // Puis tenter l'API pour mise à jour
+  try {
+    const r = await fetch(`${BACKEND_URL}/api/auth/stagiaires/`);
+    const d = await r.json();
+    if (d.success) {
+      document.getElementById('kpiStagiaires').textContent = d.stagiaires.length;
+      localStorage.setItem('stagiaires', JSON.stringify(d.stagiaires.map(s => ({
+        id: s.id, prenom: s.first_name, nom: s.last_name,
+        email: s.email, ecole: s.ecole || '', formation: s.formation || '',
+        departement: s.departement || '', statut: s.is_active === false ? 'Bloqué' : (s.statut || 'Accepté'),
+        debut: s.date_debut_stage ? new Date(s.date_debut_stage).toLocaleDateString('fr-FR') : '-',
+        fin: s.date_fin_stage ? new Date(s.date_fin_stage).toLocaleDateString('fr-FR') : '-',
+        absences: s.absences_non_justifiees ?? 0
+      }))));
+      // Synchroniser après mise à jour
+      if (window.sharedData) window.sharedData.syncStagiairesData();
+    }
+  } catch(e) {
+    // Fallback depuis sharedData ou localStorage
+    const stagiairesCount = sharedData?.stagiaires?.total || localStags.length;
+    document.getElementById('kpiStagiaires').textContent = stagiairesCount;
+  }
+
+  // --- Présents aujourd'hui ---
+  try {
+    const r = await fetch(`${BACKEND_URL}/api/presences/pointages/`);
+    const d = await r.json();
+    if (d.success) {
+      const today = new Date().toISOString().split('T')[0];
+      const uniq = new Set(
+        d.pointages
+          .filter(p => (p.date || '').split('T')[0] === today && p.type === 'entree')
+          .map(p => p.email || `${p.nom}_${p.prenom}`)
+      );
+      document.getElementById('kpiActifs').textContent = uniq.size;
+    }
+  } catch(e) {
+    document.getElementById('kpiActifs').textContent = sharedData?.stagiaires?.actifs || localStags.length || '—';
+  }
+
+  // --- Projets en cours ---
+  // Lire localStorage en premier
+  const orchidData = JSON.parse(localStorage.getItem('orchidData') || '{"projets":{"list":[]}}');
+  const localProjets = orchidData.projets?.list || [];
+  console.log('[DASHBOARD] localProjets:', localProjets.length, localProjets);
+  const projetsEnCours = localProjets.filter(p => p.etat === 'encours').length;
+  document.getElementById('kpiProjets').textContent = projetsEnCours;
+  
+  // Avancement moyen depuis localStorage
+  if (localProjets.length > 0) {
+    const moy = Math.round(localProjets.reduce((sum, p) => {
+      const tasks = p.tasks || [];
+      let total = 0, done = 0;
+      tasks.forEach(t => { total++; if(t.done) done++; (t.subs||[]).forEach(s => { total++; if(s.done) done++; }); });
+      return sum + (total > 0 ? (done/total)*100 : 0);
+    }, 0) / localProjets.length);
+    document.querySelector('.kpi-card.blue .kpi-trend').textContent = `↑ ${moy}% avancement`;
+  }
+
+  // --- Rapports déposés ---
+  // Lire localStorage en premier
+  const rapportsData = JSON.parse(localStorage.getItem('rapports') || '{"list":[]}');
+  const today = new Date().toLocaleDateString('fr-FR');
+  const rapportsAujourdhui = (rapportsData.list || []).filter(r => r.date === today).length;
+  document.getElementById('kpiRapports').textContent = rapportsAujourdhui;
+  const stagiairesTotal = localStags.length;
+  const miss = Math.max(0, stagiairesTotal - rapportsAujourdhui);
+  const trendEl = document.querySelector('.kpi-card.green .kpi-trend');
+  if (trendEl) trendEl.textContent = miss > 0 ? `↓ ${miss} manquant${miss > 1 ? 's' : ''}` : 'Tous déposés';
+
+  // --- Alertes non lues ---
+  try {
+    const alerts = JSON.parse(localStorage.getItem('system_alerts') || '[]');
+    const unread = alerts.filter(a => !a.read).length;
+    const critiques = alerts.filter(a => !a.read && a.type === 'critique').length;
+    document.getElementById('kpiBloques').textContent = unread;
+    const trendEl = document.querySelector('.kpi-card.red .kpi-trend');
+    if (trendEl) trendEl.textContent = `⚠ ${critiques} critique${critiques > 1 ? 's' : ''}`;
+  } catch(e) {}
+}
+
+  async function updatePresenceChart() {
+  const BACKEND_URL = window.BACKEND_URL || 'https://orchid-island-api.onrender.com';
+  try {
+    const r = await fetch(`${BACKEND_URL}/api/presences/historique/`);
+    const d = await r.json();
+    if (!d.success) return;
+
+    const today = new Date().toISOString().split('T')[0];
+    const todayDate = new Date(today);
+    const dayOfWeek = todayDate.getDay() === 0 ? 6 : todayDate.getDay() - 1;
+    const monday = new Date(todayDate);
+    monday.setDate(todayDate.getDate() - dayOfWeek);
+
+    const weekDays = Array.from({length: 5}, (_, i) => {
+      const d2 = new Date(monday);
+      d2.setDate(monday.getDate() + i);
+      return d2.toISOString().split('T')[0];
+    });
+
+    const presParJour = weekDays.map(dateStr => {
+      let count = 0;
+      d.stagiaires.forEach(s => {
+        const j = s.jours.find(j => j.date === dateStr);
+        if (j && (j.statut === 'present' || j.statut === 'retard')) count++;
+      });
+      return count;
+    });
+
+    // ✅ FIX: Détruire l'ancienne instance avant d'en créer une nouvelle
+    if (window.barChartInstance) {
+      window.barChartInstance.destroy();
+      window.barChartInstance = null;
+    }
+
+    // ✅ FIX: Recréer le canvas proprement pour éviter l'accumulation
+    const canvasContainer = document.getElementById('presenceChart').parentNode;
+    const oldCanvas = document.getElementById('presenceChart');
+    const newCanvas = document.createElement('canvas');
+    newCanvas.id = 'presenceChart';
+    canvasContainer.replaceChild(newCanvas, oldCanvas);
+
+    const ctx = newCanvas.getContext('2d');
+    window.barChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Lundi','Mardi','Mercredi','Jeudi','Vendredi'],
+        datasets: [{
+          label: 'Présents',
+          data: presParJour,
+          backgroundColor: '#1D9E75',
+          borderRadius: 4,
+          borderSkipped: false
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: '#B8C5D6', font: { size: 10 } }
+          },
+          y: {
+            ticks: { color: '#B8C5D6', stepSize: 1, callback: v => Math.round(v), font: { size: 10 } },
+            beginAtZero: true,
+            max: Math.max(...presParJour, 1) + 1
+          }
+        }
+      }
+    });
+
+    // ✅ FIX: Mettre à jour les mini-barres textuelles SANS toucher au canvas
+    const labels = ['Lun','Mar','Mer','Jeu','Ven'];
+    const miniContainer = document.getElementById('presencesMensuelles');
+    const totalStagiaires = d.stagiaires?.length || 1;
+    if (miniContainer) {
+      miniContainer.innerHTML = labels.map((lbl, i) => {
+        const pct = totalStagiaires > 0 ? (presParJour[i] / totalStagiaires) * 100 : 0;
+        return `
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="font-size:12px;color:var(--muted);width:28px">${lbl}</span>
+          <div style="flex:1;height:7px;background:var(--border);border-radius:4px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:#1D9E75;border-radius:4px"></div>
+          </div>
+          <span style="font-size:12px;color:var(--text);width:16px;text-align:right">${presParJour[i]}</span>
+        </div>`;
+      }).join('');
+    }
+
+    const badge = document.getElementById('presenceCountBadge');
+    const todayIdx = weekDays.indexOf(today);
+    if (badge && todayIdx >= 0) badge.textContent = `${presParJour[todayIdx]} présents`;
+
+  } catch(e) {
+    console.error('[PRESENCE CHART]', e);
+  }
+}
 
   // Fonction pour mettre à jour le graphique de candidatures
   function updateCandidaturesChart() {
-    // Lire depuis localStorage directement
+    // Lire depuis localStorage (peuplé par loadBackendData)
     const stagiaires = JSON.parse(localStorage.getItem('stagiaires') || '[]');
-    const actifs = stagiaires.filter(s => s.statut === 'Accepté' || !s.statut).length;
-    const bloques = stagiaires.filter(s => s.bloque === true || s.statut === 'Refusé').length;
-    const enAttente = stagiaires.filter(s => s.statut === 'En attente').length;
-    const total = actifs + bloques + enAttente;
+    const total = stagiaires.length;
+    const normalise = v => (v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    const acceptes = stagiaires.filter(s => normalise(s.statut || '') === 'accepte').length;
+    const refuses  = stagiaires.filter(s => ['refuse','bloque'].includes(normalise(s.statut || ''))).length;
+    const attentes = stagiaires.filter(s => normalise(s.statut || '') === 'en attente').length;
     
-    if (total === 0) {
-      // Pas de données, garder le graphique vide
-      return;
-    }
+    // Mettre à jour le total
+    const candidaturesTotal = document.getElementById('candidaturesTotal');
+    if (candidaturesTotal) candidaturesTotal.textContent = `Total: ${total}`;
     
-    // Calculer les proportions pour le donut chart
-    const circumference = 2 * Math.PI * 40; // 251.2
-    const acceptesLength = (actifs / total) * circumference;
-    const refusesLength = (bloques / total) * circumference;
-    const attenteLength = (enAttente / total) * circumference;
+    // Mettre à jour les IDs pour updateCandidatures
+    const totalEl = document.getElementById('totalCandidatures');
+    if (totalEl) totalEl.textContent = total;
+    const acceptesEl = document.getElementById('acceptesCandidatures');
+    if (acceptesEl) acceptesEl.textContent = acceptes;
+    const refusesEl = document.getElementById('refusesCandidatures');
+    if (refusesEl) refusesEl.textContent = refuses;
+    const attentesEl = document.getElementById('attentesCandidatures');
+    if (attentesEl) attentesEl.textContent = attentes;
     
-    // Mettre à jour les cercles SVG
-    const circles = document.querySelectorAll('.donut circle');
+    // Mettre à jour les légendes du donut
+    document.getElementById('legendAcceptes').textContent = acceptes;
+    document.getElementById('legendRefuses').textContent = refuses;
+    document.getElementById('legendAttente').textContent = attentes;
+
+    if (total === 0) return;
+
+    const circumference = 251.2;
+    const circles = document.querySelectorAll('svg.donut circle');
     if (circles.length >= 4) {
-      // Acceptés (vert) - commence à 0
+      const acceptesLength = (acceptes / total) * circumference;
+      const refusesLength = (refuses / total) * circumference;
+      const attentesLength = (attentes / total) * circumference;
       circles[1].style.strokeDasharray = `${acceptesLength} 251`;
-      
-      // Refusés (rouge) - commence après acceptés
+      circles[1].style.strokeDashoffset = '0';
       circles[2].style.strokeDasharray = `${refusesLength} 251`;
       circles[2].style.strokeDashoffset = -acceptesLength;
-      
-      // En attente (orange) - commence après acceptés + refusés
-      circles[3].style.strokeDasharray = `${attenteLength} 251`;
+      circles[3].style.strokeDasharray = `${attentesLength} 251`;
       circles[3].style.strokeDashoffset = -(acceptesLength + refusesLength);
     }
   }
+
+  // Fonction updateCandidatures (alias)
+  function updateCandidatures() {
+    updateCandidaturesChart();
+  }
+  window.addEventListener('storage', updateCandidatures);
 
   // Fonction pour charger les données depuis le backend
   async function loadBackendData() {
@@ -774,9 +796,9 @@
           departement: s.departement || 'Non spécifié',
           debut: s.date_debut_stage ? new Date(s.date_debut_stage).toLocaleDateString('fr-FR') : '-',
           fin: s.date_fin_stage ? new Date(s.date_fin_stage).toLocaleDateString('fr-FR') : '-',
-          statut: 'Accepté',
+          statut: s.is_active === false ? 'Bloqué' : (s.statut || 'Accepté'),
           absences: 0,
-          bloque: false,
+          bloque: s.is_active === false,
           rapport: 'Non déposé',
           avatar: '#' + Math.floor(Math.random()*16777215).toString(16),
           cv_url: s.cv_url,
@@ -832,66 +854,118 @@
     }
   }
 
-  // Fonction pour mettre à jour le graphique de présences
-  async function updatePresenceChart() {
-    // Synchroniser les données de pointage depuis le backend
-    await syncPointagesFromBackend();
+  // Fonction pour afficher les présences mensuelles par semaine (sans weekend)
+  function renderPresencesMensuelles() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+
+    // Calculer les semaines du mois (sans weekend)
+    const weeks = [];
+    let d = new Date(year, month, 1);
+    let weekDays = [];
     
-    const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul'];
-    const barGroups = document.querySelectorAll('.bar-group');
+    while (d.getMonth() === month) {
+      const day = d.getDay();
+      if (day !== 0 && day !== 6) { // exclure samedi/dimanche
+        weekDays.push(new Date(d));
+      }
+      if (day === 5 || new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1).getDay() === 1) {
+        if (weekDays.length) { weeks.push([...weekDays]); weekDays = []; }
+      }
+      d.setDate(d.getDate() + 1);
+    }
+    if (weekDays.length) weeks.push(weekDays);
 
-    // Utiliser les données de pointage réelles du système partagé
-    dashboardData = window.sharedData.getData();
-    const pointagesData = dashboardData.pointages || [];
+    // Lire les présences depuis orchid_shared_data (source de vérité du backend)
+    const orchidShared = JSON.parse(localStorage.getItem('orchid_shared_data') || '{}');
+    const presences = Array.isArray(orchidShared.pointages) ? orchidShared.pointages : [];
+    const stagiaires = JSON.parse(localStorage.getItem('stagiaires') || '[]');
+    const totalPersonnes = stagiaires.length || 1;
 
-    // Calculer le nombre de présents aujourd'hui
-    const today = new Date().toISOString().split('T')[0];
-    const todayPointages = pointagesData.filter(p => p.date === today);
-    const uniquePresents = new Set(todayPointages.map(p => `${p.nom}_${p.prenom}`)).size;
+    let html = '';
+    // Afficher seulement jusqu'à la semaine actuelle
+    const currentWeekIndex = weeks.findIndex(w => 
+      w.some(day => day.toDateString() === now.toDateString()) ||
+      (weeks.indexOf(w) > 0 && w[0] > now)
+    );
+    const weeksToShow = weeks.slice(0, currentWeekIndex + 1 || weeks.length);
 
-    console.log('[DEBUG] Pointages aujourd\'hui:', todayPointages.length);
-    console.log('[DEBUG] Présents uniques aujourd\'hui:', uniquePresents);
-    console.log('[DEBUG] Tous les pointages:', pointagesData);
+    const weekData = [];
+    weeksToShow.forEach((week, i) => {
+      // Compter présents uniques par jour (type_pointage === 'entree')
+      let totalPresents = 0;
+      week.forEach(day => {
+        const dayPresents = new Set(presences.filter(p => {
+          const pDate = p.date ? new Date(p.date.split('T')[0]).toDateString() : '';
+          return pDate === day.toDateString() && p.type_pointage === 'entree';
+        }).map(p => p.email || `${p.nom}_${p.prenom}`)).size;
+        totalPresents += dayPresents;
+      });
+      const joursOuvrables = week.length;
+      const moyennePresents = joursOuvrables ? Math.round(totalPresents / joursOuvrables) : 0;
+      const absents = Math.max(totalPersonnes - moyennePresents, 0);
 
-    // Mettre à jour le badge avec le nombre de personnes présentes aujourd'hui
-    const presenceCountBadge = document.getElementById('presenceCountBadge');
-    if (presenceCountBadge) {
-      presenceCountBadge.textContent = `${uniquePresents} présents`;
+      weekData.push({ presents: moyennePresents, absents });
+
+      html += `<div style="margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
+          <span>Semaine ${i+1} (${week[0].getDate()}–${week[week.length-1].getDate()} ${now.toLocaleString('fr',{month:'short'})})</span>
+          <span>✅ ${moyennePresents} · ❌ ${absents}</span>
+        </div>
+        <div style="background:#1A1F2E;border-radius:4px;height:4px">
+          <div style="background:var(--green);width:${totalPersonnes ? (moyennePresents/totalPersonnes*100) : 0}%;height:100%;border-radius:4px;transition:width 0.5s"></div>
+        </div>
+      </div>`;
+    });
+
+    const container = document.getElementById('presencesMensuelles');
+    if (container) container.innerHTML = html || '<p style="color:var(--muted)">Aucune donnée</p>';
+
+    // Mettre à jour le badge
+    const badge = document.getElementById('presenceCountBadge');
+    if (badge) {
+      const todayStr = now.toDateString();
+      const todayPresents = new Set(presences.filter(p => {
+        const pDate = p.date ? new Date(p.date.split('T')[0]).toDateString() : '';
+        return pDate === todayStr && p.type_pointage === 'entree';
+      }).map(p => p.email || `${p.nom}_${p.prenom}`)).size;
+      badge.textContent = `${todayPresents} présents`;
     }
 
-    // Calculer monthlyData depuis les pointages réels
-    const monthNames = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
-    const monthlyData = {};
-    pointagesData.forEach(p => {
-      const dateStr = p.date ? p.date.split('T')[0] : null;
-      if (!dateStr) return;
-      const month = monthNames[new Date(dateStr).getMonth()];
-      if (!monthlyData[month]) monthlyData[month] = { presents: 0, absents: 0 };
-      monthlyData[month].presents++;
-    });
-    
-    months.forEach((month, index) => {
-      if (barGroups[index]) {
-        const bars = barGroups[index].querySelectorAll('.bar');
-        const presents = monthlyData[month]?.presents || 0;
-        const absents = monthlyData[month]?.absents || 0;
-        
-        // Calculer la hauteur maximale pour l'échelle
-        const maxValue = Math.max(presents + absents, 100);
-        
-        if (bars[0]) {
-          bars[0].style.height = `${(presents / maxValue) * 100}px`;
-        }
-        if (bars[1]) {
-          bars[1].style.height = `${(absents / maxValue) * 100}px`;
-        }
-      }
-    });
+    // Diagramme à barres sur canvas (désactivé pour éviter conflit avec Chart.js)
+    // setTimeout(() => {
+    //   const canvas = document.getElementById('presenceChart');
+    //   if (!canvas) return;
+    //   const ctx = canvas.getContext('2d');
+    //   canvas.width = canvas.offsetWidth;
+    //   const barW = canvas.width / (weeksToShow.length * 3 + 1);
+    //   ctx.clearRect(0, 0, canvas.width, canvas.height);
+    //   const maxVal = totalPersonnes || 1;
+    //   const chartHeight = 60; // Réduit de 110 à 60
+    //   weeksToShow.forEach((week, i) => {
+    //     const x = (i * 3 + 1) * barW;
+    //     const presH = (weekData[i].presents / maxVal) * chartHeight;
+    //     const absH  = (weekData[i].absents  / maxVal) * chartHeight;
+    //     ctx.fillStyle = '#27AE60';
+    //     ctx.fillRect(x, chartHeight - presH, barW, presH);
+    //     ctx.fillStyle = '#E74C3C';
+    //     ctx.fillRect(x + barW, chartHeight - absH, barW, absH);
+    //     ctx.fillStyle = '#B8C5D6';
+    //     ctx.font = '9px Inter';
+    //     ctx.fillText(`S${i+1}`, x, chartHeight + 12);
+    //   });
+    // }, 100);
   }
+
+  // Appeler au chargement ET toutes les 60 secondes
+  // ❌ SUPPRIMER CES DEUX LIGNES — renderPresencesMensuelles() écrase le container
+  // renderPresencesMensuelles();
+  // setInterval(renderPresencesMensuelles, 60000);
 
   // Fonction pour mettre à jour les alertes
   function updateAlertes() {
-    const alertesContainer = document.getElementById('alertesContainer');
+    const alertesContainer = document.getElementById('dashboardAlertesList');
     if (!alertesContainer) {
       console.error('Conteneur d\'alertes non trouvé');
       return;
@@ -966,6 +1040,111 @@
     console.log('Alertes affichées avec succès');
   }
 
+  // Fonction pour mettre à jour les alertes du dashboard (vue simplifiée)
+  function updateDashboardAlertes() {
+  const alerts = window.alertManager ? window.alertManager.getSystemAlerts() : 
+                 JSON.parse(localStorage.getItem('system_alerts') || '[]');
+  const container = document.getElementById('dashboardAlertesList');
+  if (!container) return;
+
+  const recent = alerts.slice(0, 5);
+  if (recent.length === 0) {
+    container.innerHTML = '<p style="color:var(--muted);font-size:13px">Aucune alerte active</p>';
+    return;
+  }
+
+  container.innerHTML = recent.map(a => {
+    const typeMap = {
+      critique: { bg: 'rgba(231,76,60,0.12)', color: '#E74C3C', icon: '!', label: 'Critique' },
+      avertissement: { bg: 'rgba(243,156,18,0.12)', color: '#F39C12', icon: '~', label: 'Avertissement' },
+      info: { bg: 'rgba(0,75,168,0.10)', color: '#3E78B2', icon: 'i', label: 'Info' }
+    };
+    const t = typeMap[a.type] || typeMap.info;
+    const timeStr = a.date ? new Date(a.date).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : '';
+    return `
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--border)">
+        <div style="width:28px;height:28px;border-radius:6px;background:${t.bg};color:${t.color};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0">${t.icon}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:500;color:var(--text);line-height:1.3">${a.message}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">${timeStr} &nbsp;<span style="background:${t.bg};color:${t.color};padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600">${t.label}</span></div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+  // Fonction pour mettre à jour l'avancement des projets du dashboard (vue simplifiée)
+  function updateDashboardProjets() {
+  // Lire localStorage en premier pour affichage immédiat
+  const orchidData = JSON.parse(localStorage.getItem('orchidData') || '{"projets":{"list":[]}}');
+  const localProjets = orchidData.projets?.list || [];
+  const localStags = JSON.parse(localStorage.getItem('stagiaires') || '[]');
+  
+  // Synchroniser les données depuis sharedData
+  if (window.sharedData) {
+    window.sharedData.syncProjetsData();
+    window.sharedData.syncStagiairesData();
+  }
+
+  // Récupérer les données synchronisées (fallback)
+  const sharedData = window.sharedData ? window.sharedData.getData() : null;
+  const projets = localProjets.length > 0 ? localProjets : (sharedData?.projets?.list || []);
+  const container = document.getElementById('dashboardProjetsList');
+  if (!container) return;
+
+  if (projets.length === 0) {
+    container.innerHTML = '<p style="color:var(--muted);font-size:13px">Aucun projet — <span style="color:var(--primary-light);cursor:pointer" onclick="navigateTo(\'projets.html\')">Créer →</span></p>';
+  } else {
+    container.innerHTML = projets.slice(0, 4).map(p => {
+      const tasks = p.tasks || [];
+      let total = 0, done = 0;
+      tasks.forEach(t => {
+        total++; if(t.done) done++;
+        (t.subs || []).forEach(s => { total++; if(s.done) done++; });
+      });
+      const pct = total > 0 ? Math.round((done/total)*100) : (p.avancement || 0);
+      const isRetard = p.etat === 'retard';
+      const color = pct >= 100 ? '#1D9E75' : isRetard ? '#E74C3C' : '#185FA5';
+      const badgeBg = isRetard ? 'rgba(231,76,60,0.12)' : 'rgba(0,75,168,0.10)';
+      const badgeColor = isRetard ? '#E74C3C' : '#3E78B2';
+      const statusLabel = p.etat === 'done' ? 'Terminé' : isRetard ? 'En retard' : 'En cours';
+      return `
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.nom}</div>
+            <div style="height:5px;background:var(--border);border-radius:3px;margin-top:4px;overflow:hidden">
+              <div style="height:100%;width:${pct}%;background:${color};border-radius:3px"></div>
+            </div>
+          </div>
+          <div style="font-size:11px;font-weight:500;color:${color};width:32px;text-align:right">${pct}%</div>
+          <span style="background:${badgeBg};color:${badgeColor};font-size:10px;padding:2px 7px;border-radius:4px;font-weight:500;white-space:nowrap">${statusLabel}</span>
+        </div>`;
+    }).join('');
+  }
+
+  // Stagiaires récents — TOUJOURS afficher
+  const stagEl = document.getElementById('dashboardStagiairesList');
+  if (!stagEl) return;
+  const stags = localStags.length > 0 ? localStags.slice(0, 3) : (sharedData?.stagiaires?.list?.slice(0, 3) || []);
+  if (stags.length === 0) {
+    stagEl.innerHTML = '<p style="color:var(--muted);font-size:12px">Aucun stagiaire enregistré</p>';
+    return;
+  }
+  stagEl.innerHTML = stags.map(s => {
+    const full = `${s.prenom || ''} ${s.nom || ''}`.trim();
+    const initials = full.split(' ').map(n => n[0] || '').join('').toUpperCase().slice(0, 2);
+    const abs = s.absences ?? 0;
+    return `
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:8px">
+        <div style="width:28px;height:28px;border-radius:6px;background:rgba(0,75,168,0.12);color:#3E78B2;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0">${initials}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${full}</div>
+          <div style="font-size:11px;color:var(--muted)">${s.ecole || ''} · Abs NJ: ${abs}/3</div>
+        </div>
+        <span style="background:rgba(39,174,96,0.12);color:#27AE60;font-size:10px;padding:2px 7px;border-radius:4px;font-weight:500">Accepté</span>
+      </div>`;
+  }).join('');
+}
+
   // Fonction pour mettre à jour l'avancement des projets
   function updateProjetsProgress() {
     const projetsContainer = document.getElementById('projetsContainer');
@@ -979,7 +1158,11 @@
     const projets = projetsData.list || [];
     
     if (projets.length === 0) {
-      projetsContainer.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Aucun projet en cours</div>';
+      projetsContainer.innerHTML = `
+        <div style="text-align:center;padding:20px;color:var(--muted);">
+          Aucun projet — 
+          <span style="color:var(--primary-light);cursor:pointer;" onclick="navigateTo('projets.html')">Créer un projet →</span>
+        </div>`;
       return;
     }
 
@@ -1053,7 +1236,8 @@
   // Fonction pour mettre à jour le nombre d'alertes
   function updateAlertBadge() {
     // Utiliser AlertManager au lieu de sharedData
-    const unreadCount = window.alertManager ? window.alertManager.getUnreadAlertesCount() : 0;
+    const unreadCount = (window.alertManager && typeof window.alertManager.getUnreadAlertesCount === 'function') 
+                        ? window.alertManager.getUnreadAlertesCount() : 0;
     
     // Mettre à jour le badge dans la navigation
     let navAlertBadge = document.querySelector('.nav-item[onclick*="alertes.html"] .nav-badge');
@@ -1106,93 +1290,63 @@
       window.sharedData.syncStagiairesData();
       window.sharedData.syncRapportsData();
     }
-    
+
     // Récupérer les données fraîches
-    dashboardData = window.sharedData.getData();
+    const dashboardData = window.sharedData ? window.sharedData.getData() : null;
     console.log('[DASHBOARD] Données récupérées:', dashboardData);
     await updateKPIs();
     console.log('[DASHBOARD] updateKPIs terminé');
     await updatePresenceChart();
-    updateAlertes();
-    updateProjetsProgress();
+    updateDashboardAlertes();
+    updateDashboardProjets();
     updateAlertBadge();
     updateCandidaturesChart();
   }
 
   // Fonction d'initialisation
   async function initDashboard() {
-    console.log('[DASHBOARD] Début de initDashboard');
-    
-    // Vérifier les droits d'accès et filtrer la navigation
-    const currentUser = checkRoleAccess();
-    filterNavByRole();
-    
-    const d = new Date();
-    document.getElementById('currentDate').textContent = d.toLocaleDateString('fr-FR', { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
-    
-    // Navigation spécifique pour le dashboard
-    document.querySelector('.nav-item[onclick="navigateTo(\'dashboard.html\')"]')?.classList.add('active');
-    
-    // Charger les données depuis le backend immédiatement
-    try {
-      console.log('[DASHBOARD] Chargement des données depuis le backend...');
-      await loadBackendData();
-      console.log('[DASHBOARD] Données backend chargées');
-      
-      // Synchroniser toutes les données après le chargement
-      if (window.sharedData) {
-        window.sharedData.syncAllData();
-      }
-      
-      // Recharger les données après synchronisation
-      dashboardData = window.sharedData.getData();
-      console.log('[DASHBOARD] Données après syncAllData:', dashboardData);
-      
-      // Initialiser les données
-      console.log('[DASHBOARD] Appel de refreshDashboard...');
-      await refreshDashboard();
-      console.log('[DASHBOARD] refreshDashboard terminé');
-      
-      // Debug: Afficher les données dans la console
-      console.log('Dashboard initialisé avec les données:', dashboardData);
-      console.log('Nombre de stagiaires:', dashboardData.stagiaires?.total || 0);
-      console.log('Nombre de projets:', dashboardData.projets?.total || 0);
-      console.log('Nombre de rapports:', dashboardData.rapports?.aujourdhui || 0);
-    } catch (error) {
-      console.error('Erreur lors du chargement des données:', error);
-      // Fallback: utiliser les données existantes
-      await refreshDashboard();
-    }
-    
-    // Attendre que les données soient initialisées
-    setTimeout(() => {
-      
-      // Debug: Afficher les données dans la console
-      console.log('Dashboard initialisé avec les données:', dashboardData);
-      console.log('Nombre d\'alertes non lues:', window.alertManager ? window.alertManager.getUnreadAlertesCount() : 0);
-      
-      // Forcer une mise à jour immédiate
-      setTimeout(() => {
-        updateAlertes();
-        updateAlertBadge();
-        
-        // Vérifier si le conteneur d'alertes est vide et afficher un message approprié
-        const alertesContainer = document.getElementById('alertesContainer');
-        if (alertesContainer && alertesContainer.innerHTML.trim() === '') {
-          console.log('Conteneur d\'alertes vide, affichage du message par défaut');
-          alertesContainer.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);">Aucune alerte active</div>';
-        }
-      }, 200);
-    }, 500);
-    
-    // Rafraîchir automatiquement toutes les 30 secondes
-    setInterval(refreshDashboard, 30000);
+  const currentUser = checkRoleAccess();
+  filterNavByRole();
+
+  if (currentUser && currentUser.role === 'stagiaire') {
+    window.location.href = 'mon_espace.html';
+    return;
   }
+
+  const d = new Date();
+  document.getElementById('currentDate').textContent = d.toLocaleDateString('fr-FR', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  });
+
+  // Initialiser sharedData si pas encore fait
+  if (!window.sharedData) {
+    console.error('[DASHBOARD] sharedData non initialisé!');
+  }
+
+  // TOUJOURS afficher les données locales en premier
+  await updateKPIs();
+  updateDashboardAlertes();
+  updateDashboardProjets();
+  updateCandidaturesChart();
+  updateAlertBadge();
+
+  // Puis tenter le backend pour mettre à jour
+  try {
+    await loadBackendData();
+    if (window.sharedData) window.sharedData.syncAllData();
+    await updateKPIs();
+    await updatePresenceChart();
+    updateDashboardAlertes();
+    updateDashboardProjets();
+    updateCandidaturesChart();
+    updateAlertBadge();
+  } catch (error) {
+    console.error('Erreur init dashboard:', error);
+    // Les données locales sont déjà affichées
+  }
+
+  setInterval(refreshDashboard, 30000);
+}
 
   // Écouter les mises à jour de données depuis les autres pages
   window.addEventListener('dataUpdated', (event) => {

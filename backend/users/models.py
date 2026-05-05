@@ -9,7 +9,14 @@ class CustomUser(AbstractUser):
         ('stagiaire', 'Stagiaire'),
     ]
     
+    STATUT_CHOICES = [
+        ('Accepté', 'Accepté'),
+        ('En attente', 'En attente'),
+        ('Refusé', 'Refusé'),
+    ]
+    
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='stagiaire')
+    statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='Accepté')
     phone = models.CharField(max_length=20, blank=True, default='')
     cv = models.FileField(upload_to='cv/', blank=True, null=True, verbose_name='CV')
     date_debut_stage = models.DateField(blank=True, null=True, verbose_name='Date début stage')

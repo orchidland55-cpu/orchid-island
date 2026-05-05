@@ -189,7 +189,22 @@ let openSubsMap = {}; // taskId -> bool (subtasks expanded)
 function loadTasksFromProjects() {
   try {
     const data = JSON.parse(localStorage.getItem('orchidData') || '{"projets":{"list":[]}}');
-    const projects = data.projets.list || [];
+    let projects = data.projets.list || [];
+    
+    // ✅ Récupérer l'utilisateur connecté
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const isAdmin = ['admin', 'rh', 'manager'].includes(user.role);
+    const fullName = `${user.first_name} ${user.last_name}`.trim();
+    
+    // ✅ Si stagiaire → filtrer uniquement ses projets
+    if (!isAdmin) {
+      projects = projects.filter(p => 
+        p.resp && p.resp.toLowerCase() === fullName.toLowerCase()
+      );
+      
+      // Masquer les filtres inutiles pour le stagiaire
+      document.getElementById('assigneeFilter').style.display = 'none';
+    }
     
     allTasks = [];
     const projectsSet = new Set();

@@ -545,17 +545,26 @@ let qrCode = null;
 
 function genererQR() {
   const sessionId = Date.now().toString();
-  // Utiliser l'IP réseau pour que le mobile puisse accéder
-  let baseUrl = 'http://192.168.11.249:8000';
-  const scanUrl = baseUrl + '/scan/';
-  const url = `${scanUrl}?session=${sessionId}`;
+  
+  const hostname = window.location.hostname;
+  let baseUrl;
+  
+  if (hostname === '127.0.0.1' || hostname === 'localhost') {
+    // Mac → QR pointe vers l'IP WiFi + port Live Server (5500)
+    baseUrl = 'http://192.168.11.103:5500';
+  } else {
+    baseUrl = `http://${hostname}:5500`;
+  }
+  
+  // ✅ Pointer directement vers la page HTML du scan mobile
+  const url = `${baseUrl}/frontend/pages/scan_mobile.html?session=${sessionId}`;
   
   const wrapper = document.getElementById('qrWrapper');
   const sessionDiv = document.getElementById('qrSession');
   
   wrapper.innerHTML = '';
   
-  const qr = new QRCode(wrapper, {
+  new QRCode(wrapper, {
     text: url,
     width: 220,
     height: 220,
@@ -564,9 +573,8 @@ function genererQR() {
     correctLevel: QRCode.CorrectLevel.H
   });
   
-  sessionDiv.innerHTML = `<div>Session: ${sessionId}</div><div style="font-size:11px;color:#666;margin-top:4px;">${url}</div>`;
-  
-  qrCode = qr;
+  sessionDiv.innerHTML = `<div>Session: ${sessionId}</div>
+    <div style="font-size:11px;color:#666;margin-top:4px;">${url}</div>`;
   
   console.log('QR Code généré:', url);
 }
@@ -577,15 +585,23 @@ function regenererQR() {
 
 // Logs management
 let logs = [];
-const BACKEND_URL = window.BACKEND_URL || 'https://orchid-island-api.onrender.com';
+const BACKEND_URL = window.BACKEND_URL || 'http://192.168.11.215:8000';
 
 async function loadLogsFromBackend() {
   try {
     const response = await fetch(`${BACKEND_URL}/api/presences/pointages/`);
     const data = await response.json();
     if (data.success) {
-      console.log('Logs reçus:', data.pointages.map(p => `${p.id}:${p.prenom} ${p.nom}`).join(', '));
-      logs = data.pointages;
+      // ✅ Filtrer uniquement les pointages d'aujourd'hui
+      const todayStr = new Date().toISOString().split('T')[0];
+      logs = data.pointages.filter(p => {
+        const pDate = (p.date || '').split('T')[0];
+        return pDate === todayStr;
+      });
+
+      // ✅ Sauvegarder dans localStorage pour alertes.html
+      localStorage.setItem('pointageLogs', JSON.stringify(logs));
+
       renderLogs();
       updateKPIs();
     }
@@ -646,10 +662,12 @@ async function supprimerPointage(id) {
   if (!confirm('Êtes-vous sûr de vouloir supprimer ce pointage ?')) return;
   
   try {
+    const token = localStorage.getItem('access_token');
     const response = await fetch(`${BACKEND_URL}/api/presences/pointage/${id}/`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` 
       }
     });
     
@@ -681,15 +699,12 @@ function ajouterLog(data) {
 }
 
 function updateKPIs() {
-  const todayLogs = logs.filter(log => {
-    const logDate = new Date(log.timestamp).toDateString();
-    const today = new Date().toDateString();
-    return logDate === today;
-  });
-  
-  document.getElementById('todayScans').textContent = todayLogs.length;
-  document.getElementById('activeStagiaires').textContent = logs.length > 0 ? new Set(logs.map(l => l.prenom + ' ' + l.nom)).size : 0;
-  document.getElementById('whatsappSent').textContent = logs.filter(l => l.wa).length;
+  // logs est déjà filtré sur aujourd'hui
+  document.getElementById('todayScans').textContent = logs.length;
+  document.getElementById('activeStagiaires').textContent = 
+    logs.length > 0 ? new Set(logs.map(l => l.prenom + ' ' + l.nom)).size : 0;
+  document.getElementById('whatsappSent').textContent = 
+    logs.filter(l => l.wa_envoye || l.wa).length;
   document.getElementById('qrStatus').textContent = '●';
 }
 
@@ -699,15 +714,6 @@ function checkForNewLogs() {
 }
 
 // Initialize
-window.addEventListener('DOMContentLoaded', async () => {
-  // Vérifier les droits d'accès et filtrer la navigation
-  const currentUser = checkRoleAccess();
-  filterNavByRole();
-  
-  genererQR();
-  await loadLogsFromBackend();
-  updateKPIs();
-});
 </script>
 
 <!-- ===== BARRE DE PRÉSENCE STAGIAIRES ===== -->
@@ -835,7 +841,9 @@ const TL_RANGE    = TL_END - TL_START;
 
 function toMinutes(timeStr) {
   if (!timeStr) return null;
-  const parts = timeStr.toString().split(':');
+  // ✅ Prendre seulement HH:MM même si on reçoit HH:MM:SS
+  const str = timeStr.toString().substring(0, 5);
+  const parts = str.split(':');
   if (parts.length < 2) return null;
   const h = parseInt(parts[0]);
   const m = parseInt(parts[1]);
@@ -880,8 +888,8 @@ function buildPresenceRow(stagiaire, pointages) {
   const entreeLog = todayPointages.find(p => p.type === 'entree');
   const sortieLog = todayPointages.find(p => p.type === 'sortie');
 
-  const entreeTime = entreeLog ? toMinutes(entreeLog.heure) : null;
-  const sortieTime = sortieLog ? toMinutes(sortieLog.heure) : null;
+  const entreeTime = entreeLog ? toMinutes(entreeLog.heure.substring(0, 5)) : null;
+  const sortieTime = sortieLog ? toMinutes(sortieLog.heure.substring(0, 5)) : null;
   const statut = getStatut(entreeTime, sortieTime);
 
   const fullName = `${stagiaire.prenom || ''} ${stagiaire.nom || ''}`.trim();
@@ -969,8 +977,11 @@ async function renderPresenceBar() {
     let html = '';
     let nPresent = 0, nRetard = 0, nAbsent = 0, nPartial = 0;
 
+    const todayStr = new Date().toISOString().split('T')[0];
     data.stagiaires.forEach(s => {
-      const todayData = s.jours[s.jours.length - 1]; // Dernier jour (aujourd'hui)
+      // ✅ Chercher explicitement le jour d'aujourd'hui, pas juste le dernier
+      const todayData = s.jours.find(j => j.date === todayStr) 
+        || { statut: 'absent', entree: null, sortie: null, date: todayStr };
       const statut = todayData.statut;
 
       if (statut === 'present') nPresent++;
@@ -986,10 +997,10 @@ async function renderPresenceBar() {
       const m15h30 = pct(HEURE_FIN);
 
       if (todayData.entree) {
-        const entreeTime = toMinutes(todayData.entree);
+        const entreeTime = toMinutes(todayData.entree.substring(0, 5));
         const now = new Date();
         const nowMinutes = now.getHours() * 60 + now.getMinutes();
-        const endMinutes = todayData.sortie ? toMinutes(todayData.sortie) : Math.min(nowMinutes, TL_END);
+        const endMinutes = todayData.sortie ? toMinutes(todayData.sortie.substring(0, 5)) : Math.min(nowMinutes, TL_END);
         
         const startPct = pct(entreeTime);
         const endPct   = pct(endMinutes);
@@ -1058,16 +1069,34 @@ async function renderPresenceBar() {
   }
 }
 
-// Lancer au chargement et rafraîchir toutes les 5s avec les logs
+// Lancer au chargement et rafraîchir
 window.addEventListener('DOMContentLoaded', async () => {
-  await loadLogsFromBackend();  // attendre les données
-  renderPresenceBar();           // puis afficher
+  // Auth & navigation - sécurisé
+  if (typeof checkRoleAccess === 'function') checkRoleAccess();
+  if (typeof filterNavByRole === 'function') filterNavByRole();
+
+  // Init QR
+  genererQR();
+
+  // Chargement initial
+  await loadLogsFromBackend();
+  updateKPIs();
+  await renderPresenceBar();
+  await renderHistorique();
+
+  // Rafraîchissement automatique toutes les 10s
   setInterval(async () => {
     await loadLogsFromBackend();
-    renderPresenceBar();
-  }, 5000);
-  renderHistorique();
-  setInterval(renderHistorique, 60000); // Rafraîchir toutes les minutes
+    updateKPIs();
+    await renderPresenceBar();
+    // Déclencher la vérification des alertes d'absence
+    window.dispatchEvent(new CustomEvent('dataUpdated', {
+      detail: { section: 'alertes' }
+    }));
+  }, 10000);
+
+  // Historique toutes les 60s
+  setInterval(renderHistorique, 60000);
 });
 
 async function renderHistorique() {
@@ -1119,14 +1148,18 @@ async function renderHistorique() {
 
       const color = j.statut === 'present' ? '#27AE60'
                   : j.statut === 'retard'   ? '#F39C12'
+                  : j.statut === 'na'       ? '#4A525A'   // gris = hors stage
                   : isJustifiedDay          ? '#3E78B2'   // bleu = justifié
                   :                           '#E74C3C';   // rouge = absent NJ
 
       const icon  = j.statut === 'present' ? '✓'
                   : j.statut === 'retard'   ? '⏰'
+                  : j.statut === 'na'       ? '—'         // tiret = hors stage
                   : isJustifiedDay          ? '📄'         // document = justifié
                   :                           '✗';
-      const title = j.entree ? `Entrée: ${j.entree}${j.sortie ? ' | Sortie: '+j.sortie : ''}` : 'Absent';
+      const title = j.statut === 'na' ? 'Hors période de stage'
+                  : j.entree ? `Entrée: ${j.entree}${j.sortie ? ' | Sortie: '+j.sortie : ''}`
+                  : 'Absent';
       html += `<td style="text-align:center;padding:12px;">
         <div title="${title}" style="width:32px;height:32px;border-radius:8px;
           background:${color}22;color:${color};display:flex;align-items:center;
@@ -1138,15 +1171,8 @@ async function renderHistorique() {
     });
 
     // ✅ NOUVEAU — Calculer absences NJ en soustrayant les justifiées
-    let absencesNJ = s.total_absences;
-    s.jours.forEach(jour => {
-      const jKey = `absent_justifie_${jour.date}`;
-      const jList = JSON.parse(localStorage.getItem(jKey) || '[]');
-      const fName = `${s.prenom || ''} ${s.nom || ''}`.trim();
-      if (jour.statut === 'absent' && jList.includes(fName)) {
-        absencesNJ = Math.max(0, absencesNJ - 1);
-      }
-    });
+    // ✅ Utiliser absences_non_justifiees du backend (source de vérité)
+    const absencesNJ = s.absences_non_justifiees ?? s.total_absences ?? 0;
 
     const absBg = absencesNJ >= 3 ? 'rgba(231,76,60,0.15)' : 'transparent';
     html += `
@@ -1170,6 +1196,19 @@ async function renderHistorique() {
     document.getElementById('presenceSection').after(histDiv);
   }
   histDiv.innerHTML = html;
+}
+
+// ===== ALERTE EMAIL =====
+const ADMIN_EMAIL = 'md@orchidisland.immo';
+
+function sendEmailAlert(sujet, corps) {
+  const mailtoUrl = `mailto:${ADMIN_EMAIL}?subject=${encodeURIComponent(sujet)}&body=${encodeURIComponent(corps)}`;
+  const a = document.createElement('a');
+  a.href = mailtoUrl;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => document.body.removeChild(a), 500);
 }
 </script>
 <!-- ===== FIN BARRE DE PRÉSENCE ===== -->

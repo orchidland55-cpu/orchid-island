@@ -1,5 +1,5 @@
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from django.utils import timezone
 from django.conf import settings
@@ -93,15 +93,20 @@ def creer_pointage(request):
     prenom = data.get('prenom', '').strip()
     email = data.get('email', '').strip()
     type_pointage = data.get('type', 'entree')
-    heure = data.get('heure', timezone.now().strftime('%H:%M'))
+    heure = data.get('heure', '')
+    if not heure:
+        heure = timezone.now().strftime('%H:%M')
+    # S'assurer que c'est bien HH:MM (pas HH:MM:SS)
+    if len(heure) > 5:
+        heure = heure[:5]
     wa_envoye = data.get('wa', False)
     today = timezone.now().date()
 
     # Validation des champs obligatoires
-    if not nom or not prenom or not email:
+    if not nom or not prenom:
         return Response({
             'success': False,
-            'error': 'Le nom, le prénom et l\'email sont obligatoires.'
+            'error': 'Le nom et le prénom sont obligatoires.'
         }, status=400)
 
     if type_pointage not in ['entree', 'sortie']:
@@ -111,20 +116,24 @@ def creer_pointage(request):
         }, status=400)
 
     try:
-        # Vérifier si le stagiaire existe dans la liste des stagiaires par nom, prénom et email
+        # Vérifier si le stagiaire existe dans la liste des stagiaires par nom, prénom (email optionnel)
         from users.models import CustomUser
-        stagiaire_exists = CustomUser.objects.filter(
+        # Chercher par nom+prénom, affiner avec email si fourni
+        qs = CustomUser.objects.filter(
             first_name__iexact=prenom,
             last_name__iexact=nom,
-            email__iexact=email,
             role='stagiaire'
-        ).exists()
-        
+        )
+        if email:
+            qs = qs.filter(email__iexact=email)
+
+        stagiaire_exists = qs.exists()
+
         if not stagiaire_exists:
-            print(f"[POINTAGE] ❌ STAGIAIRE NON TROUVÉ: {prenom} {nom} ({email}) n'est pas dans la liste des stagiaires")
+            print(f"[POINTAGE] ❌ STAGIAIRE NON TROUVÉ: {prenom} {nom}")
             return Response({
                 'success': False,
-                'error': f'{prenom} {nom} ({email}) n\'est pas autorisé à faire le pointage. Veuillez contacter l\'administration.'
+                'error': f'{prenom} {nom} n\'est pas autorisé à pointer. Veuillez contacter l\'administration.'
             }, status=403)
 
         # Vérifier si ce type de pointage existe déjà aujourd'hui pour cet élève
@@ -252,28 +261,17 @@ def detail_pointage(request, pk):
 
 
 @api_view(['DELETE'])
-@permission_classes([AllowAny])
-def supprimer_pointage(request, pk):
-    """Supprimer un pointage"""
+@permission_classes([IsAuthenticated])
+def supprimer_pointage(request, pointage_id):
+    """Supprimer un pointage individuel."""
+    if request.user.role not in ['admin', 'rh', 'manager']:
+        return Response({'success': False, 'error': 'Accès refusé'}, status=403)
     try:
-        pointage = Pointage.objects.get(pk=pk)
-        nom_complet = f"{pointage.prenom} {pointage.nom}"
+        pointage = Pointage.objects.get(pk=pointage_id)
         pointage.delete()
-        return Response({
-            'success': True,
-            'message': f'Pointage de {nom_complet} supprimé avec succès.'
-        })
+        return Response({'success': True, 'message': 'Pointage supprimé'})
     except Pointage.DoesNotExist:
-        return Response({
-            'success': False,
-            'error': 'Pointage non trouvé.'
-        }, status=404)
-    except Exception as e:
-        logger.error(f"Erreur suppression pointage {pk}: {e}")
-        return Response({
-            'success': False,
-            'error': str(e)
-        }, status=500)
+        return Response({'success': False, 'error': 'Pointage non trouvé'}, status=404)
 
 
 @api_view(['GET'])
@@ -331,21 +329,35 @@ def historique_stagiaire(request):
     """Retourne les 7 derniers jours de pointage pour chaque stagiaire"""
     from datetime import timedelta
     from users.models import CustomUser
-    
+
     today = timezone.now().date()
-    jours = [today - timedelta(days=i) for i in range(6, -1, -1)]
-    
     stagiaires = CustomUser.objects.filter(role='stagiaire')
     result = []
-    
+
     def toMinutes(timeStr):
         if not timeStr: return None
         parts = timeStr.split(':')
         return int(parts[0]) * 60 + int(parts[1])
-    
+
     for s in stagiaires:
+        date_debut = s.date_debut_stage if s.date_debut_stage else today
+        jours = [today - timedelta(days=i) for i in range(6, -1, -1)]
+
         jours_data = []
         for jour in jours:
+            if jour.weekday() >= 5:
+                jours_data.append({'date': jour.isoformat(), 'statut': 'na', 'entree': None, 'sortie': None})
+                continue
+            if jour < s.date_joined.date():
+                jours_data.append({'date': jour.isoformat(), 'statut': 'na', 'entree': None, 'sortie': None})
+                continue
+            if jour < date_debut:
+                jours_data.append({'date': jour.isoformat(), 'statut': 'na', 'entree': None, 'sortie': None})
+                continue
+            if jour > today:
+                jours_data.append({'date': jour.isoformat(), 'statut': 'na', 'entree': None, 'sortie': None})
+                continue
+
             entree = Pointage.objects.filter(
                 prenom__iexact=s.first_name,
                 nom__iexact=s.last_name,
@@ -358,32 +370,52 @@ def historique_stagiaire(request):
                 type_pointage='sortie',
                 date=jour
             ).first()
-            
+
             if not entree:
                 statut = 'absent'
-            elif toMinutes(entree.heure) > (9*60 + 35):  # plus de 5 min de retard
+            elif toMinutes(entree.heure) > (9*60 + 35):
                 statut = 'retard'
             else:
                 statut = 'present'
-            
+
             jours_data.append({
                 'date': jour.isoformat(),
                 'statut': statut,
                 'entree': entree.heure if entree else None,
                 'sortie': sortie.heure if sortie else None,
             })
-        
-        absences = sum(1 for j in jours_data if j['statut'] == 'absent')
-        retards = sum(1 for j in jours_data if j['statut'] == 'retard')
-        
+
+        # ✅ Compter depuis jours_data (source de vérité)
+        total_absences = sum(1 for j in jours_data if j['statut'] == 'absent')
+        total_retards  = sum(1 for j in jours_data if j['statut'] == 'retard')
+
+        # ✅ Compter les absences justifiées dans le modèle Absence
+        absences_justifiees = Absence.objects.filter(
+            stagiaire=s,
+            justifiee=True,
+            date__in=[
+                (today - timedelta(days=i)).isoformat()
+                for i in range(7)
+            ]
+        ).count()
+
+        # ✅ Absences NJ = absences réelles - justifiées
+        absences_nj = max(0, total_absences - absences_justifiees)
+
+        # ✅ Synchroniser le champ du modèle
+        if s.absences_non_justifiees != absences_nj:
+            s.absences_non_justifiees = absences_nj
+            s.save(update_fields=['absences_non_justifiees'])
+
         result.append({
             'prenom': s.first_name,
             'nom': s.last_name,
             'email': s.email,
             'ecole': s.ecole if hasattr(s, 'ecole') else '',
+            'absences_non_justifiees': absences_nj,   # ✅ Calculé dynamiquement
+            'total_absences': total_absences,
+            'total_retards': total_retards,
             'jours': jours_data,
-            'total_absences': absences,
-            'total_retards': retards,
         })
 
     return Response({'success': True, 'stagiaires': result})

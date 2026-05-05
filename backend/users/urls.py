@@ -26,4 +26,10 @@ urlpatterns = [
 
     # ── Profil stagiaire (NOUVEAU) ──
     path('profil/', views.mon_profil, name='mon_profil'),
+
+    # ── Révocation tokens (NOUVEAU) ──
+    path('stagiaire/<int:stagiaire_id>/revoke-tokens/', views.revoke_stagiaire_tokens, name='revoke_stagiaire_tokens'),
+
+    # ── Reset absences (NOUVEAU) ──
+    path('stagiaire/<int:stagiaire_id>/reset-absences/', views.reset_absences_stagiaire, name='reset_absences'),
 ]

@@ -374,8 +374,8 @@
     padding-bottom: 80px;
   }
 </style>
-<script src="/assets/config.js"></script>
-<script src="/auth_roles.js"></script>
+<script src="../assets/config.js"></script>
+<!-- <script src="../auth_roles.js"></script> -->
 </head>
 <body>
 <div class="bg-grad"></div>
@@ -436,8 +436,8 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label">Email</label>
-        <input type="email" id="email" class="form-input" placeholder="Ex: stagiaire@example.com" autocomplete="email">
+        <label class="form-label">Email <span style="color:var(--muted);font-size:10px;">(optionnel)</span></label>
+        <input type="text" id="email" class="form-input" placeholder="Ex: stagiaire@example.com" autocomplete="email">
       </div>
     </div>
 
@@ -467,8 +467,8 @@
 </div>
 
 <script>
-  // Vérifier les droits d'accès (stagiaire uniquement)
-  const currentUser = checkRoleAccess();
+  // Vérifier les droits d'accès (stagiaire uniquement) - DÉSACTIVÉ pour scan public
+  // const currentUser = checkRoleAccess();
   
   let currentType = 'entree';
   const WA_NUMBER = '212681314877';
@@ -482,10 +482,6 @@
   }
   setInterval(updateClock, 1000);
   updateClock();
-
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('dateDebut').value = today;
-  document.getElementById('dateFin').value = today;
 
   const urlParams = new URLSearchParams(window.location.search);
   const typeFromUrl = urlParams.get('type');
@@ -526,36 +522,68 @@
     }
 
     const btn = document.getElementById('btnSubmit');
+    
+    // ✅ Ne pas écraser innerHTML — juste désactiver visuellement
     btn.disabled = true;
+    btn.style.opacity = '0.7';
+    const originalHTML = btn.innerHTML;
     btn.innerHTML = '<div class="spinner"></div><span>Envoi en cours...</span>';
+
+    // Fonction pour réinitialiser le bouton
+    function resetBtn() {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.innerHTML = originalHTML;
+    }
 
     const now = new Date();
     const heure = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-    const dateAuj = now.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-
-    // Vérifier si le stagiaire existe dans la liste
-    const stagiairesList = JSON.parse(localStorage.getItem('stagiaires') || '[]');
-    console.log('[POINTAGE] Liste des stagiaires:', stagiairesList.length, 'stagiaires');
-    console.log('[POINTAGE] Recherche:', nom, prenom);
-    
-    const stagiaireExists = stagiairesList.some(s => {
-      const stagiaireNom = s.nom ? s.nom.trim().toLowerCase() : '';
-      const stagiairePrenom = s.prenom ? s.prenom.trim().toLowerCase() : '';
-      const inputNom = nom.trim().toLowerCase();
-      const inputPrenom = prenom.trim().toLowerCase();
-      
-      const match = stagiaireNom === inputNom && stagiairePrenom === inputPrenom;
-      if (match) {
-        console.log('[POINTAGE] Stagiaire trouvé:', s);
-      }
-      return match;
+    const dateAuj = now.toLocaleDateString('fr-FR', { 
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
     });
 
-    console.log('[POINTAGE] Stagiaire existe:', stagiaireExists);
+    const backendUrl = window.BACKEND_URL || 'http://192.168.11.215:8000';
+    const pointageData = { nom, prenom, email, type: currentType, heure, wa: true };
 
-    const typeLabel = currentType === 'entree' ? 'ARRIVÉE' : 'DÉPART';
+    // ✅ Timeout 10 secondes
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-    const message = 
+    fetch(`${backendUrl}/api/presences/pointage/`, {
+      method: 'POST',
+      mode: 'cors',
+      cache: 'no-cache',
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify(pointageData)
+    })
+    .then(response => {
+      clearTimeout(timeoutId);
+      return response.json().then(result => ({ status: response.status, result }));
+    })
+    .then(({ status, result }) => {
+      resetBtn();
+      console.log('[POINTAGE] Réponse:', status, result);
+
+      if (status === 403) {
+        showErrorScreen(result.error || 'Vous n\'êtes pas autorisé à pointer.');
+        return;
+      }
+      if (status === 409) {
+        showErrorScreen(result.error || 'Vous avez déjà pointé aujourd\'hui.');
+        return;
+      }
+      if (status >= 400) {
+        showErrorScreen(result.error || 'Erreur serveur. Réessayez.');
+        return;
+      }
+
+      // ✅ Succès
+      const typeLabel = currentType === 'entree' ? 'ARRIVÉE' : 'DÉPART';
+      const message = 
 `*Pointage ${typeLabel} - Orchid Island Real Estate*
 
 *Stagiaire :* ${prenom} ${nom}
@@ -565,85 +593,21 @@
 
 Pointage enregistré automatiquement via QR Code
 Orchid Island - Système RH`;
+      const waUrl = result.whatsapp_url || 
+        `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(message)}`;
+      showSuccess(nom, prenom, heure, dateAuj, waUrl, true);
+    })
+    .catch(error => {
+      clearTimeout(timeoutId);
+      resetBtn();
+      console.error('[POINTAGE] Erreur:', error);
 
-    const waUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(message)}`;
-
-    console.log('URL WhatsApp:', waUrl);
-    console.log('Message:', message);
-    console.log('Stagiaire dans la liste:', stagiaireExists);
-
-    // Envoyer les données au backend API immédiatement
-    (async () => {
-      try {
-        const pointageData = {
-          nom: nom,
-          prenom: prenom,
-          email: email,
-          type: currentType,
-          heure: heure,
-          wa: true
-        };
-        console.log('Envoi au backend:', pointageData);
-
-        // URL du backend configurée via config.js
-        const backendUrl = window.BACKEND_URL || 'http://192.168.11.249:8000';
-
-        console.log('[POINTAGE] URL backend:', backendUrl);
-        console.log('[POINTAGE] Endpoint complet:', `${backendUrl}/api/presences/pointage/`);
-        console.log('[POINTAGE] Données à envoyer:', pointageData);
-
-        // Utiliser uniquement fetch pour éviter les doublons
-        const response = await fetch(`${backendUrl}/api/presences/pointage/`, {
-          method: 'POST',
-          mode: 'cors',
-          cache: 'no-cache',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: JSON.stringify(pointageData)
-        });
-
-        console.log('[POINTAGE] Response status:', response.status);
-        console.log('[POINTAGE] Response ok:', response.ok);
-        
-        const result = await response.json();
-        console.log('[POINTAGE] Réponse backend:', result);
-        
-        // Réactiver le bouton
-        const btn = document.getElementById('btnSubmit');
-        btn.disabled = false;
-        btn.innerHTML = '<span id="btnIcon">✓</span><span id="btnText">Confirmer l\'Entrée</span>';
-        
-        // Afficher l'écran de succès avec le bouton WhatsApp
-        showSuccess(nom, prenom, heure, dateAuj, result.whatsapp_url || waUrl, true);
-
-      } catch (error) {
-        console.error('Erreur lors de l\'envoi au backend:', error);
-        
-        // Réactiver le bouton
-        const btn = document.getElementById('btnSubmit');
-        btn.disabled = false;
-        btn.innerHTML = '<span id="btnIcon">✓</span><span id="btnText">Confirmer l\'Entrée</span>';
-        
-        alert('✗ Erreur de connexion au serveur\n\nVeuillez accéder à cette page via:\nhttp://192.168.11.249:8000/scan/\n\nErreur: ' + error.message);
-        
-        // Fallback: sauvegarder localement
-        if (typeof(Storage) !== "undefined") {
-          const logs = JSON.parse(localStorage.getItem('pointageLogs') || '[]');
-          logs.unshift({
-            nom: nom,
-            prenom: prenom,
-            email: email || '',
-            type: currentType,
-            heure: heure,
-            wa: true,
-            timestamp: Date.now()
-          });
-          localStorage.setItem('pointageLogs', JSON.stringify(logs.slice(0, 15)));
-        }
+      if (error.name === 'AbortError') {
+        showErrorScreen('Délai dépassé (10s).\nVérifiez votre WiFi et réessayez.');
+      } else {
+        showErrorScreen('Impossible de contacter le serveur.\n' + error.message);
       }
-    }, 1200);
+    });
   }
 
   function showSuccess(nom, prenom, heure, dateAuj, waUrl, stagiaireExists) {
@@ -691,17 +655,45 @@ Orchid Island - Système RH`;
       `;
       console.log('Stagiaire non reconnu - WhatsApp non envoyé');
     } else {
-      // Afficher le bouton WhatsApp si le stagiaire est reconnu
+      const typeLabel = currentType === 'entree' ? 'ARRIVÉE' : 'DÉPART';
+
+      // Envoi email automatique
+      const emailSujet = `[Orchid Island] Pointage ${typeLabel} — ${prenom} ${nom}`;
+      const emailCorps =
+`Pointage enregistré — Orchid Island Real Estate
+
+Stagiaire : ${prenom} ${nom}
+Type      : ${typeLabel}
+Heure     : ${heure}
+Date      : ${dateAuj}
+
+Ce message a été généré automatiquement via le système de pointage QR.
+Orchid Island - Système RH`;
+
+      sendEmailAlert(emailSujet, emailCorps);
+
+      // Afficher les boutons WhatsApp et Email
       document.getElementById('waStatus').innerHTML = `
-        <a href="${waUrl}" target="_blank" class="wa-button">
-          <span class="wa-icon">📱</span>
-          <div>
-            <strong>Envoyer WhatsApp</strong><br>
-            <span style="font-size:12px;opacity:0.8">Cliquez pour envoyer le message</span>
+        <div style="display:flex;flex-direction:column;gap:10px;width:100%">
+          <a href="${waUrl}" target="_blank" class="wa-button">
+            <span class="wa-icon">📱</span>
+            <div>
+              <strong>Envoyer WhatsApp</strong><br>
+              <span style="font-size:12px;opacity:0.8">Cliquez pour envoyer le message</span>
+            </div>
+          </a>
+          <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;
+            border-radius:12px;background:rgba(0,75,168,0.1);
+            border:1px solid rgba(0,75,168,0.3);color:#3E78B2;font-size:13px;">
+            <span style="font-size:20px">📧</span>
+            <div>
+              <strong>Email envoyé à md@orchidisland.immo</strong><br>
+              <span style="font-size:12px;opacity:0.8">Notification de pointage envoyée</span>
+            </div>
           </div>
-        </a>
+        </div>
       `;
-      console.log('Bouton WhatsApp affiché');
+      console.log('Boutons WhatsApp et Email affichés');
     }
   }
 
@@ -714,6 +706,54 @@ Orchid Island - Système RH`;
     const btn = document.getElementById('btnSubmit');
     btn.disabled = false;
     selectType('entree');
+  }
+
+  function showErrorScreen(message) {
+    document.getElementById('formScreen').style.display = 'none';
+    const ss = document.getElementById('successScreen');
+    ss.style.display = 'block';
+
+    const ico = document.getElementById('successIcon');
+    const title = document.getElementById('successTitle');
+    const sub = document.getElementById('successSubtitle');
+
+    ico.className = 'success-icon sortie';
+    ico.textContent = '✕';
+    ico.style.background = 'rgba(239,68,68,0.15)';
+    ico.style.boxShadow = '0 0 0 8px rgba(239,68,68,0.08)';
+
+    title.textContent = 'Accès Refusé';
+    title.style.color = 'var(--red)';
+    sub.textContent = message;
+
+    document.getElementById('summaryCard').innerHTML = `
+      <div class="summary-row">
+        <span class="summary-label">Raison</span>
+        <span class="summary-value" style="color:var(--red)">
+          Stagiaire non enregistré dans le système
+        </span>
+      </div>
+      <div class="summary-row">
+        <span class="summary-label">Solution</span>
+        <span class="summary-value" style="font-size:12px">
+          Contactez l'administration Orchid Island
+        </span>
+      </div>
+    `;
+
+    document.getElementById('waStatus').innerHTML = `
+      <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;
+        border-radius:14px;background:rgba(239,68,68,0.1);
+        border:1px solid rgba(239,68,68,0.25);color:var(--red);">
+        <span style="font-size:22px;">🚫</span>
+        <div>
+          <strong>Pointage impossible</strong><br>
+          <span style="font-size:12px;opacity:0.8">
+            Votre nom n'est pas dans la liste des stagiaires autorisés
+          </span>
+        </div>
+      </div>
+    `;
   }
 
   function shakefield(id) {
@@ -730,7 +770,20 @@ Orchid Island - Système RH`;
   const s = document.createElement('style');
   s.textContent = `@keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-8px);}40%{transform:translateX(8px);}60%{transform:translateX(-6px);}80%{transform:translateX(6px);}}`;
   document.head.appendChild(s);
-  
+
+// ===== ALERTE EMAIL =====
+const ADMIN_EMAIL = 'md@orchidisland.immo';
+
+function sendEmailAlert(sujet, corps) {
+  const mailtoUrl = `mailto:${ADMIN_EMAIL}?subject=${encodeURIComponent(sujet)}&body=${encodeURIComponent(corps)}`;
+  const a = document.createElement('a');
+  a.href = mailtoUrl;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => document.body.removeChild(a), 500);
+}
+
 </script>
 </body>
 </html>

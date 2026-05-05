@@ -273,6 +273,165 @@
   }
   .user-name { font-size: 13px; font-weight: 500; }
   .user-role { font-size: 11px; color: var(--muted); }
+
+  /* ===== SECTION JUSTIFICATION PRÉSENCE ===== */
+  .justif-section {
+    margin-bottom: 28px;
+    background: linear-gradient(135deg, var(--card), #1A1F2E);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .justif-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,75,168,0.05);
+  }
+  .justif-section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .justif-badge-count {
+    background: var(--orange);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 9px;
+    border-radius: 20px;
+  }
+  .justif-list {
+    padding: 16px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .justif-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    transition: all 0.3s ease;
+    gap: 16px;
+  }
+  .justif-row:hover {
+    border-color: rgba(0,75,168,0.3);
+    background: rgba(0,75,168,0.04);
+  }
+  .justif-row-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+  }
+  .justif-avatar {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--orange), #e67e22);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 700; color: white;
+    flex-shrink: 0;
+  }
+  .justif-info { flex: 1; }
+  .justif-name { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .justif-meta { font-size: 12px; color: var(--muted); }
+  .justif-status-badge {
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+    background: rgba(243,156,18,0.12);
+    color: var(--orange);
+    white-space: nowrap;
+  }
+  .justif-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .justif-upload-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 14px;
+    background: rgba(0,75,168,0.1);
+    border: 1px dashed rgba(0,75,168,0.4);
+    border-radius: 8px;
+    color: var(--primary-light);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .justif-upload-label:hover {
+    background: rgba(0,75,168,0.2);
+    border-color: var(--primary-light);
+  }
+  .justif-upload-label.has-file {
+    background: rgba(39,174,96,0.1);
+    border-color: rgba(39,174,96,0.4);
+    color: var(--green);
+  }
+  .justif-submit-btn {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, var(--green), #1e8449);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  .justif-submit-btn.ready {
+    opacity: 1;
+    pointer-events: all;
+  }
+  .justif-submit-btn.ready:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(39,174,96,0.3);
+  }
+  .justif-empty {
+    text-align: center;
+    padding: 32px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .justif-toast {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    background: linear-gradient(135deg, #27AE60, #1e8449);
+    color: white;
+    padding: 14px 22px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: 0 8px 32px rgba(39,174,96,0.4);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+  }
+  .justif-toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
 </style>
 <script src="../auth_roles.js"></script>
 </head>
@@ -320,6 +479,29 @@
     <div class="topbar-title">🔔 Alertes Actives</div>
   </div>
   <div class="content">
+    <!-- ===== BARRE JUSTIFICATION PRÉSENCE ===== -->
+    <div class="justif-section" id="justifPresenceSection">
+      <div class="justif-section-header">
+        <div class="justif-section-title">
+          📋 Justifications de Présence en Attente
+          <span class="justif-badge-count" id="justifPendingCount">0</span>
+        </div>
+        <button onclick="refreshJustifSection()"
+          style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;">
+          ↻ Actualiser
+        </button>
+      </div>
+      <div class="justif-list" id="justifPresenceList">
+        <div class="justif-empty">Chargement...</div>
+      </div>
+    </div>
+
+    <!-- Toast notification -->
+    <div class="justif-toast" id="justifToast">
+      <span>✅</span>
+      <span id="justifToastMsg">Justification déposée avec succès</span>
+    </div>
+
     <div class="alertes-header">
       <div class="alertes-title">Alertes</div>
       <div class="alertes-stats">
@@ -355,48 +537,32 @@
   </div>
 </div>
 
-<!-- Modal pour gérer une absence -->
-<div id="absenceModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(5,10,20,0.9);z-index:1000;align-items:center;justify-content:center">
-  <div style="background:linear-gradient(145deg, #0B1322, #0F1A2D);border:1px solid var(--border);border-radius:20px;padding:30px;max-width:500px;width:90%;box-shadow:0 25px 50px rgba(0,0,0,0.5)">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-      <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:var(--gold)">⚠️ Absence détectée</div>
-      <button onclick="closeAbsenceModal()" style="background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer">×</button>
+<!-- Modal Justification 3 absences -->
+<div id="justifModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1000;align-items:center;justify-content:center;">
+  <div style="background:#1A1F2E;border:1px solid #4A525A;border-radius:16px;padding:28px;max-width:480px;width:90%;max-height:90vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:#F0F4F8;">Dépôt de Justification</div>
+      <button onclick="closeJustifModal()" style="background:none;border:none;color:#B8C5D6;font-size:22px;cursor:pointer;">×</button>
     </div>
-    
-    <div id="absenceModalContent" style="margin-bottom:25px;color:var(--text)">
-      <!-- Contenu dynamique -->
+
+    <div id="justifModalInfo" style="background:rgba(231,76,60,0.1);border-left:3px solid #E74C3C;padding:14px;border-radius:0 8px 8px 0;margin-bottom:20px;">
+      <!-- Info stagiaire -->
     </div>
-    
-    <div style="margin-bottom:20px">
-      <div style="font-weight:600;margin-bottom:15px;color:var(--text)">Cette personne a-t-elle une justification ?</div>
-      <div style="display:flex;gap:15px">
-        <button onclick="showJustificationUpload(true)" id="btnHasJustif" style="flex:1;padding:15px;border:2px solid var(--border);border-radius:12px;background:transparent;color:var(--text);cursor:pointer;transition:all 0.2s">
-          <div style="font-size:24px;margin-bottom:5px">✅</div>
-          <div style="font-weight:600">Oui</div>
-          <div style="font-size:12px;color:var(--muted)">Justification disponible</div>
-        </button>
-        <button onclick="showJustificationUpload(false)" id="btnNoJustif" style="flex:1;padding:15px;border:2px solid var(--border);border-radius:12px;background:transparent;color:var(--text);cursor:pointer;transition:all 0.2s">
-          <div style="font-size:24px;margin-bottom:5px">❌</div>
-          <div style="font-weight:600">Non</div>
-          <div style="font-size:12px;color:var(--muted)">Absence non justifiée</div>
-        </button>
+
+    <div style="margin-bottom:20px;">
+      <div style="font-size:13px;color:#B8C5D6;margin-bottom:10px;font-weight:600;">FICHIER DE JUSTIFICATION</div>
+      <div style="border:2px dashed #4A525A;border-radius:10px;padding:24px;text-align:center;cursor:pointer;" onclick="document.getElementById('justifFile').click();" id="dropZone">
+        <div style="font-size:32px;margin-bottom:8px;">📄</div>
+        <div style="color:#B8C5D6;font-size:13px;margin-bottom:8px;">Cliquez pour sélectionner un fichier</div>
+        <div style="color:#4A525A;font-size:11px;">PDF, Word acceptés</div>
+        <input type="file" id="justifFile" accept=".pdf,.doc,.docx" style="display:none;" onchange="onJustifFileSelected(this)">
       </div>
+      <div id="justifFileName" style="margin-top:10px;color:#27AE60;font-size:13px;display:none;"></div>
     </div>
-    
-    <div id="justificationUploadSection" style="display:none;margin-bottom:20px">
-      <div style="font-weight:600;margin-bottom:10px;color:var(--text)">Déposer la justification (PDF)</div>
-      <div style="border:2px dashed var(--gold);border-radius:12px;padding:20px;text-align:center;background:rgba(245,188,76,0.05)">
-        <div style="font-size:40px;margin-bottom:10px">📄</div>
-        <div style="color:var(--muted);margin-bottom:10px;font-size:14px">Glissez-déposez un fichier PDF ou Word</div>
-        <input type="file" id="justificationFile" accept=".pdf,.doc,.docx" style="display:none" onchange="handleJustificationFile(this)">
-        <button onclick="document.getElementById('justificationFile').click()" style="background:var(--gold);color:#000;border:none;padding:10px 20px;border-radius:8px;font-weight:600;cursor:pointer">Choisir un fichier</button>
-        <div id="selectedFileName" style="margin-top:10px;color:var(--green);font-size:13px"></div>
-      </div>
-    </div>
-    
-    <div style="display:flex;gap:10px;justify-content:flex-end">
-      <button onclick="closeAbsenceModal()" style="background:transparent;border:1px solid var(--border);color:var(--text);padding:10px 20px;border-radius:8px;cursor:pointer">Annuler</button>
-      <button onclick="confirmAbsenceAction()" id="btnConfirmAbsence" style="background:var(--red);color:white;border:none;padding:10px 20px;border-radius:8px;font-weight:600;cursor:pointer">Confirmer absence</button>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button onclick="closeJustifModal()" style="padding:10px 20px;background:transparent;border:1px solid #4A525A;border-radius:8px;color:#B8C5D6;cursor:pointer;font-size:13px;">Annuler</button>
+      <button onclick="submitJustification()" id="btnSubmitJustif" disabled style="padding:10px 20px;background:#004BA8;border:none;border-radius:8px;color:white;cursor:pointer;font-size:13px;font-weight:600;opacity:0.5;">Déposer la justification</button>
     </div>
   </div>
 </div>
@@ -404,82 +570,270 @@
 <script src="../assets/config.js"></script>
 <script src="../assets/common.js"></script>
 <script>
-// Fonctions pour la gestion des alertes
+// ✅ Forcer le backend local si on est sur 127.0.0.1
+const BACKEND_URL = window.BACKEND_URL || (
+  window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost'
+    ? 'http://127.0.0.1:8000'
+    : 'https://orchid-island-api.onrender.com'
+);
+
+let currentJustifAlertId = null;
+let currentJustifStagiaire = null;
+let justifFile = null;
+
+// ✅ Flag pour bloquer les refreshs automatiques pendant le modal notif
+let notifModalOpen = false;
+
+// ✅ Cache local des absences déjà justifiées (persiste en localStorage)
+function markAbsenceJustifiedLocally(stagiaireId, dateAbsence, fullName) {
+  const key = 'local_justifications';
+  const existing = JSON.parse(localStorage.getItem(key) || '[]');
+  const entry = `${stagiaireId}_${dateAbsence || fullName}`;
+  if (!existing.includes(entry)) {
+    existing.push(entry);
+    localStorage.setItem(key, JSON.stringify(existing));
+  }
+}
+
+function isAbsenceJustifiedLocally(stagiaireId, dateAbsence, fullName) {
+  const key = 'local_justifications';
+  const existing = JSON.parse(localStorage.getItem(key) || '[]');
+  const entry = `${stagiaireId}_${dateAbsence || fullName}`;
+  return existing.includes(entry);
+}
+
+// ✅ Nettoyer local_justifications des entrées qui ne correspondent plus
+// au backend (si le backend dit absNJ > 0, supprimer les justifications locales
+// pour les dates qui sont encore dans jours absents NJ)
+function syncLocalJustificationsWithBackend(stagiaires) {
+  const localJustif = JSON.parse(localStorage.getItem('local_justifications') || '[]');
+  if (localJustif.length === 0) return;
+
+  let changed = false;
+  const newLocalJustif = localJustif.filter(entry => {
+    // Format: stagiaireId_dateAbsence
+    const parts = entry.split('_');
+    const stagId = parts[0];
+    const dateAbs = parts.slice(1).join('_');
+
+    // Chercher le stagiaire correspondant
+    const stagiaire = stagiaires.find(s => String(s.id) === String(stagId));
+    if (!stagiaire) return true; // garder si stagiaire introuvable
+
+    // Si le backend dit que cette date est encore une absence NJ, supprimer du cache local
+    const isStillNJ = (stagiaire.jours || []).some(j =>
+      j.date === dateAbs && j.statut === 'absent' && !j.justifiee
+    );
+
+    if (isStillNJ) {
+      console.log(`[SYNC JUSTIF] Suppression cache local pour ${stagiaire.prenom} ${stagiaire.nom} — ${dateAbs} (toujours NJ côté backend)`);
+      changed = true;
+      return false; // supprimer cette entrée
+    }
+    return true;
+  });
+
+  if (changed) {
+    localStorage.setItem('local_justifications', JSON.stringify(newLocalJustif));
+  }
+}
+
 function filterAlertes(type) {
   document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
   event.target.classList.add('active');
-  
   const alerts = window.alertManager ? window.alertManager.getSystemAlerts() : [];
   renderAlertes(alerts, type === 'toutes' ? null : type);
 }
 
 function renderAlertes(alerts, filterType = null) {
   const container = document.getElementById('alertesList');
-  
-  // Filtrer si nécessaire
-  const filteredAlerts = filterType ? alerts.filter(a => a.type === filterType) : alerts;
-  
-  // Mettre à jour les stats
+  const filtered = filterType ? alerts.filter(a => a.type === filterType) : alerts;
+
   document.getElementById('totalAlertes').textContent = alerts.length;
   document.getElementById('unreadAlertes').textContent = alerts.filter(a => !a.read).length;
   document.getElementById('criticalAlertes').textContent = alerts.filter(a => a.type === 'critique').length;
   document.getElementById('infoAlertes').textContent = alerts.filter(a => a.type === 'info').length;
-  
-  if (filteredAlerts.length === 0) {
-    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)"><div style="font-size:60px;margin-bottom:20px">✅</div><div>Aucune alerte</div></div>';
+
+  if (filtered.length === 0) {
+    container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)"><div style="font-size:48px;margin-bottom:16px">✅</div><div>Aucune alerte</div></div>';
     return;
   }
-  
-  container.innerHTML = filteredAlerts.map(alert => createAlertCard(alert)).join('');
-  
-  // Animation
-  document.querySelectorAll('.alerte-card').forEach((card, i) => {
-    card.style.opacity = '0';
-    card.style.transform = 'translateY(20px)';
-    setTimeout(() => {
-      card.style.transition = 'all 0.3s ease';
-      card.style.opacity = '1';
-      card.style.transform = 'translateY(0)';
-    }, i * 100);
-  });
+
+  container.innerHTML = filtered.map(a => createAlertCard(a)).join('');
 }
 
 function createAlertCard(alert) {
-  const colors = { critique: 'var(--red)', avertissement: 'var(--gold)', info: 'var(--blue)' };
-  const badges = { critique: '🚫 Critique', avertissement: '⚠️ Avertissement', info: '📁 Info' };
-  const initial = alert.nom ? alert.nom[0].toUpperCase() : '📌';
-  const time = new Date(alert.date).toLocaleString('fr-FR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' });
+  const colors = { critique: '#E74C3C', avertissement: '#F39C12', info: '#3E78B2' };
+  const badges = { critique: '🚫 Critique', avertissement: '⚠️ Avertissement', info: 'ℹ️ Info' };
+  const color = colors[alert.type] || '#3E78B2';
+  const initial = alert.nom ? alert.nom[0].toUpperCase() : '!';
+  const time = alert.date ? new Date(alert.date).toLocaleString('fr-FR', {
+    day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
+  }) : '';
 
-  let actions = `<button class="action-btn btn-resolved" onclick="resolveAlert(${alert.id})">✅ Résolu</button>`;
-  if (alert.requiresJustification) {
-    actions = `<button class="action-btn" style="background:var(--blue);color:white" onclick="justifyAlert(${alert.id})">📄 Justifier</button>
-               <button class="action-btn" style="background:var(--red);color:white" onclick="supprimerAbsenceAlert(${alert.id})">🗑️ Suppr. absence</button>` + actions;
-  }
-  
+  const isAbsenceAlert = alert.category === 'absence' || alert.category === 'absences';
+  const justifBtn = isAbsenceAlert
+    ? `<button onclick="openJustifModal(${alert.id})" style="padding:6px 14px;background:rgba(0,75,168,0.15);border:1px solid rgba(0,75,168,0.4);border-radius:6px;color:#3E78B2;font-size:12px;cursor:pointer;font-weight:600;">� Déposer justification</button>`
+    : '';
+
   return `
-    <div class="alerte-card" data-type="${alert.type}" style="${alert.read ? 'opacity:0.6' : ''}">
+    <div class="alerte-card" style="${alert.read ? 'opacity:0.55' : ''}">
       <div class="alerte-header">
         <div class="alerte-user">
-          <div class="user-avatar" style="background:${colors[alert.type]}">${initial}</div>
-          <div class="user-info">
-            <div class="user-name">${alert.nom || 'Système'}</div>
-            <div class="user-role">${alert.category || 'Alerte'}</div>
+          <div style="width:40px;height:40px;border-radius:10px;background:${color}22;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:${color};flex-shrink:0;">${initial}</div>
+          <div>
+            <div style="font-weight:600;color:var(--text)">${alert.nom || 'Système'}</div>
+            <div style="font-size:12px;color:var(--muted)">${alert.category || 'Alerte'}</div>
           </div>
         </div>
-        <div class="alerte-badge badge-${alert.type}">${badges[alert.type]}</div>
+        <span style="padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;background:${color}22;color:${color}">${badges[alert.type] || alert.type}</span>
       </div>
-      <div class="alerte-time">${time}</div>
-      <div class="alerte-message"><strong>${alert.message}</strong>${alert.details ? ' — ' + alert.details : ''}</div>
-      <div class="alerte-actions">${actions}<button class="action-btn btn-dismiss" onclick="dismissAlert(${alert.id})">🗑️</button></div>
-    </div>
+      <div style="font-size:12px;color:var(--muted);margin:8px 0">${time}</div>
+      <div style="color:var(--text);line-height:1.5;margin-bottom:14px">
+        <strong>${alert.message}</strong>
+        ${alert.details ? `<div style="font-size:13px;color:var(--muted);margin-top:4px">${alert.details}</div>` : ''}
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        ${justifBtn}
+        <button onclick="resolveAlert(${alert.id})" style="padding:6px 14px;background:rgba(39,174,96,0.12);border:1px solid rgba(39,174,96,0.3);border-radius:6px;color:#27AE60;font-size:12px;cursor:pointer;">✅ Résolu</button>
+        <button onclick="dismissAlert(${alert.id})" style="padding:6px 14px;background:rgba(74,82,90,0.12);border:1px solid rgba(74,82,90,0.3);border-radius:6px;color:var(--muted);font-size:12px;cursor:pointer;">🗑️ Supprimer</button>
+      </div>
+    </div>`;
+}
+
+// Ouvrir le modal de justification
+function openJustifModal(alertId) {
+  const alert = window.alertManager.getSystemAlerts().find(a => String(a.id) === String(alertId));
+  if (!alert) return;
+
+  currentJustifAlertId = alertId;
+  currentJustifStagiaire = alert;
+  justifFile = null;
+
+  document.getElementById('justifModalInfo').innerHTML = `
+    <div style="font-weight:600;color:#E74C3C;margin-bottom:6px">⚠️ Absence signalée</div>
+    <div style="font-size:14px;color:#F0F4F8;margin-bottom:4px"><strong>${alert.nom}</strong></div>
+    <div style="font-size:13px;color:#B8C5D6">${alert.details || alert.message}</div>
+    <div style="font-size:12px;color:#B8C5D6;margin-top:6px">Date : ${new Date().toLocaleDateString('fr-FR')}</div>
   `;
+
+  document.getElementById('justifFileName').style.display = 'none';
+  document.getElementById('justifFile').value = '';
+  document.getElementById('btnSubmitJustif').disabled = true;
+  document.getElementById('btnSubmitJustif').style.opacity = '0.5';
+  document.getElementById('justifModal').style.display = 'flex';
+}
+
+function closeJustifModal() {
+  document.getElementById('justifModal').style.display = 'none';
+  currentJustifAlertId = null;
+  currentJustifStagiaire = null;
+  justifFile = null;
+}
+
+function onJustifFileSelected(input) {
+  if (input.files && input.files[0]) {
+    justifFile = input.files[0];
+    const nameEl = document.getElementById('justifFileName');
+    nameEl.textContent = '✅ ' + justifFile.name;
+    nameEl.style.display = 'block';
+    document.getElementById('btnSubmitJustif').disabled = false;
+    document.getElementById('btnSubmitJustif').style.opacity = '1';
+  }
+}
+
+// Soumettre la justification
+async function submitJustification() {
+  if (!justifFile || !currentJustifStagiaire) return;
+
+  const btn = document.getElementById('btnSubmitJustif');
+  btn.textContent = 'Envoi...';
+  btn.disabled = true;
+
+  const nameParts = (currentJustifStagiaire.nom || '').split(' ');
+  const prenom = nameParts[0] || '';
+  const nom = nameParts.slice(1).join(' ') || '';
+  const today = new Date().toISOString().split('T')[0];
+
+  const formData = new FormData();
+  formData.append('prenom', prenom);
+  formData.append('nom', nom);
+  formData.append('date', today);
+  formData.append('justification', justifFile);
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/presences/absence/justification/`, {
+      method: 'POST',
+      body: formData
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      const alerts = window.alertManager.getSystemAlerts();
+      const alerte = alerts.find(a => String(a.id) === String(currentJustifAlertId));
+      if (alerte) {
+        alerte.read = true;
+        alerte.justifiee = true;
+        alerte.requiresJustification = false;
+        alerte.message = alerte.message.replace('Absence détectée', 'Absence justifiée ✓');
+        alerte.details = `Justification déposée le ${new Date().toLocaleDateString('fr-FR')} — ${justifFile.name}`;
+        window.alertManager.saveSystemAlerts(alerts);
+        window.alertManager.updateAlertesBadge();
+      }
+
+      const justifiedKey = `absent_justifie_${today}`;
+      const justified = JSON.parse(localStorage.getItem(justifiedKey) || '[]');
+      const fullName = `${prenom} ${nom}`.trim();
+      if (!justified.includes(fullName)) {
+        justified.push(fullName);
+        localStorage.setItem(justifiedKey, JSON.stringify(justified));
+      }
+
+      const stagiaires = JSON.parse(localStorage.getItem('stagiaires') || '[]');
+      const idx = stagiaires.findIndex(s =>
+        s.prenom?.toLowerCase() === prenom.toLowerCase() &&
+        s.nom?.toLowerCase() === nom.toLowerCase()
+      );
+      if (idx !== -1 && stagiaires[idx].absences > 0) {
+        stagiaires[idx].absences = Math.max(0, stagiaires[idx].absences - 1);
+        localStorage.setItem('stagiaires', JSON.stringify(stagiaires));
+      }
+
+      if (data.debloque) {
+        alert(`✅ Justification acceptée !\nLe compte de ${currentJustifStagiaire.nom} a été débloqué automatiquement.\nAbsences NJ restantes : ${data.nb_absences_nj}/3`);
+      } else {
+        alert(`✅ Justification déposée avec succès !\nAbsences NJ restantes : ${data.nb_absences_nj}/3`);
+      }
+
+      closeJustifModal();
+
+      // ✅ Modal unifié Email + WhatsApp
+      sendNotificationsJustif(
+        currentJustifStagiaire.nom,
+        today,
+        justifFile.name,
+        data.debloque || false
+      );
+
+      refreshAlertes();
+    } else {
+      alert('Erreur : ' + (data.error || 'Échec du dépôt'));
+      btn.textContent = 'Déposer la justification';
+      btn.disabled = false;
+      btn.style.opacity = '1';
+    }
+  } catch (e) {
+    alert('Erreur réseau : ' + e.message);
+    btn.textContent = 'Déposer la justification';
+    btn.disabled = false;
+    btn.style.opacity = '1';
+  }
 }
 
 function resolveAlert(id) {
   if (window.alertManager) {
-    // Supprimer automatiquement les alertes non-absence (rapport, info, projet, fin_stage…)
     const alert = window.alertManager.getSystemAlerts().find(a => String(a.id) === String(id));
-    if (alert && !alert.requiresJustification) {
+    if (alert && !(alert.category === 'absence' || alert.category === 'absences')) {
       window.alertManager.deleteAlert(id);
     } else {
       window.alertManager.markAlertAsRead(id);
@@ -490,303 +844,789 @@ function resolveAlert(id) {
 
 function dismissAlert(id) {
   if (confirm('Supprimer cette alerte ?')) {
-    if (window.alertManager) {
-      window.alertManager.deleteAlert(id);
-      refreshAlertes();
-    }
-  }
-}
-
-// Variables pour la gestion des absences
-let currentAbsenceAlertId = null;
-let currentAbsenceStagiaireId = null;
-let currentAbsenceStagiaireName = null;
-let selectedJustificationFile = null;
-let hasJustification = false;
-
-// Ouvrir la modal de gestion d'absence
-function justifyAlert(id) {
-  const alert = window.alertManager ? window.alertManager.getSystemAlerts().find(a => a.id === id) : null;
-  if (!alert) return;
-  
-  currentAbsenceAlertId = id;
-  currentAbsenceStagiaireId = alert.stagiaireId;
-  currentAbsenceStagiaireName = alert.nom;
-  selectedJustificationFile = null;
-  hasJustification = false;
-  
-  // Remplir le contenu
-  const content = document.getElementById('absenceModalContent');
-  content.innerHTML = `
-    <div style="display:flex;align-items:center;gap:15px;margin-bottom:15px">
-      <div style="width:50px;height:50px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:20px">⚠️</div>
-      <div>
-        <div style="font-weight:600;font-size:16px">${alert.nom || 'Stagiaire'}</div>
-        <div style="color:var(--muted);font-size:14px">Absent aujourd'hui (${new Date().toLocaleDateString('fr-FR')})</div>
-      </div>
-    </div>
-    <div style="background:rgba(255,87,87,0.1);border-left:3px solid var(--red);padding:12px;border-radius:0 8px 8px 0">
-      <div style="color:var(--red);font-weight:600;margin-bottom:5px">⚠️ Alerte d'absence</div>
-      <div style="font-size:14px">Cette personne est marquée comme absente sans justification. Veuillez indiquer si une justification existe.</div>
-    </div>
-  `;
-  
-  // Reset UI
-  document.getElementById('justificationUploadSection').style.display = 'none';
-  document.getElementById('selectedFileName').textContent = '';
-  document.getElementById('btnHasJustif').style.borderColor = 'var(--border)';
-  document.getElementById('btnNoJustif').style.borderColor = 'var(--border)';
-  document.getElementById('btnConfirmAbsence').textContent = 'Confirmer';
-  document.getElementById('btnConfirmAbsence').style.background = 'var(--muted)';
-  
-  // Afficher la modal
-  document.getElementById('absenceModal').style.display = 'flex';
-}
-
-// Afficher/masquer la section d'upload
-function showJustificationUpload(hasJustif) {
-  hasJustification = hasJustif;
-  const uploadSection = document.getElementById('justificationUploadSection');
-  const btnHas = document.getElementById('btnHasJustif');
-  const btnNo = document.getElementById('btnNoJustif');
-  const btnConfirm = document.getElementById('btnConfirmAbsence');
-  
-  if (hasJustif) {
-    uploadSection.style.display = 'block';
-    btnHas.style.borderColor = 'var(--gold)';
-    btnHas.style.background = 'rgba(245,188,76,0.1)';
-    btnNo.style.borderColor = 'var(--border)';
-    btnNo.style.background = 'transparent';
-    btnConfirm.textContent = 'Déposer justification';
-    btnConfirm.style.background = 'var(--blue)';
-  } else {
-    uploadSection.style.display = 'none';
-    btnHas.style.borderColor = 'var(--border)';
-    btnHas.style.background = 'transparent';
-    btnNo.style.borderColor = 'var(--red)';
-    btnNo.style.background = 'rgba(255,87,87,0.1)';
-    btnConfirm.textContent = 'Confirmer absence non justifiée';
-    btnConfirm.style.background = 'var(--red)';
-  }
-}
-
-// Gérer la sélection de fichier
-function handleJustificationFile(input) {
-  if (input.files && input.files[0]) {
-    selectedJustificationFile = input.files[0];
-    document.getElementById('selectedFileName').textContent = '✅ ' + selectedJustificationFile.name;
-  }
-}
-
-// Confirmer l'action sur l'absence
-async function confirmAbsenceAction() {
-  const BACKEND_URL = window.BACKEND_URL || 'https://orchid-island-api.onrender.com';
-
-  if (!hasJustification) {
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/presences/absence/creer/`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          nom: currentAbsenceStagiaireName.split(' ')[1] || '',
-          prenom: currentAbsenceStagiaireName.split(' ')[0] || '',
-          date: new Date().toISOString().split('T')[0],
-          justifiee: false
-        })
-      });
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        if (window.alertManager && currentAbsenceAlertId) {
-          window.alertManager.markAlertAsRead(currentAbsenceAlertId);
-        }
-        
-        // Si bloqué, ouvrir WhatsApp automatiquement
-        if (data.bloque && data.whatsapp_url) {
-          alert(`⚠️ ATTENTION: ${currentAbsenceStagiaireName} a été BLOQUÉ automatiquement (${data.nb_absences_nj} absences non justifiées).\n\nUn message WhatsApp va s'ouvrir pour notifier l'admin.`);
-          window.open(data.whatsapp_url, '_blank');
-          
-          // Ajouter alerte de blocage
-          if (window.alertManager) {
-            window.alertManager.addSystemAlert({
-              type: 'critique',
-              category: 'blocage',
-              nom: currentAbsenceStagiaireName,
-              message: `🔒 Compte bloqué: ${currentAbsenceStagiaireName}`,
-              details: `${data.nb_absences_nj} absences non justifiées - Compte bloqué automatiquement`,
-              date: new Date().toISOString(),
-              read: false
-            });
-          }
-        } else {
-          alert(`Absence non justifiée enregistrée (${data.nb_absences_nj}/3)`);
-        }
-      }
-    } catch(e) {
-      alert('Erreur: ' + e.message);
-    }
-    
-    closeAbsenceModal();
+    window.alertManager?.deleteAlert(id);
     refreshAlertes();
-    return;
   }
-
-  // Avec justification
-  if (!selectedJustificationFile) {
-    alert('Veuillez sélectionner un fichier de justification');
-    return;
-  }
-
-  const formData = new FormData();
-  const nameParts = currentAbsenceStagiaireName.split(' ');
-  formData.append('prenom', nameParts[0] || '');
-  formData.append('nom', nameParts[1] || '');
-  formData.append('date', new Date().toISOString().split('T')[0]);
-  formData.append('justification', selectedJustificationFile);
-
-  try {
-    const response = await fetch(`${BACKEND_URL}/api/presences/absence/justification/`, {
-      method: 'POST',
-      body: formData
-    });
-    const data = await response.json();
-
-    if (data.success) {
-      if (window.alertManager && currentAbsenceAlertId) {
-        const alerts = window.alertManager.getSystemAlerts();
-        const alerte = alerts.find(a => String(a.id) === String(currentAbsenceAlertId));
-        if (alerte) {
-          alerte.justifiee = true;
-          alerte.read = true;
-          alerte.message = alerte.message.replace('Absence détectée', 'Absence justifiée');
-          alerte.details = `Justification déposée le ${new Date().toLocaleDateString('fr-FR')}`;
-          alerte.requiresJustification = false;
-          window.alertManager.saveSystemAlerts(alerts);
-          window.alertManager.updateAlertesBadge();
-        }
-      }
-
-      // ✅ NOUVEAU — Stocker la justification
-      const todayKey = new Date().toISOString().split('T')[0];
-      const justifiedKey = `absent_justifie_${todayKey}`;
-      const justified = JSON.parse(localStorage.getItem(justifiedKey) || '[]');
-      if (!justified.includes(currentAbsenceStagiaireName)) {
-        justified.push(currentAbsenceStagiaireName);
-        localStorage.setItem(justifiedKey, JSON.stringify(justified));
-      }
-
-      // ✅ NOUVEAU — Appeler le backend pour décrémenter les absences NJ
-      try {
-        const nameParts = currentAbsenceStagiaireName.split(' ');
-        await fetch(`${BACKEND_URL}/api/presences/absence/justifier/`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            prenom: nameParts[0] || '',
-            nom: nameParts.slice(1).join(' ') || '',
-            date: todayKey
-          })
-        });
-      } catch(e) {
-        console.error('Erreur décrémentation absences NJ:', e);
-      }
-
-      // ✅ NOUVEAU — Mettre à jour stagiaires dans localStorage (décrémenter absences)
-      try {
-        const stagiaires = JSON.parse(localStorage.getItem('stagiaires') || '[]');
-        const nameParts = currentAbsenceStagiaireName.split(' ');
-        const prenom = nameParts[0] || '';
-        const nom = nameParts.slice(1).join(' ') || '';
-        const idx = stagiaires.findIndex(s =>
-          (s.prenom && s.prenom.toLowerCase() === prenom.toLowerCase() &&
-           s.nom && s.nom.toLowerCase() === nom.toLowerCase()) ||
-          s.email === (alerte && alerte.email ? alerte.email : '')
-        );
-        if (idx !== -1 && stagiaires[idx].absences > 0) {
-          stagiaires[idx].absences = Math.max(0, stagiaires[idx].absences - 1);
-          localStorage.setItem('stagiaires', JSON.stringify(stagiaires));
-          console.log('[JUSTIF] Absences NJ décrémentées pour:', currentAbsenceStagiaireName);
-        }
-      } catch(e) {
-        console.error('Erreur MAJ localStorage stagiaires:', e);
-      }
-
-      alert('✅ Justification déposée');
-      closeAbsenceModal();
-      refreshAlertes();
-    }
-  } catch(e) {
-    alert('Erreur: ' + e.message);
-  }
-}
-
-// Nouvelle fonction supprimerAbsenceAlert
-async function supprimerAbsenceAlert(alertId) {
-  if (!confirm('Supprimer cette absence du système ?')) return;
-  const BACKEND_URL = window.BACKEND_URL || 'https://orchid-island-api.onrender.com';
-  const alert = window.alertManager.getSystemAlerts().find(a => a.id === alertId);
-  if (!alert || !alert.absenceBackendId) {
-    window.alertManager.deleteAlert(alertId);
-    refreshAlertes();
-    return;
-  }
-  await fetch(`${BACKEND_URL}/api/presences/absence/${alert.absenceBackendId}/`, { method: 'DELETE' });
-  window.alertManager.deleteAlert(alertId);
-  refreshAlertes();
-}
-
-// Fermer la modal
-function closeAbsenceModal() {
-  document.getElementById('absenceModal').style.display = 'none';
-  currentAbsenceAlertId = null;
-  currentAbsenceStagiaireId = null;
-  currentAbsenceStagiaireName = null;
-  selectedJustificationFile = null;
-  hasJustification = false;
-  document.getElementById('justificationFile').value = '';
 }
 
 function refreshAlertes() {
-  if (window.alertManager) {
-    renderAlertes(window.alertManager.getSystemAlerts());
+  if (notifModalOpen) return; // ✅ bloquer si modal ouvert
+  const alerts = window.alertManager?.getSystemAlerts() || [];
+  renderAlertes(alerts);
+}
+
+function purgeOldAbsenceAlerts(autoRefresh = true) {
+  if (!window.alertManager) return;
+
+  const alerts = window.alertManager.getSystemAlerts();
+
+  const cleaned = alerts.filter(a => {
+    const isOldGrouped =
+      (a.category === 'absences_nj' || a.category === 'absences_nj_warn' || a.category === 'blocage')
+      && !a.alertKey;
+    return !isOldGrouped;
+  });
+
+  window.alertManager.saveSystemAlerts(cleaned);
+  window.alertManager.updateAlertesBadge();
+  console.log(`[PURGE] ${alerts.length - cleaned.length} ancienne(s) alerte(s) supprimée(s)`);
+
+  if (autoRefresh) {
+    checkStagiairesAbsences().then(() => {
+      refreshAlertes();
+      renderJustifSection();
+    });
   }
 }
 
-// Initialisation
+async function checkStagiairesAbsences() {
+  const BACKEND_URL = window.BACKEND_URL || 'https://orchid-island-api.onrender.com';
+
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/presences/historique/`);
+    const data = await response.json();
+
+    if (!data.success || !data.stagiaires) {
+      await checkStagiairesAbsencesFallback();
+      return;
+    }
+
+    const logsAujourdhui = JSON.parse(localStorage.getItem('pointageLogs') || '[]');
+    const nomsPointesAujourdhui = logsAujourdhui.map(l =>
+      `${(l.prenom||'').toLowerCase()} ${(l.nom||'').toLowerCase()}`.trim()
+    );
+    const today = new Date().toISOString().split('T')[0];
+
+    // ✅ ÉTAPE 1 — Supprimer TOUTES les alertes absNJ existantes non justifiées
+    // puis les recréer proprement depuis le backend
+    // C'est plus simple et plus fiable que de chercher les différences
+    const allExisting = window.alertManager.getSystemAlerts();
+    const toKeep = allExisting.filter(a =>
+      a.category !== 'absences_nj' || a.justifiee
+    );
+    window.alertManager.saveSystemAlerts(toKeep);
+
+    // ✅ ÉTAPE 2 — Recréer uniquement les alertes basées sur le backend
+    for (const stagiaire of data.stagiaires) {
+      const fullName = `${stagiaire.prenom || ''} ${stagiaire.nom || ''}`.trim();
+      const absNJ = stagiaire.absences_non_justifiees ?? 0;
+
+      if (absNJ === 0) continue;
+
+      const joursAbsentsNJ = (stagiaire.jours || []).filter(j =>
+        j.statut === 'absent' && !j.justifiee && j.date
+      );
+
+      let alertesCrees = 0;
+
+      for (const jour of joursAbsentsNJ) {
+        if (alertesCrees >= absNJ) break;
+
+        // Skip si c'est aujourd'hui ET le stagiaire a pointé
+        if (jour.date === today) {
+          const nom = fullName.toLowerCase();
+          const aPointe = nomsPointesAujourdhui.some(n =>
+            n.includes(nom.split(' ')[0]) || nom.includes(n.split(' ')[0])
+          );
+          if (aPointe) continue;
+        }
+
+        // Skip si justifié localement
+        if (isAbsenceJustifiedLocally(stagiaire.id, jour.date, fullName)) continue;
+
+        const dateFr = new Date(jour.date).toLocaleDateString('fr-FR', {
+          weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+        });
+
+        window.alertManager.addSystemAlert({
+          type: 'critique',
+          category: 'absences_nj',
+          alertKey: `absNJ_${stagiaire.id || fullName}_${jour.date}`,
+          stagiaireId: stagiaire.id,
+          nom: fullName,
+          email: stagiaire.email || '',
+          dateAbsence: jour.date,
+          message: `🚨 Absence non justifiée — ${fullName}`,
+          details: `📅 ${dateFr}`,
+          date: new Date().toISOString(),
+          read: false,
+          requiresJustification: true
+        });
+
+        alertesCrees++;
+      }
+
+      // Alerte warn 2 absNJ
+      if (absNJ === 2) {
+        const warnKey = `warn2NJ_${stagiaire.id || fullName}`;
+        const currentAlerts = window.alertManager.getSystemAlerts();
+        if (!currentAlerts.some(a => a.alertKey === warnKey)) {
+          window.alertManager.addSystemAlert({
+            type: 'avertissement',
+            category: 'absences_nj_warn',
+            alertKey: warnKey,
+            stagiaireId: stagiaire.id,
+            nom: fullName,
+            message: `⚠️ 2 absences NJ — ${fullName}`,
+            details: `Encore 1 absence non justifiée = compte bloqué automatiquement.`,
+            date: new Date().toISOString(),
+            read: false,
+            requiresJustification: false
+          });
+        }
+      }
+
+      // Alerte blocage
+      if (stagiaire.is_active === false) {
+        const blocKey = `blocage_${stagiaire.id || fullName}`;
+        const currentAlerts = window.alertManager.getSystemAlerts();
+        if (!currentAlerts.some(a => a.alertKey === blocKey)) {
+          window.alertManager.addSystemAlert({
+            type: 'critique',
+            category: 'blocage',
+            alertKey: blocKey,
+            stagiaireId: stagiaire.id,
+            nom: fullName,
+            message: `🔒 Compte bloqué — ${fullName}`,
+            details: `${absNJ} absences NJ. Accès désactivé automatiquement.`,
+            date: new Date().toISOString(),
+            read: false,
+            requiresJustification: false
+          });
+        }
+      }
+    }
+
+  } catch (error) {
+    console.error('[ALERTES] Erreur historique:', error);
+    await checkStagiairesAbsencesFallback();
+  }
+}
+
+async function checkStagiairesAbsencesFallback() {
+  const BACKEND_URL = window.BACKEND_URL || 'https://orchid-island-api.onrender.com';
+
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/auth/stagiaires/`);
+    const data = await response.json();
+    if (!data.success) return;
+
+    const existingAlerts = window.alertManager.getSystemAlerts();
+
+    for (const s of data.stagiaires) {
+      const absNJ    = s.absences_non_justifiees ?? 0;
+      const fullName = `${s.first_name || ''} ${s.last_name || ''}`.trim();
+
+      if (absNJ === 0) continue;
+
+      for (let i = 0; i < absNJ; i++) {
+        const alertKey = `absNJ_fallback_${s.id || fullName}_${i}`;
+        if (existingAlerts.some(a => a.alertKey === alertKey)) continue;
+
+        window.alertManager.addSystemAlert({
+          type: 'critique',
+          category: 'absences_nj',
+          alertKey,
+          stagiaireId: s.id,
+          nom: fullName,
+          email: s.email || '',
+          dateAbsence: null,
+          message: `🚨 Absence NJ #${i + 1} — ${fullName}`,
+          details: `Date non disponible (absence ${i + 1}/${absNJ})`,
+          date: new Date().toISOString(),
+          read: false,
+          requiresJustification: true
+        });
+      }
+    }
+
+  } catch(e) {
+    console.error('[ALERTES] Erreur fallback complet:', e);
+  }
+}
+
+async function checkRapportsManquants() {
+  const BACKEND_URL = window.BACKEND_URL || 'https://orchid-island-api.onrender.com';
+
+  try {
+    const rapportsData = JSON.parse(localStorage.getItem('rapports') || '{"list":[],"finaux":[]}');
+    const journaliers  = rapportsData.list || [];
+    const today        = new Date().toLocaleDateString('fr-FR');
+    const rapportsAujourdhui = journaliers.filter(r => r.date === today);
+
+    const stagiaires = JSON.parse(localStorage.getItem('stagiaires') || '[]');
+    if (stagiaires.length === 0) return;
+
+    const existingAlerts = window.alertManager.getSystemAlerts();
+
+    const alertesRapport = existingAlerts.filter(a =>
+      a.category === 'rapports' || a.category === 'rapport_manquant'
+    );
+
+    alertesRapport.forEach(alerte => {
+      const nomAlerte = (alerte.message + ' ' + (alerte.details || '')).toLowerCase();
+
+      const rapportDepose = rapportsAujourdhui.some(r => {
+        const stagName = (r.stagiaire || '').toLowerCase();
+        const stagNom  = (r.nom || '').toLowerCase();
+        return nomAlerte.includes(stagName) || nomAlerte.includes(stagNom);
+      });
+
+      if (rapportDepose) {
+        console.log('[ALERTES] Rapport déposé → suppression alerte:', alerte.message);
+        window.alertManager.deleteAlert(alerte.id);
+      }
+    });
+
+    window.alertManager.updateAlertesBadge();
+
+  } catch(e) {
+    console.error('[ALERTES] Erreur checkRapportsManquants:', e);
+  }
+}
+
+// Purger les alertes "aucun pointage" si le stagiaire a pointé aujourd'hui
+function purgePointageAlertsLocal() {
+  const logs = JSON.parse(localStorage.getItem('pointageLogs') || '[]');
+  if (logs.length === 0) return;
+
+  // Construire la liste des noms qui ont pointé aujourd'hui
+  const pointedNames = logs.map(l => {
+    const prenom = (l.prenom || '').toLowerCase().trim();
+    const nom    = (l.nom    || '').toLowerCase().trim();
+    return `${prenom} ${nom}`.trim();
+  }).filter(Boolean);
+
+  console.log('[PURGE POINTAGE] Noms pointés aujourd\'hui:', pointedNames);
+
+  if (pointedNames.length === 0) return;
+
+  const alerts = window.alertManager.getSystemAlerts();
+  let changed = false;
+
+  alerts.forEach(alert => {
+    if (!alert.requiresJustification || alert.justifiee) return;
+
+    // Cibler uniquement les alertes "aucun pointage aujourd'hui"
+    const isNoPointageToday =
+      (alert.details && alert.details.includes('Aucun pointage')) ||
+      (alert.message && alert.message.includes('Aucun pointage'));
+
+    if (!isNoPointageToday) return;
+
+    const alertName = (alert.nom || '').toLowerCase().trim();
+    const alertPrenom = alertName.split(' ')[0];
+
+    const hasPointed = pointedNames.some(name => {
+      return name.includes(alertPrenom) || alertPrenom.includes(name.split(' ')[0]);
+    });
+
+    if (hasPointed) {
+      console.log(`[PURGE POINTAGE] ${alert.nom} a pointé → suppression alerte`);
+      window.alertManager.deleteAlert(alert.id);
+      changed = true;
+    }
+  });
+
+  if (changed) {
+    window.alertManager.updateAlertesBadge();
+  }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('[ALERTES] Initialisation de la page alertes...');
-  
-  // Vérifier les droits d'accès et filtrer la navigation
-  const currentUser = checkRoleAccess();
-  filterNavByRole();
-  
-  // Attendre que alertManager soit disponible
-  const initAlertes = function() {
+  if (typeof checkRoleAccess === 'function') checkRoleAccess();
+  if (typeof filterNavByRole === 'function') filterNavByRole();
+
+  const initAlertes = async function() {
     if (window.alertManager) {
-      console.log('[ALERTES] alertManager trouvé, chargement des alertes...');
-      // Ne pas appeler generateDailyAlerts ici pour éviter les doublons
-      // Les alertes sont générées en temps réel lors des actions
+      purgeOldAbsenceAlerts(false);
+      purgePointageAlertsLocal();
+      await checkStagiairesAbsences();
+      await checkRapportsManquants();
+
       const alerts = window.alertManager.getSystemAlerts();
-      console.log('[ALERTES] Nombre d\'alertes chargées:', alerts.length);
       renderAlertes(alerts);
-      
-      // Écouter les événements de mise à jour des données
-      window.addEventListener('dataUpdated', (event) => {
+      renderJustifSection();
+
+      window.addEventListener('dataUpdated', async (event) => {
         if (event.detail && event.detail.section === 'alertes') {
-          console.log('[ALERTES] Événement dataUpdated reçu pour alertes');
-          const alerts = window.alertManager.getSystemAlerts();
-          renderAlertes(alerts);
+          // ✅ Ne pas rafraîchir si le modal de notification est ouvert
+          if (document.getElementById('notifModal')) return;
+
+          purgeOldAbsenceAlerts(false);
+          purgePointageAlertsLocal();
+          await checkStagiairesAbsences();
+          await checkRapportsManquants();
+          refreshAlertes();
+          renderJustifSection();
+        }
+      });
+
+      window.addEventListener('storage', async (event) => {
+        if (event.key === 'rapports') {
+          console.log('[ALERTES] Rapports mis à jour → re-vérification');
+          await checkRapportsManquants();
+          refreshAlertes();
         }
       });
     } else {
-      console.warn('[ALERTES] alertManager non disponible, attente...');
       setTimeout(initAlertes, 500);
     }
   };
-  
+
   initAlertes();
 });
+
+// ===== GESTION JUSTIFICATION PRÉSENCE =====
+
+const justifFiles = {};
+
+function renderJustifSection() {
+  if (!window.alertManager) return;
+
+  const allAlerts = window.alertManager.getSystemAlerts();
+  const absenceAlerts = allAlerts.filter(a =>
+    a.requiresJustification &&
+    !a.justifiee &&
+    (a.category === 'absences_nj' || a.dateAbsence) // ✅ seulement les vraies absences NJ datées
+  );
+
+  const countEl = document.getElementById('justifPendingCount');
+  const listEl  = document.getElementById('justifPresenceList');
+  if (!countEl || !listEl) return;
+
+  countEl.textContent = absenceAlerts.length;
+
+  if (absenceAlerts.length === 0) {
+    listEl.innerHTML = `
+      <div class="justif-empty">
+        <div style="font-size:40px;margin-bottom:12px">✅</div>
+        Aucune justification en attente
+      </div>`;
+    return;
+  }
+
+  listEl.innerHTML = absenceAlerts.map(alert => {
+    const initial = alert.nom ? alert.nom[0].toUpperCase() : '?';
+    const dateStr = alert.date
+      ? new Date(alert.date).toLocaleDateString('fr-FR', {
+          day: '2-digit', month: 'long', year: 'numeric'
+        })
+      : 'Date inconnue';
+
+    return `
+      <div class="justif-row" id="justifRow_${alert.id}">
+        <div class="justif-row-left">
+          <div class="justif-avatar">${initial}</div>
+          <div class="justif-info">
+            <div class="justif-name">${alert.nom || 'Stagiaire'}</div>
+            <div class="justif-meta">
+              Absence signalée le ${dateStr}
+              ${alert.details ? ' · ' + alert.details : ''}
+            </div>
+          </div>
+          <span class="justif-status-badge">⏳ En attente</span>
+        </div>
+        <div class="justif-row-actions">
+          <label class="justif-upload-label" id="justifLabel_${alert.id}"
+            for="justifInput_${alert.id}">
+            📎 Choisir fichier
+          </label>
+          <input type="file"
+            id="justifInput_${alert.id}"
+            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+            style="display:none"
+            onchange="onJustifFileChange(this, ${alert.id})">
+          <button class="justif-submit-btn"
+            id="justifBtn_${alert.id}"
+            onclick="submitPresenceJustif(${alert.id})">
+            ✅ Valider
+          </button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function onJustifFileChange(input, alertId) {
+  if (!input.files || !input.files[0]) return;
+
+  justifFiles[alertId] = input.files[0];
+
+  const label = document.getElementById(`justifLabel_${alertId}`);
+  const btn   = document.getElementById(`justifBtn_${alertId}`);
+
+  if (label) {
+    label.classList.add('has-file');
+    const shortName = input.files[0].name.length > 22
+      ? input.files[0].name.substring(0, 20) + '…'
+      : input.files[0].name;
+    label.innerHTML = `✅ ${shortName}`;
+  }
+  if (btn) btn.classList.add('ready');
+}
+
+async function submitPresenceJustif(alertId) {
+  const file = justifFiles[alertId];
+  if (!file) return;
+
+  const alerts  = window.alertManager.getSystemAlerts();
+  const alert   = alerts.find(a => String(a.id) === String(alertId));
+  if (!alert) return;
+
+  const btn = document.getElementById(`justifBtn_${alertId}`);
+  if (btn) { btn.textContent = '⏳ Envoi...'; btn.classList.remove('ready'); }
+
+  try {
+    const nameParts = (alert.nom || '').split(' ');
+    const prenom = nameParts[0] || '';
+    const nom    = nameParts.slice(1).join(' ') || '';
+    const dateAbsence = alert.dateAbsence || new Date().toISOString().split('T')[0];
+
+    const formData = new FormData();
+    formData.append('prenom', prenom);
+    formData.append('nom',    nom);
+    formData.append('date',   dateAbsence);
+    formData.append('justification', file);
+
+    const response = await fetch(
+      `${BACKEND_URL}/api/presences/absence/justification/`,
+      { method: 'POST', body: formData }
+    );
+    const data = await response.json();
+
+    if (data.success) {
+      // ✅ Mémoriser localement que cette absence est justifiée
+      markAbsenceJustifiedLocally(alert.stagiaireId, alert.dateAbsence, alert.nom);
+
+      // Supprimer l'alerte complètement
+      window.alertManager.deleteAlert(alertId);
+      window.alertManager.updateAlertesBadge();
+
+      // Si après justification il reste 1 seule absence NJ,
+      // supprimer aussi l'alerte avertissement "2 absNJ" devenue obsolète
+      const remainingNJ = window.alertManager.getSystemAlerts().filter(a =>
+        a.category === 'absences_nj' &&
+        a.stagiaireId === alert.stagiaireId &&
+        !a.justifiee
+      ).length;
+
+      if (remainingNJ <= 1) {
+        const warnAlert = window.alertManager.getSystemAlerts().find(a =>
+          a.category === 'absences_nj_warn' &&
+          a.stagiaireId === alert.stagiaireId
+        );
+        if (warnAlert) {
+          window.alertManager.deleteAlert(warnAlert.id);
+          console.log('[JUSTIF] Avertissement 2NJ supprimé car obsolète');
+        }
+      }
+
+      // Mettre à jour localStorage stagiaires
+      try {
+        const stagiaires = JSON.parse(localStorage.getItem('stagiaires') || '[]');
+        const sidx = stagiaires.findIndex(s =>
+          s.prenom?.toLowerCase() === prenom.toLowerCase() &&
+          s.nom?.toLowerCase()    === nom.toLowerCase()
+        );
+        if (sidx !== -1 && stagiaires[sidx].absences > 0) {
+          stagiaires[sidx].absences = Math.max(0, stagiaires[sidx].absences - 1);
+          localStorage.setItem('stagiaires', JSON.stringify(stagiaires));
+        }
+      } catch(e) { console.error(e); }
+
+      // Appel backend pour décrémenter absences_non_justifiees
+      try {
+        await fetch(`${BACKEND_URL}/api/presences/absence/justifier/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prenom, nom, date: dateAbsence })
+        });
+        console.log('[JUSTIF] Backend décrémenté pour', prenom, nom, dateAbsence);
+      } catch(e) {
+        console.error('[JUSTIF] Erreur décrémentation backend:', e);
+      }
+
+      // 5. ✅ Animation suppression ligne (SANS renderJustifSection ici)
+      const row = document.getElementById(`justifRow_${alertId}`);
+      if (row) {
+        row.style.transition = 'all 0.4s ease';
+        row.style.opacity    = '0';
+        row.style.transform  = 'translateX(40px)';
+        setTimeout(() => row.remove(), 420);
+        // ⚠️ PAS de renderJustifSection() ici — le modal doit rester visible
+      }
+
+      // 6. Toast discret (pas le modal)
+      showJustifToast('✅ Justification enregistrée');
+
+      // 7 & 8 — ✅ Attendre 500ms puis afficher le modal de notification
+      // ET bloquer tout refresh pendant que le modal est ouvert
+      setTimeout(() => {
+        sendNotificationsJustif(
+          `${prenom} ${nom}`,
+          dateAbsence,
+          file.name,
+          data.debloque || false
+        );
+
+        // ✅ Rafraîchir SEULEMENT après que l'utilisateur ferme le modal
+        // On observe le DOM — dès que notifModal disparaît, on rafraîchit
+        let attempts = 0;
+        const checkModalClosed = setInterval(() => {
+          attempts++;
+          const modal = document.getElementById('notifModal');
+
+          // Le modal n'existe plus = fermé par l'utilisateur
+          if (!modal) {
+            clearInterval(checkModalClosed);
+            renderJustifSection();
+            refreshAlertes();
+            return;
+          }
+
+          // Sécurité : après 2 minutes, rafraîchir quand même
+          if (attempts > 400) {
+            clearInterval(checkModalClosed);
+            renderJustifSection();
+            refreshAlertes();
+          }
+        }, 300);
+      }, 500);
+
+    } else {
+      showJustifToast('❌ Erreur: ' + (data.message || 'inconnue'), true);
+      if (btn) { btn.textContent = '✅ Valider'; btn.classList.add('ready'); }
+    }
+
+  } catch(err) {
+    console.error(err);
+    // Fallback local
+    window.alertManager.deleteAlert(alertId);
+    window.alertManager.updateAlertesBadge();
+    const row = document.getElementById(`justifRow_${alertId}`);
+    if (row) {
+      row.style.transition = 'all 0.4s ease';
+      row.style.opacity = '0';
+      row.style.transform = 'translateX(40px)';
+      setTimeout(() => row.remove(), 420);
+    }
+    showJustifToast('✅ Justification enregistrée localement');
+
+    // Modal notification même en fallback
+    setTimeout(() => {
+      sendNotificationsJustif(
+        `${prenom} ${nom}`,
+        dateAbsence,
+        file.name,
+        false
+      );
+    }, 500);
+
+    // Rafraîchir après fermeture modal
+    const checkModalClosed = setInterval(() => {
+      if (!document.getElementById('notifModal')) {
+        clearInterval(checkModalClosed);
+        renderJustifSection();
+        refreshAlertes();
+      }
+    }, 300);
+  }
+}
+
+function showJustifToast(msg, isError = false) {
+  const toast = document.getElementById('justifToast');
+  const msgEl = document.getElementById('justifToastMsg');
+  if (!toast || !msgEl) return;
+
+  toast.style.background = isError
+    ? 'linear-gradient(135deg,#E74C3C,#c0392b)'
+    : 'linear-gradient(135deg,#27AE60,#1e8449)';
+  msgEl.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3500);
+}
+
+function refreshJustifSection() {
+  if (notifModalOpen) return; // ✅ bloquer si modal ouvert
+  renderJustifSection();
+  refreshAlertes();
+}
+
+function closeNotifModal() {
+  notifModalOpen = false; // ✅ débloquer
+  const modal = document.getElementById('notifModal');
+  if (modal) {
+    modal.style.opacity = '0';
+    modal.style.transition = 'opacity 0.3s ease';
+    setTimeout(() => modal.remove(), 300);
+  }
+}
+
+// ===== MODAL NOTIFICATIONS UNIFIÉ (Email + WhatsApp) =====
+const ADMIN_PHONE = '212681314877';
+const ADMIN_EMAIL_ADDR = 'md@orchidisland.immo';
+
+function sendNotificationsJustif(prenomNom, dateAbsence, fichierNom, debloque = false) {
+  notifModalOpen = true; // ✅ bloquer les refreshs
+
+  const sujet = `[Orchid Island] Justification déposée — ${prenomNom}`;
+  const corps =
+`Justification d'absence déposée — Orchid Island
+
+Stagiaire   : ${prenomNom}
+Fichier     : ${fichierNom}
+Date absence: ${dateAbsence}
+Déposée le  : ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}
+
+${debloque ? 'Le compte a été débloqué automatiquement.' : 'En attente de validation.'}
+
+Orchid Island - Système RH`;
+
+  const waMsg =
+`✅ *Justification déposée — Orchid Island RH*
+
+👤 Stagiaire : *${prenomNom}*
+📅 Date absence : ${dateAbsence}
+📄 Fichier : ${fichierNom}
+🕐 Déposée le : ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'})}
+
+_Orchid Island — Système RH_`;
+
+  const waUrl     = `https://wa.me/${ADMIN_PHONE}?text=${encodeURIComponent(waMsg)}`;
+  const gmailUrl  = `https://mail.google.com/mail/?view=cm&to=${ADMIN_EMAIL_ADDR}&su=${encodeURIComponent(sujet)}&body=${encodeURIComponent(corps)}`;
+  const outlookUrl= `https://outlook.live.com/mail/0/deeplink/compose?to=${ADMIN_EMAIL_ADDR}&subject=${encodeURIComponent(sujet)}&body=${encodeURIComponent(corps)}`;
+  const mailtoUrl = `mailto:${ADMIN_EMAIL_ADDR}?subject=${encodeURIComponent(sujet)}&body=${encodeURIComponent(corps)}`;
+
+  const existing = document.getElementById('notifModal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'notifModal';
+  modal.style.cssText = `
+    position:fixed;top:0;left:0;width:100%;height:100%;
+    background:rgba(0,0,0,0.85);z-index:9999;
+    display:flex;align-items:center;justify-content:center;
+    padding:20px;box-sizing:border-box;
+  `;
+
+  modal.innerHTML = `
+    <div style="background:#1A1F2E;border:1px solid #4A525A;border-radius:16px;
+      padding:28px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;">
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:700;color:#F0F4F8;">
+          � Notifier l'admin
+        </div>
+        <button onclick="closeNotifModal()"
+          style="background:none;border:none;color:#B8C5D6;font-size:24px;cursor:pointer;line-height:1;">×</button>
+      </div>
+      <div style="font-size:12px;color:#B8C5D6;margin-bottom:20px;">
+        Justification de <strong style="color:#F0F4F8">${prenomNom}</strong> déposée avec succès. Choisissez comment notifier l'administrateur :
+      </div>
+
+      <!-- WHATSAPP — mis en avant -->
+      <div style="margin-bottom:16px;">
+        <div style="font-size:11px;color:#B8C5D6;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;margin-bottom:8px;">
+          📱 WhatsApp (recommandé)
+        </div>
+        <a href="${waUrl}" target="_blank"
+          onclick="setTimeout(closeNotifModal, 300)"
+          style="display:flex;align-items:center;justify-content:center;gap:10px;
+          padding:14px;background:linear-gradient(135deg,#25D366,#128C7E);
+          border-radius:10px;color:white;text-decoration:none;
+          font-size:14px;font-weight:700;transition:all 0.2s;"
+          onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(37,211,102,0.4)'"
+          onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='none'">
+          <span style="font-size:20px;">💬</span> Envoyer via WhatsApp
+        </a>
+      </div>
+
+      <!-- SÉPARATEUR -->
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <div style="flex:1;height:1px;background:#4A525A;"></div>
+        <span style="font-size:11px;color:#4A525A;text-transform:uppercase;letter-spacing:1px;">ou par email</span>
+        <div style="flex:1;height:1px;background:#4A525A;"></div>
+      </div>
+
+      <!-- EMAIL -->
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">
+        <a href="${gmailUrl}" target="_blank"
+          onclick="setTimeout(closeNotifModal, 300)"
+          style="display:flex;align-items:center;justify-content:center;gap:10px;
+          padding:12px;background:linear-gradient(135deg,#EA4335,#c5221f);
+          border-radius:10px;color:white;text-decoration:none;
+          font-size:13px;font-weight:600;transition:all 0.2s;"
+          onmouseover="this.style.transform='translateY(-2px)'"
+          onmouseout="this.style.transform='translateY(0)'">
+          <span style="font-size:17px;">📬</span> Gmail
+        </a>
+        <a href="${outlookUrl}" target="_blank"
+          onclick="setTimeout(closeNotifModal, 300)"
+          style="display:flex;align-items:center;justify-content:center;gap:10px;
+          padding:12px;background:linear-gradient(135deg,#0078D4,#005a9e);
+          border-radius:10px;color:white;text-decoration:none;
+          font-size:13px;font-weight:600;transition:all 0.2s;"
+          onmouseover="this.style.transform='translateY(-2px)'"
+          onmouseout="this.style.transform='translateY(0)'">
+          <span style="font-size:17px;">📨</span> Outlook
+        </a>
+        <a href="${mailtoUrl}"
+          onclick="setTimeout(closeNotifModal, 300)"
+          style="display:flex;align-items:center;justify-content:center;gap:10px;
+          padding:12px;background:rgba(255,255,255,0.04);border:1px solid #4A525A;
+          border-radius:10px;color:#B8C5D6;text-decoration:none;
+          font-size:13px;font-weight:500;transition:all 0.2s;"
+          onmouseover="this.style.borderColor='#3B82F6';this.style.color='#3B82F6'"
+          onmouseout="this.style.borderColor='#4A525A';this.style.color='#B8C5D6'">
+          <span style="font-size:17px;">✉️</span> Autre client mail
+        </a>
+      </div>
+
+      <!-- COPIER MESSAGE WA -->
+      <div style="background:rgba(255,255,255,0.03);border:1px solid #4A525A;border-radius:8px;padding:12px;margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span style="font-size:11px;color:#B8C5D6;font-weight:600;">Message WhatsApp</span>
+          <button onclick="navigator.clipboard.writeText(${JSON.stringify(waMsg)}).then(()=>showCopyToast('Message copié'))"
+            style="background:rgba(37,211,102,0.15);border:1px solid rgba(37,211,102,0.3);
+            border-radius:6px;color:#25D366;font-size:11px;padding:3px 10px;cursor:pointer;">
+            📋 Copier
+          </button>
+        </div>
+        <div style="font-size:11px;color:#B8C5D6;white-space:pre-wrap;line-height:1.5;max-height:100px;overflow-y:auto;">${waMsg}</div>
+      </div>
+
+      <button onclick="closeNotifModal()"
+        style="width:100%;padding:10px;background:transparent;border:1px solid #4A525A;
+        border-radius:8px;color:#B8C5D6;cursor:pointer;font-size:13px;transition:all 0.2s;"
+        onmouseover="this.style.borderColor='#E74C3C';this.style.color='#E74C3C'"
+        onmouseout="this.style.borderColor='#4A525A';this.style.color='#B8C5D6'">
+        Passer — Notifier plus tard
+      </button>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) closeNotifModal(); });
+}
+
+function showCopyToast(msg) {
+  const existing = document.getElementById('copyToast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'copyToast';
+  toast.style.cssText = `
+    position:fixed;bottom:28px;right:28px;
+    background:linear-gradient(135deg,#27AE60,#1e8449);
+    color:white;padding:12px 20px;border-radius:10px;
+    font-size:13px;font-weight:600;z-index:99999;
+    box-shadow:0 8px 24px rgba(39,174,96,0.4);
+    animation:slideUp 0.3s ease;
+  `;
+  toast.textContent = '✅ ' + msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2500);
+}
 </script>
 </body>
 </html>

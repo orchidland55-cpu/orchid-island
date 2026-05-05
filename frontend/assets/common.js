@@ -353,8 +353,92 @@ function navigateTo(page) {
 // Fonction de déconnexion
 function logout() {
   localStorage.removeItem('access_token');
+  localStorage.removeItem('refresh_token');
   localStorage.removeItem('user');
   window.location.href = 'authentification.html';
+}
+
+// ===== GESTION TOKENS JWT =====
+
+function getToken() {
+  return localStorage.getItem('access_token');
+}
+
+async function refreshToken() {
+  const refresh = localStorage.getItem('refresh_token');
+  if (!refresh) {
+    logout();
+    return null;
+  }
+
+  try {
+    const BACKEND_URL = window.BACKEND_URL || 'http://127.0.0.1:8000';
+    const response = await fetch(`${BACKEND_URL}/api/auth/token/refresh/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh })
+    });
+
+    const data = await response.json();
+
+    if (data.access) {
+      localStorage.setItem('access_token', data.access);
+      console.log('[TOKEN] Token rafraîchi avec succès');
+      return data.access;
+    } else {
+      console.error('[TOKEN] Refresh échoué:', data);
+      logout();
+      return null;
+    }
+  } catch(e) {
+    console.error('[TOKEN] Erreur refresh:', e);
+    logout();
+    return null;
+  }
+}
+
+// ✅ Nouvelle version qui gère le 401 automatiquement
+async function fetchWithAuth(url, options = {}) {
+  const BACKEND_URL = window.BACKEND_URL || 'http://127.0.0.1:8000';
+  const fullUrl = url.startsWith('http') ? url : BACKEND_URL + url;
+
+  // ✅ Ne pas forcer Content-Type si le body est FormData
+  const isFormData = options.body instanceof FormData;
+
+  options.headers = {
+    'Authorization': `Bearer ${getToken()}`,
+    ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+    ...(options.headers || {})
+  };
+
+  // Supprimer Content-Type si undefined (cas legacy)
+  if (options.headers['Content-Type'] === undefined) {
+    delete options.headers['Content-Type'];
+  }
+
+  let response = await fetch(fullUrl, options);
+
+  // Si 401 → rafraîchir le token et réessayer une fois
+  if (response.status === 401) {
+    console.log('[AUTH] Token expiré, tentative de refresh...');
+    const newToken = await refreshToken();
+
+    if (newToken) {
+      options.headers['Authorization'] = `Bearer ${newToken}`;
+      response = await fetch(fullUrl, options);
+    } else {
+      return null; // logout() déjà appelé dans refreshToken()
+    }
+  }
+
+  return response;
+}
+
+function authHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${getToken()}`
+  };
 }
 
 // Mettre à jour les badges de navigation avec les vraies données
@@ -405,7 +489,7 @@ function updateNavBadges() {
   if (badgeAlertes) {
     let alertesCount = 0;
     try {
-      if (window.alertManager) {
+      if (window.alertManager && typeof window.alertManager.getUnreadAlertesCount === 'function') {
         alertesCount = window.alertManager.getUnreadAlertesCount();
       }
     } catch (e) {
@@ -533,20 +617,23 @@ class AlertManager {
   // Ajouter une alerte système
   addSystemAlert(alert) {
     const alerts = this.getSystemAlerts();
-    
+
     // Vérifier si une alerte similaire existe déjà (déduplication)
-    const isDuplicate = alerts.some(a => 
-      a.category === alert.category && 
-      a.message === alert.message &&
-      a.nom === alert.nom &&
-      Math.abs(new Date(a.date) - new Date(alert.date)) < 60000 // Même alerte dans la minute
+    const isDuplicate = alerts.some(a =>
+      (alert.alertKey && a.alertKey === alert.alertKey) ||
+      (
+        a.category === alert.category &&
+        a.nom === alert.nom &&
+        a.dateAbsence === alert.dateAbsence &&  // ← clé principale
+        !a.justifiee
+      )
     );
-    
+
     if (isDuplicate) {
       console.log('[ALERTMANAGER] Alerte en double détectée, ignorée:', alert.message);
       return null;
     }
-    
+
     alert.id = Date.now();
     alerts.unshift(alert);
     this.saveSystemAlerts(alerts);
@@ -711,31 +798,40 @@ class AlertManager {
 // Vérifier absences et retards depuis l'API - CORRIGÉ pour éviter faux positifs
 async function checkAbsencesRetards() {
   try {
-    const BACKEND_URL = 'http://192.168.11.249:8000';
-    
+    const BACKEND_URL = window.BACKEND_URL || 'http://127.0.0.1:8000';
+
+    // ✅ Vérifier d'abord si le backend est accessible
+    try {
+      const ping = await fetch(`${BACKEND_URL}/api/auth/stagiaires/`, { signal: AbortSignal.timeout(2000) });
+      if (!ping.ok) return; // backend répond mais erreur → on sort
+    } catch (e) {
+      console.log('[ABSENCE CHECK] Backend inaccessible, vérification ignorée.');
+      return; // ← ici on sort proprement sans bloquer
+    }
+
     const now = new Date();
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
     const HEURE_LIMITE = 9 * 60 + 30; // 09h30
-    
+
     // Ne vérifier qu'après 09h30
     if (currentMinutes < HEURE_LIMITE) return;
-    
+
     // 1. Récupérer tous les stagiaires
     const stagResponse = await fetch(`${BACKEND_URL}/api/auth/stagiaires/`);
     const stagData = await stagResponse.json();
     if (!stagData.success) return;
-    
+
     // 2. Récupérer les pointages du jour
     const today = new Date().toISOString().split('T')[0];
     const ptgResponse = await fetch(`${BACKEND_URL}/api/presences/pointages/`);
     const ptgData = await ptgResponse.json();
     if (!ptgData.success) return;
-    
+
     // 3. Filtrer les pointages d'aujourd'hui
     const todayPointages = ptgData.pointages.filter(p => {
       return p.date && p.date.split('T')[0] === today;
     });
-    
+
     // 4. Créer un Set des noms présents aujourd'hui
     const presentsToday = new Set();
     todayPointages.forEach(p => {
@@ -744,26 +840,35 @@ async function checkAbsencesRetards() {
       // Aussi par email si disponible
       if (p.email) presentsToday.add(p.email.toLowerCase());
     });
-    
+
+    // ✅ AJOUT — Lire aussi depuis localStorage (pointageLogs sauvé par pointage_qr.html)
+    const pointageLogsLocal = JSON.parse(localStorage.getItem('pointageLogs') || '[]');
+    const nomsPointesLocal = new Set(
+      pointageLogsLocal.map(l =>
+        `${(l.nom || '').toLowerCase()}_${(l.prenom || '').toLowerCase()}`
+      )
+    );
+
     // 5. Identifier les absents
     const existingAlerts = alertManager.getSystemAlerts();
-    
+
     stagData.stagiaires.forEach(s => {
       const key = `${s.last_name.toLowerCase()}_${s.first_name.toLowerCase()}`;
       const keyEmail = s.email.toLowerCase();
-      
-      const isPresent = presentsToday.has(key) || presentsToday.has(keyEmail);
-      
+
+      // ✅ Présent si backend OU localStorage
+      const isPresent = presentsToday.has(key) || presentsToday.has(keyEmail) || nomsPointesLocal.has(key);
+
       if (!isPresent) {
         const fullName = `${s.first_name} ${s.last_name}`;
-        
+
         // Vérifier si une alerte d'absence existe déjà pour aujourd'hui
-        const alreadyAlerted = existingAlerts.some(a => 
-          a.category === 'absence' && 
+        const alreadyAlerted = existingAlerts.some(a =>
+          a.category === 'absence' &&
           a.stagiaireId === s.id &&
           a.date && new Date(a.date).toDateString() === new Date().toDateString()
         );
-        
+
         if (!alreadyAlerted) {
           alertManager.addSystemAlert({
             type: 'critique',
@@ -780,8 +885,39 @@ async function checkAbsencesRetards() {
       }
     });
   } catch(e) {
-    console.error('[ABSENCE CHECK] Erreur:', e);
+    console.log('[ABSENCE CHECK] Erreur ignorée:', e.message);
+    // Ne pas laisser l'erreur remonter
   }
+}
+
+// ✅ Purger les alertes "absence" category si le stagiaire a pointé aujourd'hui
+function purgeAbsenceAlertsIfPointed() {
+  const logs = JSON.parse(localStorage.getItem('pointageLogs') || '[]');
+  if (logs.length === 0) return;
+
+  const pointedKeys = new Set(
+    logs.map(l => `${(l.nom||'').toLowerCase()}_${(l.prenom||'').toLowerCase()}`)
+  );
+
+  const alerts = alertManager.getSystemAlerts();
+  let changed = false;
+
+  alerts.forEach(a => {
+    if (a.category !== 'absence' || !a.requiresJustification) return;
+
+    const nameParts = (a.nom || '').toLowerCase().split(' ');
+    // Essayer les deux ordres (Prénom Nom ou Nom Prénom)
+    const key1 = `${nameParts.slice(1).join(' ')}_${nameParts[0]}`;
+    const key2 = `${nameParts[0]}_${nameParts.slice(1).join(' ')}`;
+
+    if (pointedKeys.has(key1) || pointedKeys.has(key2)) {
+      console.log(`[PURGE] Alerte absence supprimée car ${a.nom} a pointé`);
+      alertManager.deleteAlert(a.id);
+      changed = true;
+    }
+  });
+
+  if (changed) alertManager.updateAlertesBadge();
 }
 
 // Alerte nouveau stagiaire — appelez-la depuis saveStagiaire() après création
@@ -928,11 +1064,12 @@ function checkRetardsProjets() {
 // Lancer toutes les vérifications au chargement et périodiquement
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
+    purgeAbsenceAlertsIfPointed(); // ✅ Purger alertes absence si pointage existe
     checkAbsencesRetards();   // absences + retards + 3 absences
     checkFinStages();          // fin de stage
     checkRetardsProjets();     // projets en retard
     checkRapportsManquants();  // rapports manquants (si après 17h)
-  }, 1500);
+  }, 3000);
 
   // Re-vérifier toutes les 10 minutes
   setInterval(() => {
@@ -1009,3 +1146,15 @@ document.addEventListener('DOMContentLoaded', function() {
     startDailyAlertCheck();
   }
 });
+
+// Fonctions d'authentification pour les requêtes API
+function getToken() {
+  return localStorage.getItem('access_token');
+}
+
+function authHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${getToken()}`
+  };
+}

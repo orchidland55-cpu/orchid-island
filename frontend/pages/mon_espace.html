@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orchid Island — Mon Espace</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07070A;
+    --sidebar-bg: #24272B;
+    --card: #24272B;
+    --card2: #1A1F2E;
+    --border: #4A525A;
+    --text: #F0F4F8;
+    --muted: #B8C5D6;
+    --primary: #004BA8;
+    --primary-light: #3E78B2;
+    --accent: #3E78B2;
+    --green: #27AE60;
+    --red: #E74C3C;
+    --orange: #F39C12;
+    --purple: #8E44AD;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; font-size: 14px; }
+
+  /* Animated background */
+  .bg-orbs { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+  .orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.15; animation: float 8s ease-in-out infinite; }
+  .orb-1 { width: 500px; height: 500px; background: radial-gradient(circle, #004BA8, transparent); top: -100px; right: -100px; animation-delay: 0s; }
+  .orb-2 { width: 400px; height: 400px; background: radial-gradient(circle, #3E78B2, transparent); bottom: -80px; left: 10%; animation-delay: 3s; }
+  .orb-3 { width: 300px; height: 300px; background: radial-gradient(circle, #4A525A, transparent); top: 50%; left: 30%; animation-delay: 5s; }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-30px) scale(1.05); }
+  }
+
+  /* SIDEBAR — identique au dashboard */
+  .sidebar {
+    width: 240px;
+    background: linear-gradient(135deg, #24272B 0%, #07070A 50%, #1A1F2E 100%);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    position: fixed; top: 0; left: 0; bottom: 0;
+    z-index: 100;
+  }
+  .sidebar-logo {
+    padding: 24px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .logo-icon {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 8px 32px rgba(0,75,168,0.3);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+  .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 15px; }
+  .logo-sub { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
+
+  .nav-section { padding: 16px 12px 8px; }
+  .nav-label { font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; padding: 0 8px; margin-bottom: 6px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 13px;
+    margin-bottom: 2px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid transparent;
+  }
+  .nav-item::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0,75,168,0.1), transparent);
+    transition: left 0.5s;
+  }
+  .nav-item:hover::before { left: 100%; }
+  .nav-item:hover {
+    background: rgba(0,75,168,0.08);
+    color: var(--text);
+    transform: translateX(5px);
+  }
+  .nav-item.active {
+    background: linear-gradient(135deg, rgba(0,75,168,0.15), rgba(62,120,178,0.1));
+    color: var(--primary-light);
+    font-weight: 600;
+    border: 1px solid rgba(0,75,168,0.2);
+    box-shadow: 0 4px 20px rgba(0,75,168,0.2);
+  }
+  .nav-badge {
+    margin-left: auto;
+    background: var(--red);
+    color: white;
+    font-size: 10px; font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 20px;
+  }
+
+  .sidebar-footer {
+    margin-top: auto;
+    padding: 16px 12px;
+    border-top: 1px solid var(--border);
+  }
+  .user-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 10px;
+  }
+  .user-avatar {
+    width: 34px; height: 34px;
+    background: linear-gradient(135deg, var(--primary-light), var(--purple));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .user-name { font-size: 13px; font-weight: 500; }
+  .user-role { font-size: 11px; color: var(--primary-light); }
+  .logout-btn {
+    width: 100%; padding: 8px;
+    background: rgba(255,87,87,0.1);
+    border: 1px solid rgba(255,87,87,0.3);
+    border-radius: 6px;
+    color: var(--red); font-size: 12px; cursor: pointer;
+    margin-top: 8px; transition: all 0.2s;
+  }
+  .logout-btn:hover { background: rgba(255,87,87,0.2); }
+
+  /* MAIN */
+  .main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; }
+  .topbar {
+    height: 60px;
+    background: linear-gradient(135deg, #24272B 0%, #1A1F2E 100%);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 28px;
+    position: sticky; top: 0; z-index: 50;
+    backdrop-filter: blur(10px);
+  }
+  .topbar-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; }
+  .topbar-right { display: flex; align-items: center; gap: 16px; }
+  .topbar-date { font-size: 12px; color: var(--muted); }
+  .content { padding: 28px; flex: 1; }
+
+  /* PROFIL BANNER */
+  .profil-banner {
+    background: linear-gradient(135deg, var(--card), #1A1F2E);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 24px;
+    display: flex; align-items: center; gap: 20px;
+    position: relative; overflow: hidden;
+  }
+  .profil-banner::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light), var(--primary));
+    animation: shimmer 3s linear infinite;
+  }
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  .profil-avatar-big {
+    width: 70px; height: 70px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 26px; font-weight: 800;
+    flex-shrink: 0;
+    box-shadow: 0 8px 32px rgba(0,75,168,0.35);
+  }
+  .profil-name { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 3px; }
+  .profil-email { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+  .profil-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(39,174,96,0.12); border: 1px solid rgba(39,174,96,0.3);
+    color: var(--green); padding: 4px 12px; border-radius: 20px;
+    font-size: 12px; font-weight: 600;
+  }
+
+  /* KPI CARDS — même style que dashboard */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .kpi-card {
+    background: linear-gradient(135deg, var(--card), #1A1F2E);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+    position: relative; overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+  }
+  .kpi-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  }
+  .kpi-card.blue::before   { background: linear-gradient(90deg, #004BA8, #3E78B2); }
+  .kpi-card.green::before  { background: linear-gradient(90deg, #27AE60, #0EA5E9); }
+  .kpi-card.orange::before { background: linear-gradient(90deg, #F39C12, #E74C3C); }
+  .kpi-card.purple::before { background: linear-gradient(90deg, #8E44AD, #3E78B2); }
+  .kpi-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 20px 60px rgba(0,75,168,0.3);
+    border-color: var(--primary-light);
+  }
+  .kpi-icon { font-size: 26px; margin-bottom: 10px; }
+  .kpi-value { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 800; line-height: 1; margin-bottom: 5px; }
+  .kpi-label { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .kpi-trend {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 600;
+    padding: 3px 8px; border-radius: 20px;
+  }
+  .kpi-trend.up   { background: rgba(39,174,96,0.12); color: var(--green); }
+  .kpi-trend.down { background: rgba(255,87,87,0.12); color: var(--red); }
+  .kpi-trend.warn { background: rgba(243,156,18,0.12); color: var(--orange); }
+
+  /* INFO GRID */
+  .info-row-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .info-card {
+    background: linear-gradient(135deg, var(--card), #1A1F2E);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px;
+    position: relative; overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .info-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light), var(--primary));
+    animation: shimmer 4s linear infinite;
+  }
+  .info-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0,75,168,0.2);
+    border-color: var(--primary-light);
+  }
+  .info-card-title {
+    font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700;
+    color: var(--primary-light); margin-bottom: 16px;
+  }
+  .info-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 9px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 13px;
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-label { color: var(--muted); }
+  .info-value { font-weight: 500; }
+
+  /* BOTTOM ROW */
+  .bottom-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .bottom-card {
+    background: linear-gradient(135deg, var(--card), #1A1F2E);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px;
+    position: relative; overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .bottom-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light), var(--primary));
+    animation: shimmer 5s linear infinite;
+  }
+  .bottom-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0,75,168,0.2);
+    border-color: var(--primary-light);
+  }
+  .bottom-card-title {
+    font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700;
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* Progress bar */
+  .prog-item { margin-bottom: 14px; }
+  .prog-header { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 13px; }
+  .prog-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .prog-fill { height: 100%; border-radius: 3px; transition: width 1.2s cubic-bezier(0.25,1,0.5,1); }
+
+  /* Tâche item */
+  .task-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 13px;
+  }
+  .task-row:last-child { border-bottom: none; }
+  .task-chk {
+    width: 16px; height: 16px;
+    border-radius: 4px;
+    border: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .task-chk.done { background: var(--green); border-color: var(--green); color: white; font-size: 9px; }
+  .task-name { flex: 1; }
+  .task-name.done { text-decoration: line-through; color: var(--muted); }
+  .task-prio {
+    font-size: 10px; font-weight: 600;
+    padding: 2px 7px; border-radius: 10px;
+  }
+  .prio-h { background: rgba(231,76,60,0.12); color: var(--red); }
+  .prio-m { background: rgba(243,156,18,0.12); color: var(--orange); }
+  .prio-l { background: rgba(39,174,96,0.12); color: var(--green); }
+</style>
+<script src="../assets/config.js"></script>
+</head>
+<body>
+<div class="bg-orbs">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">🏝️</div>
+    <div>
+      <div class="logo-text">Orchid Island</div>
+      <div class="logo-sub">REAL ESTATE RH</div>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Principal</div>
+    <div class="nav-item active" onclick="goTo('mon_espace.html')">Tableau de bord</div>
+    <div class="nav-item" onclick="goTo('projets.html')">Projets</div>
+    <div class="nav-item" onclick="goTo('taches.html')">Tâches</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Gestion</div>
+    <div class="nav-item" onclick="goTo('pointage_qr.html')">Pointage QR</div>
+    <div class="nav-item" onclick="goTo('rapports.html')">Rapports</div>
+    <div class="nav-item" onclick="goTo('alertes.html')">Alertes <span class="nav-badge" id="badgeAlertes" style="display:none">0</span></div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar" id="userInitials">?</div>
+      <div>
+        <div class="user-name" id="userName">Chargement...</div>
+        <div class="user-role">Stagiaire</div>
+        <div style="font-size:11px;color:var(--muted)" id="userEmailSide"></div>
+      </div>
+    </div>
+    <button class="logout-btn" onclick="logout()">🚪 Déconnexion</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title">Mon Espace Stagiaire</div>
+    <div class="topbar-right">
+      <div class="topbar-date" id="currentDate"></div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- PROFIL BANNER -->
+    <div class="profil-banner">
+      <div class="profil-avatar-big" id="avatarBig">?</div>
+      <div>
+        <div class="profil-name" id="profilName">Chargement...</div>
+        <div class="profil-email" id="profilEmail"></div>
+        <span class="profil-badge">● Stagiaire Actif</span>
+      </div>
+    </div>
+
+    <!-- KPI CARDS -->
+    <div class="kpi-grid">
+      <div class="kpi-card blue">
+        <div class="kpi-icon">📅</div>
+        <div class="kpi-value" id="kpiJours">—</div>
+        <div class="kpi-label">Jours restants</div>
+        <span class="kpi-trend up" id="kpiJoursTrend">● En cours</span>
+      </div>
+      <div class="kpi-card orange">
+        <div class="kpi-icon">⚠️</div>
+        <div class="kpi-value" id="kpiAbsences" style="color:var(--orange)">0/3</div>
+        <div class="kpi-label">Absences non justifiées</div>
+        <span class="kpi-trend up" id="kpiAbsTrend">● Aucune absence</span>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-icon">✅</div>
+        <div class="kpi-value" id="kpiPointage" style="color:var(--green)">—</div>
+        <div class="kpi-label">Pointage aujourd'hui</div>
+        <span class="kpi-trend up">● Temps réel</span>
+      </div>
+      <div class="kpi-card purple">
+        <div class="kpi-icon">📊</div>
+        <div class="kpi-value" id="kpiTaches">—</div>
+        <div class="kpi-label">Tâches complétées</div>
+        <span class="kpi-trend up" id="kpiTachesTrend">● Mon projet</span>
+      </div>
+    </div>
+
+    <!-- INFO CARDS -->
+    <div class="info-row-grid">
+      <div class="info-card">
+        <div class="info-card-title">📚 Formation</div>
+        <div class="info-row">
+          <span class="info-label">École</span>
+          <span class="info-value" id="infoEcole">—</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Formation</span>
+          <span class="info-value" id="infoFormation">—</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Département</span>
+          <span class="info-value" id="infoDept">—</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Téléphone</span>
+          <span class="info-value" id="infoPhone">—</span>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-card-title">🗓️ Période de Stage</div>
+        <div class="info-row">
+          <span class="info-label">Date de début</span>
+          <span class="info-value" id="infoDebut">—</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Date de fin</span>
+          <span class="info-value" id="infoFin">—</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Durée totale</span>
+          <span class="info-value" id="infoDuree">—</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Avancement</span>
+          <span class="info-value" id="infoAvancement" style="color:var(--primary-light)">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM ROW -->
+    <div class="bottom-row">
+      <!-- Avancement projet -->
+      <div class="bottom-card">
+        <div class="bottom-card-title">📁 Avancement Projet</div>
+        <div id="projetContent">
+          <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">Chargement...</div>
+        </div>
+      </div>
+
+      <!-- Mes tâches récentes -->
+      <div class="bottom-card">
+        <div class="bottom-card-title">
+          ✅ Mes Tâches
+          <span style="margin-left:auto;font-size:11px;color:var(--primary-light);cursor:pointer;font-weight:400;" onclick="goTo('taches.html')">Voir tout →</span>
+        </div>
+        <div id="tachesContent">
+          <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">Chargement...</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const BACKEND_URL = window.BACKEND_URL || 'http://127.0.0.1:8000';
+
+function goTo(page) {
+  if (window.location.origin.includes(':8000')) {
+    window.location.href = '/' + page.replace('.html', '/');
+  } else {
+    window.location.href = page;
+  }
+}
+
+function logout() {
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('user');
+  goTo('authentification.html');
+}
+
+/* ===== PROJETS & TÂCHES depuis localStorage ===== */
+function loadProjetData() {
+  try {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const fullName = `${user.first_name} ${user.last_name}`.trim().toLowerCase();
+    const orchidData = JSON.parse(localStorage.getItem('orchidData') || '{"projets":{"list":[]}}');
+    const projets = (orchidData.projets?.list || []).filter(p =>
+      p.resp && p.resp.trim().toLowerCase() === fullName
+    );
+
+    const projetEl = document.getElementById('projetContent');
+    const tachesEl = document.getElementById('tachesContent');
+
+    if (projets.length === 0) {
+      projetEl.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">Aucun projet assigné</div>';
+      tachesEl.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">Aucune tâche</div>';
+      document.getElementById('kpiTaches').textContent = '0/0';
+      return;
+    }
+
+    // Projet principal
+    const proj = projets[0];
+    const tasks = proj.tasks || [];
+    let totalItems = 0, doneItems = 0;
+    tasks.forEach(t => {
+      totalItems++; if (t.done) doneItems++;
+      (t.subs || []).forEach(s => { totalItems++; if (s.done) doneItems++; });
+    });
+    const pct = totalItems > 0 ? Math.round((doneItems / totalItems) * 100) : 0;
+
+    // KPI tâches
+    const tasksDone = tasks.filter(t => t.done).length;
+    document.getElementById('kpiTaches').textContent = `${tasksDone}/${tasks.length}`;
+    document.getElementById('kpiTachesTrend').textContent = `● ${pct}% complété`;
+
+    // Couleur progression
+    const color = pct >= 100 ? '#27AE60' : pct >= 60 ? '#3E78B2' : pct >= 30 ? '#F39C12' : '#E74C3C';
+
+    projetEl.innerHTML = `
+      <div style="margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700">${proj.nom}</div>
+          <span style="background:rgba(0,75,168,0.12);color:#3E78B2;font-size:11px;padding:3px 9px;border-radius:12px;font-weight:600">En cours</span>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:12px">
+          ${proj.debut || '—'} → ${proj.fin || '—'}
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px">
+          <span style="color:var(--muted)">Progression globale</span>
+          <span style="font-weight:600;color:${color}">${pct}%</span>
+        </div>
+        <div style="height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin-bottom:16px">
+          <div style="height:100%;width:${pct}%;background:${color};border-radius:4px;transition:width 1.2s ease"></div>
+        </div>
+      </div>
+      ${tasks.slice(0, 4).map(t => {
+        const subs = t.subs || [];
+        const subsDone = subs.filter(s => s.done).length;
+        const tPct = subs.length > 0 ? Math.round((subsDone/subs.length)*100) : (t.done ? 100 : 0);
+        const tColor = tPct >= 100 ? '#27AE60' : tPct > 0 ? '#3E78B2' : 'var(--border)';
+        return `
+        <div class="prog-item">
+          <div class="prog-header">
+            <span style="color:${t.done ? 'var(--muted)' : 'var(--text)'}${t.done ? ';text-decoration:line-through' : ''}">${t.name}</span>
+            <span style="color:${tColor};font-weight:600;font-size:12px">${tPct}%</span>
+          </div>
+          <div class="prog-bar"><div class="prog-fill" style="width:${tPct}%;background:${tColor}"></div></div>
+          ${subs.length > 0 ? `<div style="font-size:11px;color:var(--muted);margin-top:3px">${subsDone}/${subs.length} sous-tâches</div>` : ''}
+        </div>`;
+      }).join('')}
+      ${projets.length > 1 ? `<div style="font-size:12px;color:var(--primary-light);margin-top:8px;cursor:pointer" onclick="goTo('projets.html')">+ ${projets.length - 1} autre(s) projet(s) →</div>` : ''}
+    `;
+
+    // Tâches récentes
+    const allTasks = [];
+    projets.forEach(p => (p.tasks || []).forEach(t => {
+      allTasks.push({ ...t, projet: p.nom });
+      (t.subs || []).forEach(s => allTasks.push({ ...s, projet: p.nom, parentTask: t.name }));
+    }));
+
+    if (allTasks.length === 0) {
+      tachesEl.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px">Aucune tâche</div>';
+      return;
+    }
+
+    const sorted = [...allTasks].sort((a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0));
+    tachesEl.innerHTML = sorted.slice(0, 6).map(t => `
+      <div class="task-row">
+        <div class="task-chk ${t.done ? 'done' : ''}">${t.done ? '✓' : ''}</div>
+        <div class="task-name ${t.done ? 'done' : ''}">
+          ${t.name}
+          ${t.parentTask ? `<div style="font-size:11px;color:var(--muted)">${t.parentTask}</div>` : ''}
+        </div>
+        <span class="task-prio prio-${t.prio || 'm'}">${t.prio === 'h' ? 'Haute' : t.prio === 'l' ? 'Faible' : 'Moyenne'}</span>
+      </div>
+    `).join('');
+
+  } catch(e) {
+    console.error('Erreur chargement projet:', e);
+  }
+}
+
+/* ===== LOAD PROFIL ===== */
+async function loadProfil() {
+  // Date
+  document.getElementById('currentDate').textContent =
+    new Date().toLocaleDateString('fr-FR', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  if (!user.id) { goTo('authentification.html'); return; }
+  if (user.role !== 'stagiaire') { goTo('dashboard.html'); return; }
+
+  const fullName = `${user.first_name} ${user.last_name}`;
+  const initials = (user.first_name?.[0] || '') + (user.last_name?.[0] || '');
+
+  document.getElementById('userInitials').textContent = initials;
+  document.getElementById('userName').textContent = fullName;
+  document.getElementById('userEmailSide').textContent = user.email;
+  document.getElementById('avatarBig').textContent = initials;
+  document.getElementById('profilName').textContent = fullName;
+  document.getElementById('profilEmail').textContent = user.email;
+
+  // Charger projets/tâches depuis localStorage immédiatement
+  loadProjetData();
+
+  // Alertes badge
+  try {
+    const alerts = JSON.parse(localStorage.getItem('system_alerts') || '[]');
+    const unread = alerts.filter(a => !a.read).length;
+    const badge = document.getElementById('badgeAlertes');
+    if (unread > 0) { badge.textContent = unread; badge.style.display = 'inline-flex'; }
+  } catch(e) {}
+
+  try {
+    const token = localStorage.getItem('access_token');
+    const res = await fetch(`${BACKEND_URL}/api/auth/profil/`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      const p = data.profil;
+
+      document.getElementById('infoEcole').textContent = p.ecole || '—';
+      document.getElementById('infoFormation').textContent = p.formation || '—';
+      document.getElementById('infoDept').textContent = p.departement || '—';
+      document.getElementById('infoPhone').textContent = p.phone || '—';
+
+      if (p.date_debut_stage && p.date_fin_stage) {
+        const debut = new Date(p.date_debut_stage);
+        const fin   = new Date(p.date_fin_stage);
+        const now   = new Date();
+
+        document.getElementById('infoDebut').textContent = debut.toLocaleDateString('fr-FR');
+        document.getElementById('infoFin').textContent   = fin.toLocaleDateString('fr-FR');
+
+        const totalDays = Math.ceil((fin - debut) / (1000*60*60*24));
+        const elapsed   = Math.ceil((now  - debut) / (1000*60*60*24));
+        const remaining = Math.ceil((fin  - now)   / (1000*60*60*24));
+        const stagePct  = Math.min(100, Math.round((elapsed / totalDays) * 100));
+
+        document.getElementById('infoDuree').textContent     = `${totalDays} jours`;
+        document.getElementById('infoAvancement').textContent = `${stagePct}% du stage écoulé`;
+        document.getElementById('kpiJours').textContent      = remaining > 0 ? remaining : '0';
+        document.getElementById('kpiJoursTrend').textContent = `● ${stagePct}% du stage écoulé`;
+      }
+
+      const absNJ = p.absences_non_justifiees ?? 0;
+      document.getElementById('kpiAbsences').textContent = `${absNJ}/3`;
+      if (absNJ >= 3) {
+        document.getElementById('kpiAbsences').style.color = 'var(--red)';
+        document.getElementById('kpiAbsTrend').textContent = '⚠ Limite atteinte!';
+        document.getElementById('kpiAbsTrend').className = 'kpi-trend down';
+      } else if (absNJ > 0) {
+        document.getElementById('kpiAbsences').style.color = 'var(--orange)';
+        document.getElementById('kpiAbsTrend').textContent = `⚠ ${absNJ} absence(s)`;
+        document.getElementById('kpiAbsTrend').className = 'kpi-trend warn';
+      }
+
+      // Pointage
+      const ptgRes = await fetch(`${BACKEND_URL}/api/presences/pointages/?email=${p.email}`);
+      const ptgData = await ptgRes.json();
+      if (ptgData.success && ptgData.pointages.length > 0) {
+        const entree = ptgData.pointages.find(pt => pt.type === 'entree');
+        if (entree) {
+          document.getElementById('kpiPointage').textContent = `✓ ${entree.heure}`;
+          document.getElementById('kpiPointage').style.color = 'var(--green)';
+        } else {
+          document.getElementById('kpiPointage').textContent = 'Non pointé';
+          document.getElementById('kpiPointage').style.color = 'var(--orange)';
+        }
+      } else {
+        document.getElementById('kpiPointage').textContent = 'Non pointé';
+        document.getElementById('kpiPointage').style.color = 'var(--orange)';
+      }
+    }
+  } catch(e) {
+    console.error('Erreur chargement profil:', e);
+    document.getElementById('kpiPointage').textContent = '—';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', loadProfil);
+</script>
+</body>
+</html>

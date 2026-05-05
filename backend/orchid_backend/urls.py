@@ -44,10 +44,10 @@ urlpatterns = [
     path('dashboard/', lambda r: serve_frontend(r, 'dashboard.html')),
     path('rapports/', lambda r: serve_frontend(r, 'rapports.html')),
     path('alertes/', lambda r: serve_frontend(r, 'alertes.html')),
+    path('mon_espace/', lambda r: serve_frontend(r, 'mon_espace.html')),
 ]
 
 # ============================================================
-# CRITIQUE : Sans ces lignes, les CV ne s'affichent PAS
+# Servir les fichiers média (CV, justifications)
 # ============================================================
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Orchid Island — Connexion</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<script>if(typeof emailjs!=='undefined')emailjs.init('YOUR_PUBLIC_KEY');</script>
 <style>
   :root {
     --primary: #004BA8;
@@ -414,7 +416,14 @@
     </div>
 
     <div class="forgot-link">
-      <a href="#">Mot de passe oublié ?</a>
+      <a href="#" onclick="showForgotPassword(); return false;">Mot de passe oublié ?</a>
+    </div>
+
+    <!-- Section mot de passe oublié (masquée par défaut) -->
+    <div id="forgotSection" style="display:none;margin-top:16px">
+      <input type="email" id="forgotEmail" placeholder="Votre email" style="width:100%;padding:12px;background:#1A1F2E;border:1px solid var(--border);border-radius:8px;color:var(--text);margin-bottom:8px">
+      <button onclick="sendResetEmail()" style="width:100%;padding:12px;background:var(--primary);color:white;border:none;border-radius:8px;cursor:pointer;font-weight:600">Envoyer le mot de passe</button>
+      <div id="forgotMsg" style="margin-top:8px;font-size:13px;text-align:center"></div>
     </div>
 
     <button class="btn-login" onclick="doLogin()">
@@ -457,32 +466,33 @@
     const pass = document.getElementById('passInput').value;
     const selectedRoleBtn = document.querySelector('.role-btn.active');
     const selectedRole = selectedRoleBtn ? selectedRoleBtn.textContent.trim() : '';
-    
+
     const btn = document.querySelector('.btn-login');
     const btnText = document.getElementById('btnText');
     const spinner = document.getElementById('spinner');
     const err = document.getElementById('errorAlert');
-    
+
     err.style.display = 'none';
-    
+
     if (!email || !pass) {
         err.style.display = 'flex';
         document.getElementById('errorMessage').textContent = 'Veuillez remplir tous les champs.';
         return;
     }
-    
+
     if (!selectedRole) {
         err.style.display = 'flex';
         document.getElementById('errorMessage').textContent = 'Veuillez sélectionner un rôle.';
         return;
     }
-    
+
     btnText.style.display = 'none';
     spinner.style.display = 'block';
     btn.disabled = true;
-    
+
     try {
-        const response = await fetch('http://127.0.0.1:8000/api/auth/login/', {
+        const BACKEND_URL = window.BACKEND_URL || 'http://127.0.0.1:8000';
+        const response = await fetch(`${BACKEND_URL}/api/auth/login/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -493,24 +503,71 @@
                 role: selectedRole
             })
         });
-        
+
         const data = await response.json();
-        
+
         if (response.ok && data.success) {
-            // Stocker le token
+            // ✅ Sauvegarder TOUT avant de rediriger
             localStorage.setItem('access_token', data.access_token);
+            localStorage.setItem('refresh_token', data.refresh_token || '');
             localStorage.setItem('user', JSON.stringify(data.user));
+            localStorage.setItem('currentUser', JSON.stringify(data.user));
             
+            // ✅ Vérifier que la sauvegarde a bien fonctionné
+            const savedToken = localStorage.getItem('access_token');
+            if (!savedToken) {
+                document.getElementById('errorMessage').textContent = 'Erreur de sauvegarde. Vérifiez que les cookies sont activés.';
+                document.getElementById('errorAlert').style.display = 'flex';
+                return;
+            }
+
             btnText.textContent = '✅ Connexion réussie !';
+            btnText.style.display = 'block';
+            spinner.style.display = 'none';
+            
+            // ✅ Attendre 1.5s puis rediriger
             setTimeout(() => {
-                // Rediriger selon le rôle
                 redirectAfterLogin(data.user);
             }, 1500);
         } else {
+            // Si le backend échoue et rôle Stagiaire, vérifier dans localStorage
+            if (selectedRole === 'Stagiaire') {
+                const stagiaires = JSON.parse(localStorage.getItem('stagiaires') || '[]');
+                const stagiaire = stagiaires.find(s =>
+                    s.email === email && atob(s.password || '') === pass
+                );
+                if (stagiaire) {
+                    localStorage.setItem('currentUser', JSON.stringify({
+                        ...stagiaire, role: 'stagiaire'
+                    }));
+                    btnText.textContent = '✅ Connexion réussie !';
+                    setTimeout(() => {
+                        redirectAfterLogin({ role: 'stagiaire' });
+                    }, 1500);
+                    return;
+                }
+            }
             err.style.display = 'flex';
             document.getElementById('errorMessage').textContent = data.error || 'Email ou mot de passe incorrect. Veuillez réessayer.';
         }
     } catch (error) {
+        // Si le serveur est indisponible et rôle Stagiaire, vérifier localStorage
+        if (selectedRole === 'Stagiaire') {
+            const stagiaires = JSON.parse(localStorage.getItem('stagiaires') || '[]');
+            const stagiaire = stagiaires.find(s =>
+                s.email === email && atob(s.password || '') === pass
+            );
+            if (stagiaire) {
+                localStorage.setItem('currentUser', JSON.stringify({
+                    ...stagiaire, role: 'stagiaire'
+                }));
+                btnText.textContent = '✅ Connexion réussie !';
+                setTimeout(() => {
+                    redirectAfterLogin({ role: 'stagiaire' });
+                }, 1500);
+                return;
+            }
+        }
         err.style.display = 'flex';
         document.getElementById('errorMessage').textContent = 'Erreur de connexion au serveur. Vérifiez que le backend est démarré.';
     } finally {
@@ -518,7 +575,61 @@
         btnText.style.display = 'block';
         btn.disabled = false;
     }
-}
+  }
+
+  // Redirection selon le rôle après connexion
+  function redirectAfterLogin(user) {
+    const role = user.role;
+    
+    // ✅ Tous vont vers dashboard pour l'instant
+    // Le dashboard gère l'affichage selon le rôle
+    if (window.location.origin.includes(':8000')) {
+      window.location.href = '/dashboard/';
+    } else {
+      window.location.href = 'dashboard.html';
+    }
+  }
+
+  // Mot de passe oublié
+  function showForgotPassword() {
+    const s = document.getElementById('forgotSection');
+    s.style.display = s.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function sendResetEmail() {
+    const email = document.getElementById('forgotEmail').value.trim();
+    const msg = document.getElementById('forgotMsg');
+
+    if (!email) { msg.style.color='var(--red)'; msg.textContent='Entrez votre email'; return; }
+
+    const stagiaires = JSON.parse(localStorage.getItem('stagiaires') || '[]');
+    const stagiaire = stagiaires.find(s => s.email === email);
+
+    if (!stagiaire) {
+      msg.style.color = 'var(--red)';
+      msg.textContent = 'Aucun compte trouvé avec cet email';
+      return;
+    }
+
+    // Envoyer via EmailJS (service gratuit) — configurez votre compte sur emailjs.com
+    if (typeof emailjs !== 'undefined') {
+      const password = atob(stagiaire.password || '');
+      emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', {
+        to_email: email,
+        to_name: stagiaire.prenom + ' ' + stagiaire.nom,
+        password: password
+      }).then(() => {
+        msg.style.color = 'var(--green)';
+        msg.textContent = '✅ Email envoyé ! Vérifiez votre boîte mail.';
+      }).catch(() => {
+        msg.style.color = 'var(--red)';
+        msg.textContent = 'Erreur envoi email. Configurez EmailJS.';
+      });
+    } else {
+      msg.style.color = 'var(--orange)';
+      msg.textContent = 'EmailJS non configuré. Contactez l\'administrateur.';
+    }
+  }
 </script>
 </body>
 </html>

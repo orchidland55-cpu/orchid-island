@@ -1,10 +1,17 @@
-// config.js — URL du backend selon l'environnement
-const CONFIG = {
-  // En production : URL Render
-  BACKEND_URL: 'https://orchid-island-api.onrender.com',
-  
-  // En local : commenter la ligne ci-dessus et décommenter celle-ci
-  // BACKEND_URL: 'http://192.168.11.249:8000',
-};
+// config.js — détection automatique selon l'hostname
+(function() {
+  const hostname = window.location.hostname;
 
-window.BACKEND_URL = CONFIG.BACKEND_URL;
+  if (hostname === '127.0.0.1' || hostname === 'localhost') {
+    // Navigateur sur le Mac → backend local
+    window.BACKEND_URL = 'http://127.0.0.1:8000';
+  } else if (hostname.startsWith('192.168.')) {
+    // Téléphone sur le réseau WiFi → backend local sur même IP
+    window.BACKEND_URL = `http://${hostname}:8000`;
+  } else {
+    // Téléphone sur le réseau WiFi ou autre → backend Render
+    window.BACKEND_URL = 'https://orchid-island-api.onrender.com';
+  }
+
+  console.log('[CONFIG] BACKEND_URL:', window.BACKEND_URL);
+})();
