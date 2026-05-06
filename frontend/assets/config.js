@@ -9,8 +9,8 @@
     // Téléphone sur le réseau WiFi → backend local sur même IP
     window.BACKEND_URL = `http://${hostname}:8000`;
   } else {
-    // Téléphone sur le réseau WiFi ou autre → backend Render
-    window.BACKEND_URL = 'https://orchid-island-api.onrender.com';
+    // Production Vercel → backend Railway
+    window.BACKEND_URL = 'https://orchid-island-production.up.railway.app';
   }
 
   console.log('[CONFIG] BACKEND_URL:', window.BACKEND_URL);
