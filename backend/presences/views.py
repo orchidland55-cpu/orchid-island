@@ -445,7 +445,7 @@ def upload_justification(request):
         try:
             stagiaire = CustomUser.objects.get(
                 last_name__iexact=nom,
-                first_name__iexact=prenom, last_name__iexact=nom
+                first_name__iexact=prenom,
                 role='stagiaire'
             )
         except CustomUser.DoesNotExist:
@@ -526,7 +526,7 @@ def creer_absence(request):
         try:
             stagiaire = CustomUser.objects.get(
                 last_name__iexact=nom,
-                first_name__iexact=prenom, last_name__iexact=nom
+                first_name__iexact=prenom,
                 role='stagiaire'
             )
         except CustomUser.DoesNotExist:
