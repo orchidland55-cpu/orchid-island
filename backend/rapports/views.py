@@ -67,8 +67,8 @@ def detail_rapport(request, pk):
             'contenu': r.contenu,
             'auteur': r.auteur.email,
             'created_at': r.created_at,
-            # Si vous avez un champ fichier Cloudinary, ajoutez :
-            # 'fichier_url': r.fichier.url if r.fichier else None,
+            'fichier_url': r.fichier_url or None,   # ← décommenter + utiliser fichier_url
+            'fichier_nom': r.fichier_nom or None,   # ← ajouter aussi le nom
         })
     except Rapport.DoesNotExist:
         return Response({'error': 'Not found'}, status=404)
