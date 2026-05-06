@@ -1971,7 +1971,7 @@ async function saveStagiaire() {
       showSuccessMessage(`Stagiaire "${prenom} ${nom}" créé avec succès ! Mot de passe par défaut: Stagiaire123`);
 
       // Déclencher l'alerte nouveau stagiaire
-      if (window.alertManager) {
+      if (window.alertManager && typeof window.alertManager.alertNouveauStagiaire === 'function') {
         window.alertManager.alertNouveauStagiaire(prenom, nom, ecole);
       }
     } else {
