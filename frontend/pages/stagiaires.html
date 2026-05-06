@@ -452,7 +452,7 @@
   <div class="content">
     <div class="filters-bar">
       <div class="search-box">
-        🔍 <input type="text" placeholder="Rechercher un stagiaire..." oninput="filterTable(this.value)" autocomplete="off">
+        🔍 <input type="text" placeholder="Rechercher un stagiaire..." oninput="filterTable(this.value)" autocomplete="new-password" name="search_stagiaire_orchid" readonly onfocus="this.removeAttribute('readonly')">
       </div>
       <select class="filter-select" onchange="filterStatus(this.value)">
         <option value="all">Tous les statuts</option>
