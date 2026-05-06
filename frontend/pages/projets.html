@@ -1399,7 +1399,9 @@ async function sauvegarderProjets() {
             statut: p.etat === 'done' ? 'termine' : p.etat === 'retard' ? 'en_retard' : 'en_cours',
             progression: calcPct(p),
             date_debut: p.debut || null,
-            date_fin: p.fin || null
+            date_fin: p.fin || null,
+            responsable_nom: p.resp || '',
+            tasks_json: p.tasks || []
           })
         });
         const d = await res.json();
