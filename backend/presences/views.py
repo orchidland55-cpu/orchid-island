@@ -123,6 +123,10 @@ def creer_pointage(request):
             first_name__iexact=prenom,
             last_name__iexact=nom,
             role='stagiaire'
+        ) | CustomUser.objects.filter(
+            first_name__iexact=nom,
+            last_name__iexact=prenom,
+            role='stagiaire'
         )
         if email:
             qs = qs.filter(email__iexact=email)
@@ -441,7 +445,7 @@ def upload_justification(request):
         try:
             stagiaire = CustomUser.objects.get(
                 last_name__iexact=nom,
-                first_name__iexact=prenom,
+                first_name__iexact=prenom, last_name__iexact=nom
                 role='stagiaire'
             )
         except CustomUser.DoesNotExist:
@@ -522,7 +526,7 @@ def creer_absence(request):
         try:
             stagiaire = CustomUser.objects.get(
                 last_name__iexact=nom,
-                first_name__iexact=prenom,
+                first_name__iexact=prenom, last_name__iexact=nom
                 role='stagiaire'
             )
         except CustomUser.DoesNotExist:
