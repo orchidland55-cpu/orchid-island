@@ -2,24 +2,49 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import Rapport
+import cloudinary.uploader
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def lister_rapports(request):
-    rapports = Rapport.objects.all().values('id','date','contenu','auteur__email','created_at')
+    rapports = Rapport.objects.all().values(
+        'id', 'date', 'contenu', 'auteur__email',
+        'created_at', 'fichier_url', 'fichier_nom', 'statut'  # ✅ ajouter ces champs
+    )
     return Response(list(rapports))
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def creer_rapport(request):
+    fichier = request.FILES.get('fichier')
+    fichier_url = None
+    fichier_nom = None
+
+    if fichier:
+        fichier_nom = fichier.name
+        # ✅ Utiliser resource_type='raw' pour PDF/DOCX (pas 'image')
+        upload_result = cloudinary.uploader.upload(
+            fichier,
+            resource_type='raw',          # ← clé du fix
+            folder='rapports/',
+            use_filename=True,
+            unique_filename=True,
+        )
+        fichier_url = upload_result.get('secure_url')
+
     r = Rapport.objects.create(
         auteur=request.user,
         date=request.data.get('date'),
         contenu=request.data.get('contenu', ''),
-        fichier=request.FILES.get('fichier'),  # ✅ NOUVEAU
+        fichier_url=fichier_url or '',    # stocker l'URL directement
+        fichier_nom=fichier_nom or '',
     )
-    fichier_url = r.fichier.url if r.fichier else None
-    return Response({'id': r.id, 'success': True, 'fichier_url': fichier_url})
+    return Response({
+        'id': r.id,
+        'success': True,
+        'fichier_url': fichier_url,
+        'fichier_nom': fichier_nom,
+    })
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])

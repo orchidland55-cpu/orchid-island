@@ -1,12 +1,12 @@
 from django.db import models
 from django.conf import settings
-from cloudinary.models import CloudinaryField
 
 class Rapport(models.Model):
     auteur = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     date = models.DateField()
     contenu = models.TextField(blank=True)
-    fichier = CloudinaryField('fichier', blank=True, null=True)  # ✅ NOUVEAU
+    fichier_url = models.URLField(blank=True, null=True)   # ✅ simple URL string
+    fichier_nom = models.CharField(max_length=255, blank=True, null=True)  # ✅ nom original
     statut = models.CharField(max_length=20, default='attente', choices=[
         ('attente', 'En attente'),
         ('valide', 'Validé'),

@@ -525,23 +525,29 @@ function renderJournaliers() {
   `).join('');
 }
 
-// ✅ CORRIGÉ — Parser JSON et afficher proprement
+// ✅ Utiliser Google Docs Viewer pour afficher PDF/DOCX dans l'iframe
 async function viewReport(reportId) {
   const report = journaliers.find(r => r.id === reportId);
   if (!report) return;
 
-  // ✅ Parser le contenu JSON si c'est du JSON brut (pas une URL)
+  // ✅ Récupérer l'URL depuis l'API si _apiId existe
   let fichierUrl = null;
-  let fichierNom = report.fichier || 'N/A';
-  
-  if (report.fichierContenu) {
-    if (report.fichierContenu.startsWith('http')) {
-      // C'est une vraie URL Cloudinary
-      fichierUrl = report.fichierContenu;
-    } else if (report.fichierContenu.startsWith('{') || report.fichierContenu.startsWith('data:')) {
-      // C'est du JSON brut ou base64 — pas affichable, ignorer
-      fichierUrl = null;
-    }
+  let fichierNom = report.fichier || 'fichier';
+
+  if (report._apiId) {
+    try {
+      const res = await fetchWithAuth(`/api/rapports/${report._apiId}/`);
+      if (res && res.ok) {
+        const data = await res.json();
+        fichierUrl = data.fichier_url || null;
+        fichierNom = data.fichier_nom || fichierNom;
+      }
+    } catch(e) { console.error(e); }
+  }
+
+  // Fallback : si déjà stocké localement comme URL valide
+  if (!fichierUrl && report.fichierContenu && report.fichierContenu.startsWith('https://')) {
+    fichierUrl = report.fichierContenu;
   }
 
   const content = `
@@ -554,31 +560,25 @@ async function viewReport(reportId) {
       <div style="font-size:14px">${report.projet || 'N/A'}</div>
     </div>
     <div style="margin-bottom:16px">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Date</div>
-      <div style="font-size:14px">${report.date}</div>
-    </div>
-    <div style="margin-bottom:16px">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Heure</div>
-      <div style="font-size:14px;font-family:monospace">${report.heure || '—'}</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Date · Heure</div>
+      <div style="font-size:14px">${report.date} à ${report.heure || '—'}</div>
     </div>
     <div style="margin-bottom:16px">
       <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Fichier</div>
-      <div style="font-size:14px">
-        ${fichierUrl
-          ? `<a href="${fichierUrl}" target="_blank"
-              style="color:var(--primary-light);text-decoration:underline;display:flex;align-items:center;gap:6px">
-              📄 ${fichierNom} — Ouvrir le fichier
-            </a>`
-          : `<span style="color:var(--muted)">📄 ${fichierNom}
-              <br><small style="color:var(--red)">⚠️ Fichier stocké localement uniquement — 
-              redéposez via le backend pour activer l'affichage.</small>
-            </span>`
-        }
-      </div>
+      ${fichierUrl
+        ? `<a href="${fichierUrl}" target="_blank"
+            style="color:var(--primary-light);text-decoration:underline;display:inline-flex;align-items:center;gap:6px;font-size:14px">
+            📄 ${fichierNom} — Télécharger
+           </a>`
+        : `<span style="color:var(--muted);font-size:13px">
+            📄 ${fichierNom}
+            <br><small style="color:var(--red)">⚠️ Fichier non disponible — redéposez pour activer l'affichage</small>
+           </span>`
+      }
     </div>
     <div style="margin-bottom:16px">
       <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Commentaire</div>
-      <div style="font-size:14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:12px">
+      <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:13px">
         ${report.commentaire || 'Aucun commentaire'}
       </div>
     </div>
@@ -586,16 +586,25 @@ async function viewReport(reportId) {
 
   document.getElementById('reportModalContent').innerHTML = content;
 
-  // ✅ N'afficher l'iframe que si on a une vraie URL
+  // ✅ Utiliser Google Docs Viewer pour afficher PDF/DOCX dans l'iframe
   const filePreview = document.getElementById('filePreview');
   const filePreviewIframe = document.getElementById('filePreviewIframe');
   const filePreviewContent = document.getElementById('filePreviewContent');
 
   if (fichierUrl) {
+    const isPdf = fichierUrl.toLowerCase().includes('.pdf');
+    const isDocx = fichierUrl.toLowerCase().includes('.docx') || fichierUrl.toLowerCase().includes('.doc');
+    
     filePreview.style.display = 'block';
-    filePreviewIframe.style.display = 'block';
-    filePreviewIframe.src = fichierUrl;
     filePreviewContent.style.display = 'none';
+    filePreviewIframe.style.display = 'block';
+
+    if (isPdf || isDocx) {
+      // ✅ Google Docs Viewer — fonctionne pour PDF et DOCX publics
+      filePreviewIframe.src = `https://docs.google.com/viewer?url=${encodeURIComponent(fichierUrl)}&embedded=true`;
+    } else {
+      filePreviewIframe.src = fichierUrl;
+    }
   } else {
     filePreview.style.display = 'none';
   }
