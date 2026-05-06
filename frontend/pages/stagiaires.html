@@ -674,7 +674,8 @@ async function loadStagiaires() {
         rapport: 'Non déposé',
         avatar: '#' + Math.floor(Math.random()*16777215).toString(16),
         cv_url: s.cv_url,
-        cv_name: s.cv_name
+        cv_name: s.cv_name,
+        mot_de_passe: s.mot_de_passe_clair || ''
       }));
       
       // Sauvegarder dans localStorage
@@ -807,20 +808,13 @@ function renderTable(data) {
       </div></td>
       <td><div style="font-size:12px">${s.debut}</div><div style="font-size:11px;color:var(--muted)">${s.fin !== '-' ? '-> ' + s.fin : '-'}</div></td>
       <td>${cvDisplay}</td>
-      <td>${(() => {
-        const passwds = JSON.parse(localStorage.getItem('stagiaires_passwords') || '{}');
-        const mdp = passwds[s.email];
-        if (mdp) {
-          return `
-            <div style="display:flex;flex-direction:column;gap:3px;">
-              <span style="font-size:10px;color:var(--muted)">${s.email}</span>
-              <span style="font-family:monospace;font-size:11px;background:rgba(0,75,168,0.1);
-                padding:3px 8px;border-radius:4px;color:var(--primary-light);
-                border:1px solid rgba(0,75,168,0.2);">${mdp}</span>
-            </div>`;
-        }
-        return '<span style="color:var(--muted);font-size:11px">—</span>';
-      })()}</td>
+      <td>${s.mot_de_passe ? `
+        <div style="display:flex;flex-direction:column;gap:3px;">
+          <span style="font-family:monospace;font-size:11px;background:rgba(0,75,168,0.1);
+            padding:3px 8px;border-radius:4px;color:var(--primary-light);
+            border:1px solid rgba(0,75,168,0.2);">${s.mot_de_passe}</span>
+        </div>` : '<span style="color:var(--muted);font-size:11px">—</span>'
+      }</td>
       <td>${s.rapport !== '-' ? `<span class="badge ${rapCls}">${s.rapport}</span>` : '<span style="color:var(--muted);font-size:12px">-</span>'}</td>
       <td>
         <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
