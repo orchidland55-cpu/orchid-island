@@ -6,18 +6,18 @@ from .models import Rapport
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def lister_rapports(request):
-    rapports = Rapport.objects.all().values('id','auteur_id','date','contenu','created_at')
+    rapports = Rapport.objects.all().values('id','date','contenu','auteur__email','created_at')
     return Response(list(rapports))
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def creer_rapport(request):
     r = Rapport.objects.create(
-        auteur_id=request.data.get('auteur_id') or request.user.id,
+        auteur=request.user,
         date=request.data.get('date'),
         contenu=request.data.get('contenu',''),
     )
-    return Response({'id': r.id, 'date': str(r.date)})
+    return Response({'id': r.id, 'success': True})
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
