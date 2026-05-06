@@ -910,10 +910,42 @@ function deleteSub(projId, taskId, subId) {
 }
 
 // Charger les données depuis le localStorage
-function loadProjects() {
+async function loadProjects() {
   try {
-    const data = JSON.parse(localStorage.getItem('orchidData') || '{"projets":{"list":[]}}');
-    const storedProjects = data.projets?.list || [];
+    // Charger depuis l'API Railway
+    const token = localStorage.getItem('access_token');
+    const BACKEND = window.BACKEND_URL || 'https://orchid-island-production.up.railway.app';
+    const res = await fetch(`${BACKEND}/api/projets/`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (res.ok) {
+      const apiProjets = await res.json();
+      // Convertir format API vers format local
+      projects = apiProjets.map(p => ({
+        id: p.id,
+        _apiId: p.id,
+        nom: p.titre,
+        desc: p.description || '',
+        etat: p.statut === 'termine' ? 'done' : p.statut === 'en_retard' ? 'retard' : 'encours',
+        resp: p.responsable_nom || '',
+        debut: p.date_debut || '',
+        fin: p.date_fin || '',
+        tasks: [],
+        color: 'var(--blue)'
+      }));
+      // Aussi sauvegarder en localStorage pour les tâches
+      const data = JSON.parse(localStorage.getItem('orchidData') || '{"projets":{"list":[]}}');
+      // Merger avec localStorage pour garder les tâches
+      projects = projects.map(p => {
+        const local = (data.projets?.list || []).find(l => l._apiId === p.id || l.id === p.id);
+        return local ? {...p, tasks: local.tasks || [], resp: local.resp || p.resp} : p;
+      });
+    } else {
+      // Fallback localStorage
+      const data = JSON.parse(localStorage.getItem('orchidData') || '{"projets":{"list":[]}}');
+      projects = data.projets?.list || [];
+    }
+    const storedProjects = projects;
     
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const isAdmin = ['admin', 'rh', 'manager'].includes(user.role);
@@ -1136,11 +1168,22 @@ function modifierProjet(id) {
   alert('Fonction de modification à implémenter');
 }
 
-function supprimerProjet(id) {
-  if (confirm('â Êtes-vous sûr de vouloir supprimer ce projet ?')) {
+async function supprimerProjet(id) {
+  if (confirm('Êtes-vous sûr de vouloir supprimer ce projet ?')) {
+    const p = projects.find(x => x.id === id);
+    const apiId = p?._apiId || id;
+    // Supprimer via API si possible
+    try {
+      const token = localStorage.getItem('access_token');
+      const BACKEND = window.BACKEND_URL || 'https://orchid-island-production.up.railway.app';
+      await fetch(`${BACKEND}/api/projets/${apiId}/supprimer/`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+    } catch(e) { console.error('Erreur API delete:', e); }
     projects = projects.filter(p => p.id !== id);
     sauvegarderProjets();
-    alert('â Projet supprimé avec succès !');
+    alert('Projet supprimé avec succès !');
   }
 }
 
@@ -1260,7 +1303,7 @@ function fermerModalProjet() {
   document.getElementById('formProjet').reset();
 }
 
-function creerProjet(event) {
+async function creerProjet(event) {
   event.preventDefault();
   
   const nom = document.getElementById('nomProjet').value.trim();
@@ -1280,22 +1323,48 @@ function creerProjet(event) {
   
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   
-  const nouveauProjet = {
-    id: Date.now(),
-    nom: nom,
-    resp: stagiaire,
-    desc: 'Nouveau projet créé',
-    tasks: [],
-    debut: debut,
-    fin: fin,
-    etat: 'encours',
-    avancement: 0,
-    color: 'var(--blue)',
-    // ✅ Stocker l'ID du créateur pour filtrage fiable
-    createdBy: user.id || user.email
-  };
-  
-  projects.unshift(nouveauProjet);
+  // Créer via API Railway
+  try {
+    const token = localStorage.getItem('access_token');
+    const BACKEND = window.BACKEND_URL || 'https://orchid-island-production.up.railway.app';
+    const res = await fetch(`${BACKEND}/api/projets/creer/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({
+        titre: nom,
+        description: 'Nouveau projet créé',
+        statut: 'en_cours',
+        progression: 0,
+        date_debut: debut || null,
+        date_fin: fin || null
+      })
+    });
+    const data = await res.json();
+    const nouveauProjet = {
+      id: data.id || Date.now(),
+      _apiId: data.id,
+      nom: nom,
+      resp: stagiaire,
+      desc: 'Nouveau projet créé',
+      tasks: [],
+      debut: debut,
+      fin: fin,
+      etat: 'encours',
+      avancement: 0,
+      color: 'var(--blue)',
+      createdBy: user.id || user.email
+    };
+    projects.unshift(nouveauProjet);
+  } catch(e) {
+    console.error('Erreur création API:', e);
+    const nouveauProjet = {
+      id: Date.now(),
+      nom: nom, resp: stagiaire, desc: 'Nouveau projet créé',
+      tasks: [], debut: debut, fin: fin, etat: 'encours',
+      avancement: 0, color: 'var(--blue)', createdBy: user.id || user.email
+    };
+    projects.unshift(nouveauProjet);
+  }
   sauvegarderProjets();
   fermerModalProjet();
   alert('✅ Projet créé avec succès !');

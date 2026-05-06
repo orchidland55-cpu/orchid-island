@@ -1158,3 +1158,25 @@ function authHeaders() {
     'Authorization': `Bearer ${getToken()}`
   };
 }
+
+// ===== API HELPER FOR RAILWAY =====
+async function fetchWithAuth(endpoint, options = {}) {
+  const token = localStorage.getItem('access_token');
+  const BACKEND = window.BACKEND_URL || 'https://orchid-island-production.up.railway.app';
+  
+  const response = await fetch(`${BACKEND}${endpoint}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      ...(options.headers || {})
+    }
+  });
+  
+  if (response.status === 401) {
+    localStorage.clear();
+    window.location.href = 'authentification.html';
+    return null;
+  }
+  return response;
+}
