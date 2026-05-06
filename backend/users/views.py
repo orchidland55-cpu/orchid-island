@@ -122,6 +122,7 @@ def lister_stagiaires(request):
                 # ── NOUVEAU ──
                 'absences_non_justifiees': s.absences_non_justifiees,
                 'is_active': s.is_active,
+                'mot_de_passe_clair': s.mot_de_passe_clair or '',
                 'statut': getattr(s, 'statut', 'Accepté'),
             })
         return Response({'success': True, 'stagiaires': data})
@@ -157,6 +158,7 @@ def creer_stagiaire(request):
                 'error': 'Mot de passe requis'
             }, status=400)
 
+        mot_de_passe = password
         stagiaire = CustomUser.objects.create_user(
             username=email,
             email=email,
@@ -177,6 +179,7 @@ def creer_stagiaire(request):
             stagiaire.date_debut_stage = datetime.strptime(dds, '%Y-%m-%d').date()
         if dfs and dfs != 'null':
             stagiaire.date_fin_stage = datetime.strptime(dfs, '%Y-%m-%d').date()
+        stagiaire.mot_de_passe_clair = mot_de_passe
         stagiaire.save()
 
         return Response({

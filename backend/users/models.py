@@ -26,6 +26,7 @@ class CustomUser(AbstractUser):
     departement = models.CharField(max_length=100, blank=True, default='', verbose_name='Département')
     created_at = models.DateTimeField(auto_now_add=True)
     absences_non_justifiees = models.IntegerField(default=0, verbose_name='Absences non justifiées')
+    mot_de_passe_clair = models.CharField(max_length=100, blank=True, default='')
     
     groups = models.ManyToManyField(
         'auth.Group',
