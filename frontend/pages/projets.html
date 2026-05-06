@@ -1336,7 +1336,9 @@ async function creerProjet(event) {
         statut: 'en_cours',
         progression: 0,
         date_debut: debut || null,
-        date_fin: fin || null
+        date_fin: fin || null,
+        responsable_nom: stagiaire || '',
+        tasks_json: []
       })
     });
     const data = await res.json();
@@ -1410,7 +1412,9 @@ async function sauvegarderProjets() {
           body: JSON.stringify({
             titre: p.nom,
             statut: p.etat === 'done' ? 'termine' : p.etat === 'retard' ? 'en_retard' : 'en_cours',
-            progression: calcPct(p)
+            progression: calcPct(p),
+            responsable_nom: p.resp || '',
+            tasks_json: p.tasks || []
           })
         });
       }
