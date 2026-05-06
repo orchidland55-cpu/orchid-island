@@ -550,14 +550,18 @@ function genererQR() {
   let baseUrl;
   
   if (hostname === '127.0.0.1' || hostname === 'localhost') {
-    // Mac → QR pointe vers l'IP WiFi + port Live Server (5500)
+    // Development → QR pointe vers l'IP WiFi + port Live Server (5500)
     baseUrl = 'http://192.168.11.103:5500';
+  } else if (hostname.includes('vercel.app')) {
+    // Production Vercel → utiliser HTTPS sans port
+    baseUrl = `https://${hostname}`;
   } else {
-    baseUrl = `http://${hostname}:5500`;
+    // Autre environnement → utiliser le protocole actuel sans port
+    baseUrl = `${window.location.protocol}//${hostname}`;
   }
   
   // ✅ Pointer directement vers la page HTML du scan mobile
-  const url = `${baseUrl}/frontend/pages/scan_mobile.html?session=${sessionId}`;
+  const url = `${baseUrl}/pages/scan_mobile.html?session=${sessionId}`;
   
   const wrapper = document.getElementById('qrWrapper');
   const sessionDiv = document.getElementById('qrSession');
