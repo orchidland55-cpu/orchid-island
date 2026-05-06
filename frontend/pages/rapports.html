@@ -525,25 +525,30 @@ function renderJournaliers() {
   `).join('');
 }
 
-// Voir les détails d'un rapport journalier
-function viewReport(reportId) {
-  console.log('[RAPPORTS] viewReport appelé avec ID:', reportId);
+// ✅ MODIFIÉ — Charger le contenu depuis l'API avant d'afficher la modal
+async function viewReport(reportId) {
   const report = journaliers.find(r => r.id === reportId);
-  console.log('[RAPPORTS] Rapport trouvé:', report);
   if (!report) return;
-  
+
+  // Si le rapport a un _apiId, récupérer le contenu depuis le backend
+  if (report._apiId) {
+    try {
+      const res = await fetchWithAuth(`/api/rapports/${report._apiId}/`);
+      if (res && res.ok) {
+        const data = await res.json();
+        // Fusionner les données API avec le rapport local
+        report.fichierContenu = data.fichier_url || data.contenu || null;
+      }
+    } catch(e) {
+      console.error('[RAPPORTS] Erreur chargement détail:', e);
+    }
+  }
+
+  // Affichage modal (code existant inchangé)
   const content = `
     <div style="margin-bottom:16px">
       <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Stagiaire</div>
       <div style="font-size:16px;font-weight:600">${report.stagiaire}</div>
-    </div>
-    <div style="margin-bottom:16px">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Nom</div>
-      <div style="font-size:14px">${report.nom || 'N/A'}</div>
-    </div>
-    <div style="margin-bottom:16px">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Prénom</div>
-      <div style="font-size:14px">${report.prenom || 'N/A'}</div>
     </div>
     <div style="margin-bottom:16px">
       <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Projet</div>
@@ -554,19 +559,24 @@ function viewReport(reportId) {
       <div style="font-size:14px">${report.date}</div>
     </div>
     <div style="margin-bottom:16px">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Heure</div>
-      <div style="font-size:14px;font-family:monospace">${report.heure}</div>
-    </div>
-    <div style="margin-bottom:16px">
       <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Fichier</div>
-      <div style="font-size:14px;color:var(--blue)">${report.fichier || 'N/A'}</div>
+      <div style="font-size:14px;color:var(--blue)">
+        ${report.fichierContenu
+          ? `<a href="${report.fichierContenu}" target="_blank" 
+              style="color:var(--primary-light);text-decoration:underline">
+              📄 ${report.fichier} — Ouvrir le fichier
+            </a>`
+          : report.fichier || 'N/A'}
+      </div>
     </div>
     <div style="margin-bottom:16px">
       <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Commentaire</div>
-      <div style="font-size:14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:12px">${report.commentaire || 'Aucun commentaire'}</div>
+      <div style="font-size:14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:12px">
+        ${report.commentaire || 'Aucun commentaire'}
+      </div>
     </div>
   `;
-  
+
   document.getElementById('reportModalContent').innerHTML = content;
   
   // Afficher le contenu du fichier si disponible
@@ -765,37 +775,40 @@ Orchid Island - Système RH`;
   alert('✅ Rapport supprimé avec succès');
 }
 
-// Valider un rapport journalier
-function validateReport(reportId) {
-  console.log('[RAPPORTS] validateReport appelé avec ID:', reportId);
-  console.log('[RAPPORTS] Liste des rapports:', journaliers);
-  
+// ✅ MODIFIÉ — Valider via API + vérification rôle côté frontend
+async function validateReport(reportId) {
+  // Vérification rôle côté frontend (double sécurité, la vraie est côté backend)
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  if (!['admin', 'rh', 'manager'].includes(user.role)) {
+    alert('❌ Vous n\'avez pas la permission de valider des rapports.');
+    return;
+  }
+
   const report = journaliers.find(r => r.id === reportId);
-  console.log('[RAPPORTS] Rapport trouvé:', report);
-  
-  if (!report) {
-    alert('❌ Rapport non trouvé');
-    return;
+  if (!report) { alert('❌ Rapport non trouvé'); return; }
+  if (!confirm(`Valider le rapport de ${report.stagiaire} ?`)) return;
+
+  // Si le rapport est synchronisé avec l'API, valider côté backend
+  if (report._apiId) {
+    try {
+      const res = await fetchWithAuth(`/api/rapports/${report._apiId}/valider/`, { method: 'POST' });
+      if (res && res.status === 403) {
+        alert('❌ Permission refusée par le serveur.');
+        return;
+      }
+      if (!res || !res.ok) {
+        alert('❌ Erreur lors de la validation.');
+        return;
+      }
+    } catch(e) {
+      console.error('[RAPPORTS] Erreur validation API:', e);
+    }
   }
-  
-  if (!confirm(`Êtes-vous sûr de vouloir valider le rapport de ${report.stagiaire} ?`)) {
-    return;
-  }
-  
-  console.log('[RAPPORTS] Validation du rapport, statut actuel:', report.statut);
-  
-  // Mettre à jour le statut du rapport
+
+  // Mettre à jour localement
   report.statut = 'Validé';
-  console.log('[RAPPORTS] Nouveau statut:', report.statut);
-  
-  // Sauvegarder dans localStorage
   saveRapports();
-  console.log('[RAPPORTS] Rapports sauvegardés');
-  
-  // Rafraîchir l'affichage
   renderJournaliers();
-  console.log('[RAPPORTS] Affichage rafraîchi');
-  
   alert('✅ Rapport validé avec succès');
 }
 
