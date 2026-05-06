@@ -2,12 +2,26 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import Projet
+import json
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def lister_projets(request):
-    projets = Projet.objects.all().values('id','titre','description','statut','progression','date_debut','date_fin')
-    return Response(list(projets))
+    projets = Projet.objects.all()
+    data = []
+    for p in projets:
+        data.append({
+            'id': p.id,
+            'titre': p.titre,
+            'description': p.description,
+            'statut': p.statut,
+            'progression': p.progression,
+            'date_debut': str(p.date_debut) if p.date_debut else None,
+            'date_fin': str(p.date_fin) if p.date_fin else None,
+            'responsable_nom': p.responsable_nom or '',
+            'tasks_json': p.tasks_json or [],
+        })
+    return Response(data)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -19,6 +33,8 @@ def creer_projet(request):
         progression=request.data.get('progression',0),
         date_debut=request.data.get('date_debut') or None,
         date_fin=request.data.get('date_fin') or None,
+        responsable_nom=request.data.get('responsable_nom',''),
+        tasks_json=request.data.get('tasks_json', []),
     )
     return Response({'id': p.id, 'titre': p.titre, 'statut': p.statut})
 
@@ -27,7 +43,12 @@ def creer_projet(request):
 def detail_projet(request, pk):
     try:
         p = Projet.objects.get(pk=pk)
-        return Response({'id':p.id,'titre':p.titre,'description':p.description,'statut':p.statut,'progression':p.progression})
+        return Response({
+            'id': p.id, 'titre': p.titre, 'description': p.description,
+            'statut': p.statut, 'progression': p.progression,
+            'responsable_nom': p.responsable_nom,
+            'tasks_json': p.tasks_json or [],
+        })
     except Projet.DoesNotExist:
         return Response({'error': 'Not found'}, status=404)
 
@@ -36,9 +57,11 @@ def detail_projet(request, pk):
 def modifier_projet(request, pk):
     try:
         p = Projet.objects.get(pk=pk)
-        for field in ['titre','description','statut','progression','date_debut','date_fin']:
+        for field in ['titre','description','statut','progression','date_debut','date_fin','responsable_nom']:
             if field in request.data:
-                setattr(p, field, request.data[field])
+                setattr(p, field, request.data[field] or None if field in ['date_debut','date_fin'] else request.data[field])
+        if 'tasks_json' in request.data:
+            p.tasks_json = request.data['tasks_json']
         p.save()
         return Response({'success': True})
     except Projet.DoesNotExist:

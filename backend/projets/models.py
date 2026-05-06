@@ -6,10 +6,12 @@ class Projet(models.Model):
     titre = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     responsable = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    responsable_nom = models.CharField(max_length=200, blank=True, default='')
     date_debut = models.DateField(null=True, blank=True)
     date_fin = models.DateField(null=True, blank=True)
     statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='en_cours')
     progression = models.IntegerField(default=0)
+    tasks_json = models.JSONField(default=list, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
