@@ -186,10 +186,28 @@ let currentAssigneeFilter = null;
 let openSubsMap = {}; // taskId -> bool (subtasks expanded)
 
 // Charger les tâches et sous-tâches depuis les projets
-function loadTasksFromProjects() {
+async function loadTasksFromProjects() {
   try {
-    const data = JSON.parse(localStorage.getItem('orchidData') || '{"projets":{"list":[]}}');
-    let projects = data.projets.list || [];
+    const token = localStorage.getItem('access_token');
+    const BACKEND = window.BACKEND_URL || 'https://orchid-island-production.up.railway.app';
+    let projects = [];
+    try {
+      const res = await fetch(`${BACKEND}/api/projets/`, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (res.ok) {
+        const apiProjets = await res.json();
+        const localData = JSON.parse(localStorage.getItem('orchidData') || '{"projets":{"list":[]}}');
+        projects = apiProjets.map(p => {
+          const local = (localData.projets?.list || []).find(l => l._apiId === p.id || l.id === p.id);
+          return { id: p.id, nom: p.titre, resp: local?.resp || '', fin: p.date_fin || '-', tasks: local?.tasks || [] };
+        });
+      } else {
+        const data = JSON.parse(localStorage.getItem('orchidData') || '{"projets":{"list":[]}}');
+        projects = data.projets.list || [];
+      }
+    } catch(e) {
+      const data = JSON.parse(localStorage.getItem('orchidData') || '{"projets":{"list":[]}}');
+      projects = data.projets.list || [];
+    }
     
     // ✅ Récupérer l'utilisateur connecté
     const user = JSON.parse(localStorage.getItem('user') || '{}');

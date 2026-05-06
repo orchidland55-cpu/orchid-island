@@ -1814,19 +1814,29 @@ async function submitReport() {
 }
 
 // Sauvegarder les rapports dans localStorage
-function saveRapports() {
-  const data = {
-    list: journaliers,
-    finaux: finaux
-  };
+async function saveRapports() {
+  const data = { list: journaliers, finaux: finaux };
   localStorage.setItem('rapports', JSON.stringify(data));
-
-  if (window.sharedData) {
-    window.sharedData.syncAllData();
-  }
-
+  if (window.sharedData) window.sharedData.syncAllData();
   updateNavBadges();
-
+  try {
+    const token = localStorage.getItem('access_token');
+    const BACKEND = window.BACKEND_URL || 'https://orchid-island-production.up.railway.app';
+    for (const r of journaliers) {
+      if (!r._apiId) {
+        const res = await fetch(`${BACKEND}/api/rapports/creer/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({
+            date: r.date ? r.date.split('/').reverse().join('-') : new Date().toISOString().split('T')[0],
+            contenu: JSON.stringify({ stagiaire: r.stagiaire, fichier: r.fichier, projet: r.projet, statut: r.statut })
+          })
+        });
+        if (res.ok) { const d = await res.json(); if (d.id) r._apiId = d.id; }
+      }
+    }
+    localStorage.setItem('rapports', JSON.stringify({ list: journaliers, finaux: finaux }));
+  } catch(e) { console.error('Erreur sync rapports:', e); }
 }
 
 // ===== ALERTE EMAIL =====
