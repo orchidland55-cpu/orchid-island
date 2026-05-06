@@ -525,26 +525,25 @@ function renderJournaliers() {
   `).join('');
 }
 
-// ✅ MODIFIÉ — Charger le contenu depuis l'API avant d'afficher la modal
+// ✅ CORRIGÉ — Parser JSON et afficher proprement
 async function viewReport(reportId) {
   const report = journaliers.find(r => r.id === reportId);
   if (!report) return;
 
-  // Si le rapport a un _apiId, récupérer le contenu depuis le backend
-  if (report._apiId) {
-    try {
-      const res = await fetchWithAuth(`/api/rapports/${report._apiId}/`);
-      if (res && res.ok) {
-        const data = await res.json();
-        // Fusionner les données API avec le rapport local
-        report.fichierContenu = data.fichier_url || data.contenu || null;
-      }
-    } catch(e) {
-      console.error('[RAPPORTS] Erreur chargement détail:', e);
+  // ✅ Parser le contenu JSON si c'est du JSON brut (pas une URL)
+  let fichierUrl = null;
+  let fichierNom = report.fichier || 'N/A';
+  
+  if (report.fichierContenu) {
+    if (report.fichierContenu.startsWith('http')) {
+      // C'est une vraie URL Cloudinary
+      fichierUrl = report.fichierContenu;
+    } else if (report.fichierContenu.startsWith('{') || report.fichierContenu.startsWith('data:')) {
+      // C'est du JSON brut ou base64 — pas affichable, ignorer
+      fichierUrl = null;
     }
   }
 
-  // Affichage modal (code existant inchangé)
   const content = `
     <div style="margin-bottom:16px">
       <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Stagiaire</div>
@@ -559,14 +558,22 @@ async function viewReport(reportId) {
       <div style="font-size:14px">${report.date}</div>
     </div>
     <div style="margin-bottom:16px">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Heure</div>
+      <div style="font-size:14px;font-family:monospace">${report.heure || '—'}</div>
+    </div>
+    <div style="margin-bottom:16px">
       <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Fichier</div>
-      <div style="font-size:14px;color:var(--blue)">
-        ${report.fichierContenu
-          ? `<a href="${report.fichierContenu}" target="_blank" 
-              style="color:var(--primary-light);text-decoration:underline">
-              📄 ${report.fichier} — Ouvrir le fichier
+      <div style="font-size:14px">
+        ${fichierUrl
+          ? `<a href="${fichierUrl}" target="_blank"
+              style="color:var(--primary-light);text-decoration:underline;display:flex;align-items:center;gap:6px">
+              📄 ${fichierNom} — Ouvrir le fichier
             </a>`
-          : report.fichier || 'N/A'}
+          : `<span style="color:var(--muted)">📄 ${fichierNom}
+              <br><small style="color:var(--red)">⚠️ Fichier stocké localement uniquement — 
+              redéposez via le backend pour activer l'affichage.</small>
+            </span>`
+        }
       </div>
     </div>
     <div style="margin-bottom:16px">
@@ -578,29 +585,17 @@ async function viewReport(reportId) {
   `;
 
   document.getElementById('reportModalContent').innerHTML = content;
-  
-  // Afficher le contenu du fichier si disponible
+
+  // ✅ N'afficher l'iframe que si on a une vraie URL
   const filePreview = document.getElementById('filePreview');
-  const filePreviewContent = document.getElementById('filePreviewContent');
   const filePreviewIframe = document.getElementById('filePreviewIframe');
-  
-  if (report.fichierContenu) {
+  const filePreviewContent = document.getElementById('filePreviewContent');
+
+  if (fichierUrl) {
     filePreview.style.display = 'block';
-    // Vérifier si le contenu est en base64 (Word/PDF) ou texte
-    if (report.fichierContenu.startsWith('data:application/pdf') || report.fichierContenu.startsWith('data:application/vnd')) {
-      // Afficher le fichier dans l'iframe pour PDF/Word
-      filePreviewContent.style.display = 'none';
-      filePreviewIframe.style.display = 'block';
-      filePreviewIframe.src = report.fichierContenu;
-    } else if (report.fichierContenu.startsWith('data:')) {
-      filePreviewContent.innerHTML = '<span style="color:var(--muted)">⚠️ Le format de fichier n\'est pas supporté pour l\'affichage direct. Veuillez télécharger le fichier pour le lire.</span>';
-      filePreviewIframe.style.display = 'none';
-    } else {
-      // Afficher le contenu texte
-      filePreviewContent.style.display = 'block';
-      filePreviewContent.textContent = report.fichierContenu;
-      filePreviewIframe.style.display = 'none';
-    }
+    filePreviewIframe.style.display = 'block';
+    filePreviewIframe.src = fichierUrl;
+    filePreviewContent.style.display = 'none';
   } else {
     filePreview.style.display = 'none';
   }
@@ -1826,30 +1821,51 @@ async function submitReport() {
   }
 }
 
-// Sauvegarder les rapports dans localStorage
+// Sauvegarder les rapports dans localStorage + API
 async function saveRapports() {
   const data = { list: journaliers, finaux: finaux };
   localStorage.setItem('rapports', JSON.stringify(data));
   if (window.sharedData) window.sharedData.syncAllData();
   updateNavBadges();
+
   try {
-    const token = localStorage.getItem('access_token');
     const BACKEND = window.BACKEND_URL || 'https://orchid-island-production.up.railway.app';
+    const token = localStorage.getItem('access_token');
+
     for (const r of journaliers) {
       if (!r._apiId) {
+        // ✅ Utiliser FormData pour envoyer le fichier
+        const formData = new FormData();
+        formData.append('date', r.date ? r.date.split('/').reverse().join('-') : new Date().toISOString().split('T')[0]);
+        formData.append('contenu', r.commentaire || '');
+        
+        // Si le fichier est disponible dans l'input
+        const fileInput = document.getElementById('journalierFile');
+        if (fileInput && fileInput.files[0]) {
+          formData.append('fichier', fileInput.files[0]);
+        }
+
         const res = await fetch(`${BACKEND}/api/rapports/creer/`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({
-            date: r.date ? r.date.split('/').reverse().join('-') : new Date().toISOString().split('T')[0],
-            contenu: JSON.stringify({ stagiaire: r.stagiaire, fichier: r.fichier, projet: r.projet, statut: r.statut })
-          })
+          headers: { 'Authorization': `Bearer ${token}` },
+          // ✅ PAS de Content-Type ici — FormData le gère automatiquement
+          body: formData
         });
-        if (res.ok) { const d = await res.json(); if (d.id) r._apiId = d.id; }
+
+        if (res.ok) {
+          const d = await res.json();
+          if (d.id) {
+            r._apiId = d.id;
+            // ✅ Stocker l'URL Cloudinary réelle
+            if (d.fichier_url) r.fichierContenu = d.fichier_url;
+          }
+        }
       }
     }
     localStorage.setItem('rapports', JSON.stringify({ list: journaliers, finaux: finaux }));
-  } catch(e) { console.error('Erreur sync rapports:', e); }
+  } catch(e) {
+    console.error('Erreur sync rapports:', e);
+  }
 }
 
 // ===== ALERTE EMAIL =====

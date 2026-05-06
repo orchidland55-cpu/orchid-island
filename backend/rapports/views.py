@@ -15,9 +15,11 @@ def creer_rapport(request):
     r = Rapport.objects.create(
         auteur=request.user,
         date=request.data.get('date'),
-        contenu=request.data.get('contenu',''),
+        contenu=request.data.get('contenu', ''),
+        fichier=request.FILES.get('fichier'),  # ✅ NOUVEAU
     )
-    return Response({'id': r.id, 'success': True})
+    fichier_url = r.fichier.url if r.fichier else None
+    return Response({'id': r.id, 'success': True, 'fichier_url': fichier_url})
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])

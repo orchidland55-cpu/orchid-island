@@ -1,11 +1,12 @@
 from django.db import models
 from django.conf import settings
+from cloudinary.models import CloudinaryField
 
 class Rapport(models.Model):
     auteur = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     date = models.DateField()
-    contenu = models.TextField()
-    # ✅ NOUVEAU si absent :
+    contenu = models.TextField(blank=True)
+    fichier = CloudinaryField('fichier', blank=True, null=True)  # ✅ NOUVEAU
     statut = models.CharField(max_length=20, default='attente', choices=[
         ('attente', 'En attente'),
         ('valide', 'Validé'),
