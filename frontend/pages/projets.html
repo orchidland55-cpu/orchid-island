@@ -1301,23 +1301,57 @@ function creerProjet(event) {
   alert('✅ Projet créé avec succès !');
 }
 
-function sauvegarderProjets() {
-  // Save to localStorage directly
+async function sauvegarderProjets() {
+  // 1. Sauvegarder en localStorage (comportement actuel conservé)
   try {
     const data = JSON.parse(localStorage.getItem('orchidData') || '{"projets":{"list":[]}}');
     data.projets.list = projects;
     localStorage.setItem('orchidData', JSON.stringify(data));
-    console.log('Sauvegarde projets OK');
-    
-    // Sync to shared data system
-    if (window.sharedData) {
-      window.sharedData.syncProjetsData();
+    if (window.sharedData) window.sharedData.syncProjetsData();
+  } catch(e) { console.error('Erreur localStorage:', e); }
+
+  // 2. Synchroniser avec l'API Railway
+  const token = localStorage.getItem('access_token');
+  if (!token) { render(); return; }
+
+  try {
+    for (const p of projects) {
+      if (p._synced) continue;
+      if (!p._apiId) {
+        // Créer dans l'API
+        const res = await fetch(`${window.BACKEND_URL}/api/projets/creer/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({
+            titre: p.nom,
+            description: p.desc || '',
+            statut: p.etat === 'done' ? 'termine' : p.etat === 'retard' ? 'en_retard' : 'en_cours',
+            progression: calcPct(p),
+            date_debut: p.debut || null,
+            date_fin: p.fin || null
+          })
+        });
+        const d = await res.json();
+        if (d.id) p._apiId = d.id;
+      } else {
+        // Mettre à jour dans l'API
+        await fetch(`${window.BACKEND_URL}/api/projets/${p._apiId}/modifier/`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({
+            titre: p.nom,
+            statut: p.etat === 'done' ? 'termine' : p.etat === 'retard' ? 'en_retard' : 'en_cours',
+            progression: calcPct(p)
+          })
+        });
+      }
     }
-  } catch(e) {
-    console.error('Erreur sauvegarde:', e);
-  }
-  
-  // Refresh display
+    // Resauvegarder avec les _apiId
+    const data = JSON.parse(localStorage.getItem('orchidData') || '{"projets":{"list":[]}}');
+    data.projets.list = projects;
+    localStorage.setItem('orchidData', JSON.stringify(data));
+  } catch(e) { console.error('Erreur sync API:', e); }
+
   render();
 }
 
