@@ -29,6 +29,7 @@ def creer_rapport(request):
             folder='rapports/',
             use_filename=True,
             unique_filename=True,
+            access_mode='public',         # ← AJOUTER CETTE LIGNE
         )
         fichier_url = upload_result.get('secure_url')
 
