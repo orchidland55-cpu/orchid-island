@@ -7,6 +7,7 @@ class Rapport(models.Model):
     contenu = models.TextField(blank=True)
     fichier_url = models.URLField(blank=True, null=True)   # ✅ simple URL string
     fichier_nom = models.CharField(max_length=255, blank=True, null=True)  # ✅ nom original
+    fichier_public_id = models.CharField(max_length=255, blank=True, null=True)  # ✅ pour URL signée
     statut = models.CharField(max_length=20, default='attente', choices=[
         ('attente', 'En attente'),
         ('valide', 'Validé'),

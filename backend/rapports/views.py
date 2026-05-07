@@ -3,6 +3,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import Rapport
 import cloudinary.uploader
+import cloudinary
+from cloudinary.utils import cloudinary_url
+import time
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -19,31 +22,41 @@ def creer_rapport(request):
     fichier = request.FILES.get('fichier')
     fichier_url = None
     fichier_nom = None
+    fichier_public_id = None
 
     if fichier:
         fichier_nom = fichier.name
-        # ✅ Utiliser resource_type='raw' pour PDF/DOCX (pas 'image')
         upload_result = cloudinary.uploader.upload(
             fichier,
-            resource_type='raw',          # ← clé du fix
+            resource_type='raw',
             folder='rapports/',
             use_filename=True,
             unique_filename=True,
-            access_mode='public',         # ← AJOUTER CETTE LIGNE
+            # ✅ NE PAS mettre access_mode='public' pour les PDFs sensibles
+            # On va générer une URL signée à la volée
         )
-        fichier_url = upload_result.get('secure_url')
+        fichier_public_id = upload_result.get('public_id')
+        
+        # ✅ Générer une URL signée valable 1 heure
+        fichier_url, _ = cloudinary_url(
+            fichier_public_id,
+            resource_type='raw',
+            sign_url=True,
+            expires_at=int(time.time()) + 3600,  # 1 heure
+        )
 
     r = Rapport.objects.create(
         auteur=request.user,
         date=request.data.get('date'),
         contenu=request.data.get('contenu', ''),
-        fichier_url=fichier_url or '',    # stocker l'URL directement
+        fichier_url=fichier_url or '',
         fichier_nom=fichier_nom or '',
+        fichier_public_id=fichier_public_id or '',
     )
     return Response({
         'id': r.id,
         'success': True,
-        'fichier_url': fichier_url,
+        'fichier_url': fichier_url,   # URL signée temporaire
         'fichier_nom': fichier_nom,
     })
 
@@ -62,14 +75,27 @@ def supprimer_rapport(request, pk):
 def detail_rapport(request, pk):
     try:
         r = Rapport.objects.get(pk=pk)
+        
+        # ✅ Régénérer une URL signée fraîche à chaque accès
+        fichier_url = None
+        if r.fichier_public_id:
+            fichier_url, _ = cloudinary_url(
+                r.fichier_public_id,
+                resource_type='raw',
+                sign_url=True,
+                expires_at=int(time.time()) + 3600,  # valide 1h
+            )
+        elif r.fichier_url:
+            fichier_url = r.fichier_url  # fallback URL stockée
+
         return Response({
             'id': r.id,
             'date': r.date,
             'contenu': r.contenu,
             'auteur': r.auteur.email,
             'created_at': r.created_at,
-            'fichier_url': r.fichier_url or None,   # ← décommenter + utiliser fichier_url
-            'fichier_nom': r.fichier_nom or None,   # ← ajouter aussi le nom
+            'fichier_url': fichier_url,
+            'fichier_nom': r.fichier_nom or None,
         })
     except Rapport.DoesNotExist:
         return Response({'error': 'Not found'}, status=404)
