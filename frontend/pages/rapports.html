@@ -530,90 +530,69 @@ async function viewReport(reportId) {
   const report = journaliers.find(r => r.id === reportId);
   if (!report) return;
 
+  // Contenu modal (garde ton code existant)
+  document.getElementById('reportModalContent').innerHTML = `
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;color:var(--muted)">Stagiaire</div>
+      <div style="font-size:16px;font-weight:600">${report.stagiaire}</div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;color:var(--muted)">Projet</div>
+      <div>${report.projet || 'N/A'}</div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;color:var(--muted)">Date · Heure</div>
+      <div>${report.date} à ${report.heure || '—'}</div>
+    </div>
+  `;
+
+  const filePreview = document.getElementById('filePreview');
+  const filePreviewIframe = document.getElementById('filePreviewIframe');
+  const filePreviewContent = document.getElementById('filePreviewContent');
+
+  // ✅ Récupérer l'URL via API detail
   const BACKEND = window.BACKEND_URL || 'https://orchid-island-production.up.railway.app';
   const token = localStorage.getItem('access_token');
+  const apiId = report._apiId;
 
-  // Récupérer l'URL via l'API detail (qui retourne fichier_url direct)
-  const apiId = report._apiId || report.id;
-  
-  try {
-    const res = await fetch(`${BACKEND}/api/rapports/${apiId}/`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    const data = await res.json();
-    const fichierUrl = data.fichier_url; // URL Cloudinary directe
-    const fichierNom = data.fichier_nom || report.fichier || 'fichier';
-
-    const content = `
-      <div style="margin-bottom:16px">
-        <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Stagiaire</div>
-        <div style="font-size:16px;font-weight:600">${report.stagiaire}</div>
-      </div>
-      <div style="margin-bottom:16px">
-        <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Projet</div>
-        <div style="font-size:14px">${report.projet}</div>
-      </div>
-      <div style="margin-bottom:16px">
-        <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Date</div>
-        <div style="font-size:14px">${report.date} à ${report.heure}</div>
-      </div>
-      <div style="margin-bottom:16px">
-        <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Statut</div>
-        <div style="font-size:14px">
-          <span class="badge ${report.statut === 'Validé' ? 'badge-accepte' : report.statut === 'Déposé' ? 'badge-attente' : 'badge-refuse'}">${report.statut}</span>
-        </div>
-      </div>
-      ${report.commentaire ? `
-      <div style="margin-bottom:16px">
-        <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Commentaire</div>
-        <div style="font-size:14px;line-height:1.5">${report.commentaire}</div>
-      </div>` : ''}
-      ${fichierUrl ? `
-      <div style="margin-bottom:16px">
-        <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Fichier</div>
-        <div style="font-size:14px">
-          <a href="${fichierUrl}" target="_blank" 
-            style="color:var(--primary-light);text-decoration:underline">
-            📄 ${fichierNom}
-          </a>
-        </div>
-      </div>` : ''}
-    `;
-
-    document.getElementById('reportModalContent').innerHTML = content;
-
-    // ✅ Afficher via URL Cloudinary directe
-    const filePreview = document.getElementById('filePreview');
-    const filePreviewIframe = document.getElementById('filePreviewIframe');
-    const filePreviewContent = document.getElementById('filePreviewContent');
-
-    if (fichierUrl) {
-      filePreview.style.display = 'block';
-      const isPdf = fichierNom.toLowerCase().endsWith('.pdf');
+  if (apiId) {
+    try {
+      const res = await fetch(`${BACKEND}/api/rapports/${apiId}/`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
       
-      if (isPdf) {
-        filePreviewIframe.style.display = 'block';
-        filePreviewContent.style.display = 'none';
-        filePreviewIframe.src = fichierUrl; // ✅ URL Cloudinary directe, pas de proxy
+      if (data.fichier_url) {
+        filePreview.style.display = 'block';
+        const fichierNom = data.fichier_nom || report.fichier || 'fichier';
+        const isPdf = fichierNom.toLowerCase().endsWith('.pdf');
+        
+        if (isPdf) {
+          filePreviewIframe.style.display = 'block';
+          filePreviewContent.style.display = 'none';
+          // ✅ URL Cloudinary directe — fonctionne maintenant
+          filePreviewIframe.src = data.fichier_url;
+          filePreviewIframe.style.height = '500px';
+        } else {
+          filePreviewIframe.style.display = 'none';
+          filePreviewContent.style.display = 'block';
+          filePreviewContent.innerHTML = `
+            <a href="${data.fichier_url}" target="_blank" 
+              style="color:var(--primary-light);text-decoration:underline">
+              📥 Télécharger ${fichierNom}
+            </a>`;
+        }
       } else {
-        filePreviewIframe.style.display = 'none';
-        filePreviewContent.style.display = 'block';
-        filePreviewContent.innerHTML = `
-          <a href="${fichierUrl}" target="_blank" 
-            style="color:var(--primary-light);text-decoration:underline">
-            📥 Télécharger ${fichierNom}
-          </a>`;
+        filePreview.style.display = 'none';
       }
-    } else {
+    } catch(e) {
       filePreview.style.display = 'none';
     }
-  } catch(e) {
+  } else {
     filePreview.style.display = 'none';
   }
 
-  const modal = document.getElementById('reportModal');
-  modal.style.display = 'flex';
-  console.log('[RAPPORTS] Modal ouverte avec display:', modal.style.display);
+  document.getElementById('reportModal').style.display = 'flex';
 }
 
 // Fermer la modal
