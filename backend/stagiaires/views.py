@@ -36,6 +36,13 @@ def upload_cv(request):
     except CustomUser.DoesNotExist:
         return Response({'success': False, 'error': 'Utilisateur non trouvé'}, status=404)
 
+    # ✅ Supprimer l'ancien CV Cloudinary si existant
+    if user.cv_public_id:
+        try:
+            cloudinary.uploader.destroy(user.cv_public_id, resource_type='raw')
+        except Exception as e:
+            print(f'[CV UPLOAD] Erreur suppression ancien CV: {e}')
+
     # ✅ Upload vers Cloudinary en raw (pas image) + accès public
     upload_result = cloudinary.uploader.upload(
         fichier,
