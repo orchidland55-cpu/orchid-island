@@ -1587,7 +1587,7 @@ async function uploaderCV(userId, input) {
     // ✅ Utiliser fetch directement (PAS fetchWithAuth)
     // pour ne pas écraser le Content-Type multipart
     const token = localStorage.getItem('access_token');
-    const response = await fetch(`${BACKEND_URL}/api/auth/cv/upload/`, {
+    const response = await fetch(`${BACKEND_URL}/api/stagiaires/cv/upload/`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`
