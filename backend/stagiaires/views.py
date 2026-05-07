@@ -51,38 +51,47 @@ def upload_cv(request):
     import os
     import uuid
 
-    # ✅ Créer le dossier media s'il n'existe pas
-    media_root = settings.MEDIA_ROOT
-    if not os.path.exists(media_root):
-        os.makedirs(media_root, exist_ok=True)
-        print(f'[CV UPLOAD] Créé dossier media: {media_root}')
+    try:
+        # ✅ Créer le dossier media s'il n'existe pas
+        media_root = settings.MEDIA_ROOT
+        if not os.path.exists(media_root):
+            os.makedirs(media_root, exist_ok=True)
+            print(f'[CV UPLOAD] Créé dossier media: {media_root}')
 
-    cv_dir = os.path.join(media_root, 'cv')
-    if not os.path.exists(cv_dir):
-        os.makedirs(cv_dir, exist_ok=True)
-        print(f'[CV UPLOAD] Créé dossier cv: {cv_dir}')
+        cv_dir = os.path.join(media_root, 'cv')
+        if not os.path.exists(cv_dir):
+            os.makedirs(cv_dir, exist_ok=True)
+            print(f'[CV UPLOAD] Créé dossier cv: {cv_dir}')
 
-    # Générer un nom de fichier unique
-    ext = os.path.splitext(fichier.name)[1]
-    unique_filename = f"cv_{uuid.uuid4().hex}{ext}"
-    path = default_storage.save(f'cv/{unique_filename}', fichier)
-    cv_url = f"/media/{path}"
+        # Générer un nom de fichier unique
+        ext = os.path.splitext(fichier.name)[1]
+        unique_filename = f"cv_{uuid.uuid4().hex}{ext}"
+        path = default_storage.save(f'cv/{unique_filename}', fichier)
+        cv_url = f"/media/{path}"
 
-    print(f'[CV UPLOAD] Fichier sauvegardé: {path}')
-    print(f'[CV UPLOAD] URL: {cv_url}')
+        print(f'[CV UPLOAD] Fichier sauvegardé: {path}')
+        print(f'[CV UPLOAD] URL: {cv_url}')
 
-    user.cv_url = cv_url
-    user.cv_name = fichier.name
-    user.cv_public_id = path  # Stocker le chemin local comme public_id
-    user.save()
+        user.cv_url = cv_url
+        user.cv_name = fichier.name
+        user.cv_public_id = path  # Stocker le chemin local comme public_id
+        user.save()
 
-    print(f'[CV UPLOAD] User mis à jour: cv_url={user.cv_url}')
+        print(f'[CV UPLOAD] User mis à jour: cv_url={user.cv_url}')
 
-    return Response({
-        'success': True,
-        'cv_url': user.cv_url,
-        'cv_name': user.cv_name,
-    })
+        return Response({
+            'success': True,
+            'cv_url': user.cv_url,
+            'cv_name': user.cv_name,
+        })
+    except Exception as e:
+        print(f'[CV UPLOAD] Erreur lors de l\'upload: {e}')
+        import traceback
+        traceback.print_exc()
+        return Response({
+            'success': False,
+            'error': f'Erreur lors de l\'upload: {str(e)}'
+        }, status=500)
 
 
 @api_view(['DELETE'])
