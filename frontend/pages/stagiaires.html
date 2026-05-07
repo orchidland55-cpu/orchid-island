@@ -479,7 +479,6 @@
             <th>Statut</th>
             <th>Absences NJ</th>
             <th>Stage</th>
-            <th>CV</th>
             <th>Mot de passe</th>
             <th>Rapport Final</th>
             <th style="min-width:280px;">Actions</th>
@@ -531,6 +530,12 @@
           <option value="Accepté">Accepté</option>
           <option value="Refusé">Refusé</option>
         </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">CV (PDF ou DOCX)</label>
+        <input type="file" class="form-input" id="cvFile" accept=".pdf,.doc,.docx" 
+          style="padding:8px;cursor:pointer;">
+        <div id="cvFileName" style="font-size:11px;color:var(--muted);margin-top:4px;"></div>
       </div>
     </div>
     <div class="modal-footer">
@@ -778,27 +783,7 @@ function renderTable(data) {
     const fullName = s.prenom && s.nom ? `${s.prenom} ${s.nom}` : s.nom || '';
     const initials = fullName.split(' ').map(n => n[0]).join('');
     
-    // Affichage du CV
-    let cvDisplay = '';
-    if (s.cv_url) {
-      // ✅ Utiliser le proxy Django avec token pour authentification
-      const token = localStorage.getItem('access_token');
-      const proxyUrl = `${BACKEND_URL}/api/stagiaires/cv/proxy/${s.id}/?token=${token}`;
-      cvDisplay = `
-        <div style="display:flex;align-items:center;gap:8px;">
-          <a href="${proxyUrl}" target="_blank" style="color:var(--primary);text-decoration:none;font-size:12px;">📄 Voir CV</a>
-          <button onclick="supprimerCV(${s.id})" style="background:rgba(255,87,87,0.1);border:1px solid rgba(255,87,87,0.3);border-radius:4px;color:var(--red);cursor:pointer;font-size:10px;padding:2px 6px;" title="Supprimer CV">🗑️</button>
-        </div>
-      `;
-    } else {
-      cvDisplay = `
-        <label onclick="document.getElementById('cv-${s.id}').click()" style="color:var(--muted);font-size:12px;cursor:pointer;">
-          📤 Uploader
-          <input type="file" id="cv-${s.id}" accept=".pdf,.doc,.docx" style="display:none;" onchange="uploaderCV(${s.id}, this)">
-        </label>
-      `;
-    }
-    
+        
     return `<tr class="fade-in" style="animation-delay: ${index * 0.05}s">
       <td><div class="stagiaire-info">
         <div class="avatar" style="background:${s.avatar}22;color:${s.avatar}">${initials}</div>
@@ -817,7 +802,6 @@ function renderTable(data) {
         ${absencesNJReelles < (s.absences || 0) ? `<span style="font-size:10px;color:#3E78B2;margin-left:4px;">(${(s.absences||0)-absencesNJReelles} justif.)</span>` : ''}
       </div></td>
       <td><div style="font-size:12px">${s.debut}</div><div style="font-size:11px;color:var(--muted)">${s.fin !== '-' ? '-> ' + s.fin : '-'}</div></td>
-      <td>${cvDisplay}</td>
       <td>${s.mot_de_passe ? `
         <div style="display:flex;flex-direction:column;gap:3px;">
           <span style="font-family:monospace;font-size:11px;background:rgba(0,75,168,0.1);
@@ -1101,6 +1085,7 @@ async function updateStagiaire(id) {
   // Utiliser les mêmes sélecteurs
   const inputs = document.querySelectorAll('.modal .form-input');
   const select = document.querySelector('.modal .form-select');
+  const cvFile = document.getElementById('cvFile')?.files[0];
   
   const prenom = inputs[0].value.trim();
   const nom = inputs[1].value.trim();
@@ -1137,6 +1122,19 @@ async function updateStagiaire(id) {
     console.log('[MODIFIER STAGIAIRE] Réponse backend:', data);
     
     if (data.success) {
+      // ✅ Upload CV si fichier sélectionné
+      if (cvFile) {
+        const formData = new FormData();
+        formData.append('email', stagiaire.email);
+        formData.append('cv', cvFile);
+        const token = localStorage.getItem('access_token');
+        await fetch(`${BACKEND_URL}/api/stagiaires/cv/upload/`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+      }
+
       // Fermer le modal
       closeModal();
       
@@ -1747,14 +1745,32 @@ function viewStagiaire(id) {
           <div class="view-info-label">Document CV</div>
           <div class="view-info-value">
             ${stagiaire.cv_url ? `
-              <div style="display:flex;align-items:center;gap:12px;">
-                <a href="${stagiaire.cv_url}" target="_blank" style="color:var(--primary);text-decoration:none;display:flex;align-items:center;gap:6px;padding:8px 16px;background:rgba(0,75,168,0.1);border:1px solid rgba(0,75,168,0.2);border-radius:6px;font-size:13px;">
-                  📄 Voir le CV
+              <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+                <a href="${stagiaire.cv_url}" target="_blank" 
+                  style="color:var(--primary-light);text-decoration:none;display:flex;
+                  align-items:center;gap:6px;padding:10px 18px;
+                  background:rgba(0,75,168,0.15);border:1px solid rgba(0,75,168,0.3);
+                  border-radius:8px;font-size:13px;font-weight:600;">
+                  📄 Ouvrir le CV
                 </a>
-                <button onclick="supprimerCV(${stagiaire.id});closeViewModal();" style="background:rgba(255,87,87,0.1);border:1px solid rgba(255,87,87,0.3);border-radius:6px;color:var(--red);cursor:pointer;font-size:12px;padding:6px 12px;" title="Supprimer CV">🗑️ Supprimer</button>
+                <button onclick="supprimerCV(${stagiaire.id});closeViewModal();" 
+                  style="background:rgba(255,87,87,0.1);border:1px solid rgba(255,87,87,0.3);
+                  border-radius:8px;color:var(--red);cursor:pointer;font-size:12px;
+                  padding:10px 16px;font-weight:600;">
+                  🗑️ Supprimer
+                </button>
               </div>
-            ` : `
-              <div style="color:var(--muted);font-size:13px;">Aucun CV disponible</div>
+              <div style="margin-top:12px;border:1px solid var(--border);border-radius:8px;overflow:hidden;height:400px;">
+                <iframe src="${stagiaire.cv_url}" width="100%" height="400" 
+                  style="border:none;display:block;"
+                  title="CV ${stagiaire.prenom} ${stagiaire.nom}">
+                </iframe>
+              </div>
+            ` : ` 
+              <div style="color:var(--muted);font-size:13px;padding:20px;text-align:center;
+                background:rgba(255,255,255,0.02);border-radius:8px;border:1px dashed var(--border);">
+                📭 Aucun CV — uploadez-le via "Modifier"
+              </div>
             `}
           </div>
         </div>
@@ -1853,6 +1869,7 @@ async function saveStagiaire() {
   // Utiliser des sélecteurs plus précis basés sur les labels
   const inputs = document.querySelectorAll('.modal .form-input');
   const select = document.querySelector('.modal .form-select');
+  const cvFile = document.getElementById('cvFile')?.files[0];
   
   const prenom = inputs[0].value.trim(); // Prénom
   const nom = inputs[1].value.trim(); // Nom
@@ -1927,6 +1944,20 @@ async function saveStagiaire() {
     console.log('[AJOUT STAGIAIRE] Réponse backend:', data);
     
     if (data.success) {
+      // ✅ Upload CV si un fichier est sélectionné
+      if (cvFile && data.id) {
+        saveBtn.innerHTML = '<div style="width:16px;height:16px;border:2px solid rgba(255,255,255,0.3);border-top:2px solid white;border-radius:50%;animation:spin 0.7s linear infinite;"></div> Upload CV...';
+        const formData = new FormData();
+        formData.append('email', email);
+        formData.append('cv', cvFile);
+        const token = localStorage.getItem('access_token');
+        await fetch(`${BACKEND_URL}/api/stagiaires/cv/upload/`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+      }
+
       // Sauvegarder le mot de passe initial en clair dans localStorage
       const passwds = JSON.parse(localStorage.getItem('stagiaires_passwords') || '{}');
       passwds[email] = password;
@@ -2193,6 +2224,18 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
   document.getElementById('viewModalOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeViewModal(); });
   document.getElementById('deleteModalOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeDeleteModal(); });
+  
+  // CV file input listener
+  const cvFileInput = document.getElementById('cvFile');
+  if (cvFileInput) {
+    cvFileInput.addEventListener('change', function(e) {
+      const fileName = e.target.files[0]?.name || '';
+      const cvFileName = document.getElementById('cvFileName');
+      if (cvFileName) {
+        cvFileName.textContent = fileName ? `Fichier sélectionné: ${fileName}` : '';
+      }
+    });
+  }
   
   // Keyboard shortcuts
   document.addEventListener('keydown', (e) => {
