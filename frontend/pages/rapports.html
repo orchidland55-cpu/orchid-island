@@ -525,83 +525,93 @@ function renderJournaliers() {
   `).join('');
 }
 
-// ✅ Utiliser le proxy Django pour afficher les fichiers
+// ✅ Utiliser directement l'URL Cloudinary pour afficher les fichiers
 async function viewReport(reportId) {
   const report = journaliers.find(r => r.id === reportId);
   if (!report) return;
 
-  let fichierProxyUrl = null;
-  let fichierNom = report.fichier || 'fichier';
   const BACKEND = window.BACKEND_URL || 'https://orchid-island-production.up.railway.app';
   const token = localStorage.getItem('access_token');
 
-  // ✅ Utiliser _apiId (ID backend) pas id (ID local)
+  // Récupérer l'URL via l'API detail (qui retourne fichier_url direct)
   const apiId = report._apiId || report.id;
-  if (apiId) {
-    fichierProxyUrl = `${BACKEND}/api/rapports/${apiId}/fichier/`;
-    fichierNom = report.fichier || fichierNom;
-  }
+  
+  try {
+    const res = await fetch(`${BACKEND}/api/rapports/${apiId}/`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const data = await res.json();
+    const fichierUrl = data.fichier_url; // URL Cloudinary directe
+    const fichierNom = data.fichier_nom || report.fichier || 'fichier';
 
-  const content = `
-    <div style="margin-bottom:16px">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Stagiaire</div>
-      <div style="font-size:16px;font-weight:600">${report.stagiaire}</div>
-    </div>
-    <div style="margin-bottom:16px">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Projet</div>
-      <div style="font-size:14px">${report.projet || 'N/A'}</div>
-    </div>
-    <div style="margin-bottom:16px">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Date · Heure</div>
-      <div style="font-size:14px">${report.date} à ${report.heure || '—'}</div>
-    </div>
-    <div style="margin-bottom:16px">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Commentaire</div>
-      <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);
-        border-radius:8px;padding:12px;font-size:13px">
-        ${report.commentaire || 'Aucun commentaire'}
+    const content = `
+      <div style="margin-bottom:16px">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Stagiaire</div>
+        <div style="font-size:16px;font-weight:600">${report.stagiaire}</div>
       </div>
-    </div>
-  `;
-
-  document.getElementById('reportModalContent').innerHTML = content;
-
-  // ✅ Afficher via proxy dans l'iframe — pas de problème CORS/auth
-  const filePreview = document.getElementById('filePreview');
-  const filePreviewIframe = document.getElementById('filePreviewIframe');
-  const filePreviewContent = document.getElementById('filePreviewContent');
-
-  if (fichierProxyUrl) {
-    const isPdf = fichierNom.toLowerCase().endsWith('.pdf');
-
-    filePreview.style.display = 'block';
-    filePreviewContent.style.display = 'none';
-
-    if (isPdf) {
-      // ✅ Le proxy sert le PDF avec les bons headers — l'iframe fonctionne
-      filePreviewIframe.style.display = 'block';
-      filePreviewIframe.style.height = '500px';
-      // Ajouter le token dans l'URL pour l'authentification
-      filePreviewIframe.src = `${fichierProxyUrl}?token=${token}`;
-    } else {
-      filePreviewIframe.style.display = 'none';
-      filePreviewContent.style.display = 'block';
-      filePreviewContent.innerHTML = `
-        <span style="color:var(--muted)">
-          📄 Fichier Word — 
-          <a href="${fichierProxyUrl}" target="_blank"
+      <div style="margin-bottom:16px">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Projet</div>
+        <div style="font-size:14px">${report.projet}</div>
+      </div>
+      <div style="margin-bottom:16px">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Date</div>
+        <div style="font-size:14px">${report.date} à ${report.heure}</div>
+      </div>
+      <div style="margin-bottom:16px">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Statut</div>
+        <div style="font-size:14px">
+          <span class="badge ${report.statut === 'Validé' ? 'badge-accepte' : report.statut === 'Déposé' ? 'badge-attente' : 'badge-refuse'}">${report.statut}</span>
+        </div>
+      </div>
+      ${report.commentaire ? `
+      <div style="margin-bottom:16px">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Commentaire</div>
+        <div style="font-size:14px;line-height:1.5">${report.commentaire}</div>
+      </div>` : ''}
+      ${fichierUrl ? `
+      <div style="margin-bottom:16px">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Fichier</div>
+        <div style="font-size:14px">
+          <a href="${fichierUrl}" target="_blank" 
             style="color:var(--primary-light);text-decoration:underline">
-            Télécharger pour lire
+            📄 ${fichierNom}
           </a>
-        </span>
-      `;
+        </div>
+      </div>` : ''}
+    `;
+
+    document.getElementById('reportModalContent').innerHTML = content;
+
+    // ✅ Afficher via URL Cloudinary directe
+    const filePreview = document.getElementById('filePreview');
+    const filePreviewIframe = document.getElementById('filePreviewIframe');
+    const filePreviewContent = document.getElementById('filePreviewContent');
+
+    if (fichierUrl) {
+      filePreview.style.display = 'block';
+      const isPdf = fichierNom.toLowerCase().endsWith('.pdf');
+      
+      if (isPdf) {
+        filePreviewIframe.style.display = 'block';
+        filePreviewContent.style.display = 'none';
+        filePreviewIframe.src = fichierUrl; // ✅ URL Cloudinary directe, pas de proxy
+      } else {
+        filePreviewIframe.style.display = 'none';
+        filePreviewContent.style.display = 'block';
+        filePreviewContent.innerHTML = `
+          <a href="${fichierUrl}" target="_blank" 
+            style="color:var(--primary-light);text-decoration:underline">
+            📥 Télécharger ${fichierNom}
+          </a>`;
+      }
+    } else {
+      filePreview.style.display = 'none';
     }
-  } else {
+  } catch(e) {
     filePreview.style.display = 'none';
   }
-  
+
   const modal = document.getElementById('reportModal');
-  console.log('[RAPPORTS] Modal trouvée:', modal);
   modal.style.display = 'flex';
   console.log('[RAPPORTS] Modal ouverte avec display:', modal.style.display);
 }
