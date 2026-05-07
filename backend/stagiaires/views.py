@@ -139,20 +139,31 @@ def proxy_cv(request, user_id):
     except CustomUser.DoesNotExist:
         return HttpResponse('Not found', status=404)
 
+    print(f'[PROXY CV] User trouvé: {user.email}, cv_public_id: {user.cv_public_id}, cv_url: {user.cv_url}')
+
     if not user.cv_public_id:
         return HttpResponse('Pas de CV', status=404)
 
     # ✅ Servir le fichier local
     from django.core.files.storage import default_storage
+    from django.conf import settings
 
     try:
         # Le cv_public_id contient maintenant le chemin local
         file_path = user.cv_public_id
+        print(f'[PROXY CV] Chemin fichier: {file_path}')
+        print(f'[PROXY CV] MEDIA_ROOT: {settings.MEDIA_ROOT}')
+        print(f'[PROXY CV] Fichier existe: {default_storage.exists(file_path)}')
+
         if not default_storage.exists(file_path):
+            print(f'[PROXY CV] Fichier non trouvé: {file_path}')
             return HttpResponse('Fichier non trouvé', status=404)
 
         file = default_storage.open(file_path, 'rb')
-        response = HttpResponse(file.read(), content_type='application/octet-stream')
+        file_content = file.read()
+        print(f'[PROXY CV] Fichier lu, taille: {len(file_content)} bytes')
+
+        response = HttpResponse(file_content, content_type='application/octet-stream')
         response['Content-Disposition'] = f'inline; filename="{user.cv_name or "cv.pdf"}"'
         response['Access-Control-Allow-Origin'] = '*'
         response['X-Frame-Options'] = 'ALLOWALL'
@@ -165,6 +176,10 @@ def proxy_cv(request, user_id):
             response['Content-Type'] = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 
         file.close()
+        print(f'[PROXY CV] Réponse envoyée')
         return response
     except Exception as e:
+        print(f'[PROXY CV] Erreur: {e}')
+        import traceback
+        traceback.print_exc()
         return HttpResponse(f'Erreur lecture fichier: {e}', status=500)
