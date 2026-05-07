@@ -14,8 +14,9 @@ def lister_stagiaires(request):
         'id', 'email', 'first_name', 'last_name', 'is_active',
         'absences_non_justifiees', 'ecole', 'formation', 'departement',
         'date_debut_stage', 'date_fin_stage',
-        'cv_url',      # ✅ URL Cloudinary directe
+        'cv_url',      # ✅ URL du fichier
         'cv_name',     # ✅ Nom du fichier original
+        'cv_public_id',  # ✅ Chemin local (nécessaire pour proxy_cv)
         'mot_de_passe_clair',
         'statut',
     )
