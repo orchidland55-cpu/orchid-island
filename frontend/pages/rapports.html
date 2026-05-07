@@ -555,23 +555,6 @@ async function viewReport(reportId) {
       <div style="font-size:14px">${report.date} à ${report.heure || '—'}</div>
     </div>
     <div style="margin-bottom:16px">
-      <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Fichier</div>
-      ${fichierProxyUrl
-        ? `<a href="${fichierProxyUrl}?download=1"
-              download="${fichierNom}"
-              style="color:var(--primary-light);text-decoration:underline;
-              display:inline-flex;align-items:center;gap:6px;font-size:14px;
-              background:rgba(62,120,178,0.1);border:1px solid rgba(62,120,178,0.3);
-              padding:8px 14px;border-radius:8px;">
-              📥 Télécharger ${fichierNom}
-           </a>`
-        : `<span style="color:var(--muted);font-size:13px">
-             📄 ${fichierNom}
-             <br><small style="color:var(--red)">⚠️ Fichier non disponible</small>
-           </span>`
-      }
-    </div>
-    <div style="margin-bottom:16px">
       <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Commentaire</div>
       <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);
         border-radius:8px;padding:12px;font-size:13px">
