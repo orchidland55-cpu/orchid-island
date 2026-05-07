@@ -774,8 +774,9 @@ function renderTable(data) {
     // Affichage du CV
     let cvDisplay = '';
     if (s.cv_url) {
-      // ✅ Utiliser le proxy Django au lieu du lien direct
-      const proxyUrl = `${BACKEND_URL}/api/stagiaires/cv/proxy/${s.id}/`;
+      // ✅ Utiliser le proxy Django avec token pour authentification
+      const token = localStorage.getItem('access_token');
+      const proxyUrl = `${BACKEND_URL}/api/stagiaires/cv/proxy/${s.id}/?token=${token}`;
       cvDisplay = `
         <div style="display:flex;align-items:center;gap:8px;">
           <a href="${proxyUrl}" target="_blank" style="color:var(--primary);text-decoration:none;font-size:12px;">📄 Voir CV</a>
