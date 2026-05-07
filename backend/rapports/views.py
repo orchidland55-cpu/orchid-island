@@ -6,6 +6,9 @@ import cloudinary.uploader
 import cloudinary
 from cloudinary.utils import cloudinary_url
 import time
+import requests
+from django.http import HttpResponse, StreamingHttpResponse
+from rest_framework_simplejwt.tokens import AccessToken
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -99,3 +102,63 @@ def valider_rapport(request, pk):
         return Response({'success': True, 'statut': r.statut})
     except Rapport.DoesNotExist:
         return Response({'error': 'Not found'}, status=404)
+
+
+# ✅ NOUVEAU — Proxy qui télécharge le fichier Cloudinary et le sert au client
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def proxy_fichier(request, pk):
+    # ✅ Accepter token depuis query param (pour iframe)
+    token_str = request.GET.get('token')
+    if token_str:
+        try:
+            from users.models import CustomUser
+            token = AccessToken(token_str)
+            user = CustomUser.objects.get(id=token['user_id'])
+        except Exception:
+            return HttpResponse('Token invalide', status=401)
+    elif not request.user.is_authenticated:
+        return HttpResponse('Non authentifié', status=401)
+
+    try:
+        r = Rapport.objects.get(pk=pk)
+    except Rapport.DoesNotExist:
+        return HttpResponse('Not found', status=404)
+
+    if not r.fichier_public_id:
+        return HttpResponse('Pas de fichier', status=404)
+
+    # Générer une URL signée côté serveur (valide 1h)
+    signed_url, _ = cloudinary_url(
+        r.fichier_public_id,
+        resource_type='raw',
+        sign_url=True,
+        expires_at=int(time.time()) + 3600,
+    )
+
+    # Télécharger le fichier depuis Cloudinary côté serveur
+    try:
+        resp = requests.get(signed_url, timeout=30, stream=True)
+        resp.raise_for_status()
+    except Exception as e:
+        return HttpResponse(f'Erreur Cloudinary: {e}', status=502)
+
+    # Déterminer le Content-Type
+    nom = r.fichier_nom or 'fichier'
+    if nom.lower().endswith('.pdf'):
+        content_type = 'application/pdf'
+    elif nom.lower().endswith('.docx'):
+        content_type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    else:
+        content_type = resp.headers.get('Content-Type', 'application/octet-stream')
+
+    # Streamer le fichier au client avec les bons headers CORS
+    response = StreamingHttpResponse(
+        resp.iter_content(chunk_size=8192),
+        content_type=content_type,
+        status=200,
+    )
+    response['Content-Disposition'] = f'inline; filename="{nom}"'
+    response['Access-Control-Allow-Origin'] = '*'
+    response['X-Frame-Options'] = 'ALLOWALL'
+    return response

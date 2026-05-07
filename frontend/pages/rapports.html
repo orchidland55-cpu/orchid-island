@@ -525,29 +525,20 @@ function renderJournaliers() {
   `).join('');
 }
 
-// ✅ Afficher avec <object> natif pour PDFs signés
+// ✅ Utiliser le proxy Django pour afficher les fichiers
 async function viewReport(reportId) {
   const report = journaliers.find(r => r.id === reportId);
   if (!report) return;
 
-  let fichierUrl = null;
+  let fichierProxyUrl = null;
   let fichierNom = report.fichier || 'fichier';
+  const BACKEND = window.BACKEND_URL || 'https://orchid-island-production.up.railway.app';
+  const token = localStorage.getItem('access_token');
 
-  // ✅ Toujours récupérer une URL fraîche depuis l'API si _apiId existe
+  // ✅ Si le rapport a un _apiId, utiliser le proxy backend
   if (report._apiId) {
-    try {
-      const res = await fetchWithAuth(`/api/rapports/${report._apiId}/`);
-      if (res && res.ok) {
-        const data = await res.json();
-        fichierUrl = data.fichier_url || null;
-        fichierNom = data.fichier_nom || fichierNom;
-      }
-    } catch(e) { console.error(e); }
-  }
-
-  // Fallback URL locale
-  if (!fichierUrl && report.fichierContenu && report.fichierContenu.startsWith('https://')) {
-    fichierUrl = report.fichierContenu;
+    fichierProxyUrl = `${BACKEND}/api/rapports/${report._apiId}/fichier/`;
+    fichierNom = report.fichier || fichierNom;
   }
 
   const content = `
@@ -565,19 +556,18 @@ async function viewReport(reportId) {
     </div>
     <div style="margin-bottom:16px">
       <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Fichier</div>
-      ${fichierUrl
-        ? `<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-            <a href="${fichierUrl}" target="_blank"
+      ${fichierProxyUrl
+        ? `<a href="${fichierProxyUrl}" 
+              target="_blank"
               style="color:var(--primary-light);text-decoration:underline;
               display:inline-flex;align-items:center;gap:6px;font-size:14px;
               background:rgba(62,120,178,0.1);border:1px solid rgba(62,120,178,0.3);
               padding:8px 14px;border-radius:8px;">
-              � Télécharger ${fichierNom}
-            </a>
-           </div>`
+              📥 Télécharger ${fichierNom}
+           </a>`
         : `<span style="color:var(--muted);font-size:13px">
-            📄 ${fichierNom}
-            <br><small style="color:var(--red)">⚠️ Fichier non disponible</small>
+             📄 ${fichierNom}
+             <br><small style="color:var(--red)">⚠️ Fichier non disponible</small>
            </span>`
       }
     </div>
@@ -592,34 +582,30 @@ async function viewReport(reportId) {
 
   document.getElementById('reportModalContent').innerHTML = content;
 
-  // ✅ Afficher un aperçu inline avec iframe directe (fichiers publics)
+  // ✅ Afficher via proxy dans l'iframe — pas de problème CORS/auth
   const filePreview = document.getElementById('filePreview');
   const filePreviewIframe = document.getElementById('filePreviewIframe');
   const filePreviewContent = document.getElementById('filePreviewContent');
 
-  if (fichierUrl) {
-    const isPdf = fichierNom.toLowerCase().endsWith('.pdf') || fichierUrl.includes('.pdf');
+  if (fichierProxyUrl) {
+    const isPdf = fichierNom.toLowerCase().endsWith('.pdf');
 
     filePreview.style.display = 'block';
     filePreviewContent.style.display = 'none';
 
-    // Nettoyer l'ancien object si existant
-    const existingObj = document.getElementById('pdfObject');
-    if (existingObj) existingObj.remove();
-
     if (isPdf) {
-      // ✅ Maintenant que l'URL est publique, iframe fonctionne directement
+      // ✅ Le proxy sert le PDF avec les bons headers — l'iframe fonctionne
       filePreviewIframe.style.display = 'block';
-      filePreviewIframe.src = fichierUrl;
       filePreviewIframe.style.height = '500px';
+      // Ajouter le token dans l'URL pour l'authentification
+      filePreviewIframe.src = `${fichierProxyUrl}?token=${token}`;
     } else {
-      // DOCX — lien de téléchargement
       filePreviewIframe.style.display = 'none';
       filePreviewContent.style.display = 'block';
       filePreviewContent.innerHTML = `
         <span style="color:var(--muted)">
           📄 Fichier Word — 
-          <a href="${fichierUrl}" target="_blank" 
+          <a href="${fichierProxyUrl}" target="_blank"
             style="color:var(--primary-light);text-decoration:underline">
             Télécharger pour lire
           </a>

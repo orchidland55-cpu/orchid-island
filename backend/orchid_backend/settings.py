@@ -111,6 +111,14 @@ CORS_ALLOWED_ORIGINS = [
 ]
 CORS_ALLOW_ALL_ORIGINS = DEBUG  # True seulement en dev local
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    'authorization',
+    'content-type',
+    'x-requested-with',
+]
+
+# ✅ Permettre iframes depuis Vercel
+X_FRAME_OPTIONS = 'ALLOWALL'
 
 # Fichiers statiques
 STATIC_URL = '/static/'

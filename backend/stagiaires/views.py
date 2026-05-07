@@ -3,6 +3,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from users.models import CustomUser
 import cloudinary.uploader
+import requests
+from django.http import HttpResponse, StreamingHttpResponse
+from rest_framework_simplejwt.tokens import AccessToken
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -81,3 +84,58 @@ def delete_cv(request):
     user.save()
 
     return Response({'success': True})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def proxy_cv(request, user_id):
+    # ✅ Accepter token depuis query param (pour iframe)
+    token_str = request.GET.get('token')
+    if token_str:
+        try:
+            token = AccessToken(token_str)
+            user = CustomUser.objects.get(id=token['user_id'])
+        except Exception:
+            return HttpResponse('Token invalide', status=401)
+    elif not request.user.is_authenticated:
+        return HttpResponse('Non authentifié', status=401)
+
+    try:
+        user = CustomUser.objects.get(id=user_id)
+    except CustomUser.DoesNotExist:
+        return HttpResponse('Not found', status=404)
+
+    if not user.cv_public_id and not user.cv_url:
+        return HttpResponse('Pas de CV', status=404)
+
+    # Si on a un public_id Cloudinary, générer URL signée
+    if user.cv_public_id:
+        import time
+        from cloudinary.utils import cloudinary_url
+        signed_url, _ = cloudinary_url(
+            user.cv_public_id,
+            resource_type='raw',
+            sign_url=True,
+            expires_at=int(time.time()) + 3600,
+        )
+        fetch_url = signed_url
+    else:
+        fetch_url = user.cv_url
+
+    try:
+        resp = requests.get(fetch_url, timeout=30, stream=True)
+        resp.raise_for_status()
+    except Exception as e:
+        return HttpResponse(f'Erreur: {e}', status=502)
+
+    nom = user.cv_name or 'cv.pdf'
+    content_type = 'application/pdf' if nom.lower().endswith('.pdf') else 'application/octet-stream'
+
+    response = StreamingHttpResponse(
+        resp.iter_content(chunk_size=8192),
+        content_type=content_type,
+    )
+    response['Content-Disposition'] = f'inline; filename="{nom}"'
+    response['Access-Control-Allow-Origin'] = '*'
+    response['X-Frame-Options'] = 'ALLOWALL'
+    return response
