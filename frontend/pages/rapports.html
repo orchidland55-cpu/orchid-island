@@ -535,9 +535,9 @@ async function viewReport(reportId) {
   const BACKEND = window.BACKEND_URL || 'https://orchid-island-production.up.railway.app';
   const token = localStorage.getItem('access_token');
 
-  // ✅ Si le rapport a un _apiId, utiliser le proxy backend
-  if (report._apiId) {
-    fichierProxyUrl = `${BACKEND}/api/rapports/${report._apiId}/fichier/`;
+  // ✅ Si le rapport a un id, utiliser le proxy backend
+  if (report.id) {
+    fichierProxyUrl = `${BACKEND}/api/rapports/${report.id}/fichier/`;
     fichierNom = report.fichier || fichierNom;
   }
 
