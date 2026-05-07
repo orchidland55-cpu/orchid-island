@@ -47,8 +47,20 @@ def upload_cv(request):
 
     # ✅ Stocker localement au lieu de Cloudinary
     from django.core.files.storage import default_storage
+    from django.conf import settings
     import os
     import uuid
+
+    # ✅ Créer le dossier media s'il n'existe pas
+    media_root = settings.MEDIA_ROOT
+    if not os.path.exists(media_root):
+        os.makedirs(media_root, exist_ok=True)
+        print(f'[CV UPLOAD] Créé dossier media: {media_root}')
+
+    cv_dir = os.path.join(media_root, 'cv')
+    if not os.path.exists(cv_dir):
+        os.makedirs(cv_dir, exist_ok=True)
+        print(f'[CV UPLOAD] Créé dossier cv: {cv_dir}')
 
     # Générer un nom de fichier unique
     ext = os.path.splitext(fichier.name)[1]
@@ -56,10 +68,15 @@ def upload_cv(request):
     path = default_storage.save(f'cv/{unique_filename}', fichier)
     cv_url = f"/media/{path}"
 
+    print(f'[CV UPLOAD] Fichier sauvegardé: {path}')
+    print(f'[CV UPLOAD] URL: {cv_url}')
+
     user.cv_url = cv_url
     user.cv_name = fichier.name
     user.cv_public_id = path  # Stocker le chemin local comme public_id
     user.save()
+
+    print(f'[CV UPLOAD] User mis à jour: cv_url={user.cv_url}')
 
     return Response({
         'success': True,
