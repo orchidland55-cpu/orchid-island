@@ -19,6 +19,10 @@ class CustomUser(AbstractUser):
     statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='Accepté')
     phone = models.CharField(max_length=20, blank=True, default='')
     cv = models.FileField(upload_to='cv/', blank=True, null=True, verbose_name='CV')
+    # ✅ Champs Cloudinary pour CV
+    cv_url = models.URLField(blank=True, null=True, verbose_name='CV URL')
+    cv_name = models.CharField(max_length=255, blank=True, null=True, verbose_name='CV Nom')
+    cv_public_id = models.CharField(max_length=255, blank=True, null=True, verbose_name='CV Public ID')
     date_debut_stage = models.DateField(blank=True, null=True, verbose_name='Date début stage')
     date_fin_stage = models.DateField(blank=True, null=True, verbose_name='Date fin stage')
     ecole = models.CharField(max_length=100, blank=True, default='', verbose_name='École')
