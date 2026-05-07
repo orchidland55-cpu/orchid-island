@@ -38,6 +38,7 @@ def creer_rapport(request):
             resource_type=resource_type,
             use_filename=True,
             unique_filename=True,
+            access_mode="public",  # ✅ Rendre le fichier public
         )
         fichier_url = result.get("secure_url")
         fichier_public_id = result.get("public_id")
@@ -72,14 +73,26 @@ def supprimer_rapport(request, pk):
 def detail_rapport(request, pk):
     try:
         r = Rapport.objects.get(pk=pk)
-        # ✅ Retourner l'URL directement sans signature
+        
+        # ✅ Générer une URL signée valable 1 heure si nécessaire
+        fichier_url = None
+        if r.fichier_public_id:
+            fichier_url, _ = cloudinary_url(
+                r.fichier_public_id,
+                resource_type="raw",
+                sign_url=True,
+                expires_at=int(time.time()) + 3600  # 1 heure
+            )
+        else:
+            fichier_url = r.fichier_url or None
+            
         return Response({
             'id': r.id,
             'date': r.date,
             'contenu': r.contenu,
             'auteur': r.auteur.email,
             'created_at': r.created_at,
-            'fichier_url': r.fichier_url or None,
+            'fichier_url': fichier_url,
             'fichier_nom': r.fichier_nom or None,
         })
     except Rapport.DoesNotExist:
