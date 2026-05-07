@@ -774,9 +774,11 @@ function renderTable(data) {
     // Affichage du CV
     let cvDisplay = '';
     if (s.cv_url) {
+      // ✅ Utiliser le proxy Django au lieu du lien direct
+      const proxyUrl = `${BACKEND_URL}/api/stagiaires/cv/proxy/${s.id}/`;
       cvDisplay = `
         <div style="display:flex;align-items:center;gap:8px;">
-          <a href="${s.cv_url}" target="_blank" style="color:var(--primary);text-decoration:none;font-size:12px;">📄 Voir CV</a>
+          <a href="${proxyUrl}" target="_blank" style="color:var(--primary);text-decoration:none;font-size:12px;">📄 Voir CV</a>
           <button onclick="supprimerCV(${s.id})" style="background:rgba(255,87,87,0.1);border:1px solid rgba(255,87,87,0.3);border-radius:4px;color:var(--red);cursor:pointer;font-size:10px;padding:2px 6px;" title="Supprimer CV">🗑️</button>
         </div>
       `;
