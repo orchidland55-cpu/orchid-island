@@ -592,7 +592,7 @@ async function viewReport(reportId) {
 
   document.getElementById('reportModalContent').innerHTML = content;
 
-  // ✅ Afficher un aperçu inline avec objet HTML natif (pas iframe Google Docs)
+  // ✅ Afficher un aperçu inline avec iframe directe (fichiers publics)
   const filePreview = document.getElementById('filePreview');
   const filePreviewIframe = document.getElementById('filePreviewIframe');
   const filePreviewContent = document.getElementById('filePreviewContent');
@@ -603,31 +603,17 @@ async function viewReport(reportId) {
     filePreview.style.display = 'block';
     filePreviewContent.style.display = 'none';
 
+    // Nettoyer l'ancien object si existant
+    const existingObj = document.getElementById('pdfObject');
+    if (existingObj) existingObj.remove();
+
     if (isPdf) {
-      // ✅ Utiliser <object> au lieu d'iframe — meilleure compatibilité pour PDFs signés
-      filePreviewIframe.style.display = 'none';
-      
-      // Injecter un <object> dynamiquement
-      const existingObj = document.getElementById('pdfObject');
-      if (existingObj) existingObj.remove();
-      
-      const obj = document.createElement('object');
-      obj.id = 'pdfObject';
-      obj.data = fichierUrl;
-      obj.type = 'application/pdf';
-      obj.style.cssText = 'width:100%;height:400px;border:none;margin-top:12px;border-radius:8px;';
-      obj.innerHTML = `
-        <div style="padding:20px;text-align:center;color:var(--muted)">
-          <p>⚠️ Aperçu non disponible dans ce navigateur.</p>
-          <a href="${fichierUrl}" target="_blank" 
-            style="color:var(--primary-light);text-decoration:underline">
-            📥 Ouvrir le PDF dans un nouvel onglet
-          </a>
-        </div>
-      `;
-      filePreview.appendChild(obj);
+      // ✅ Maintenant que l'URL est publique, iframe fonctionne directement
+      filePreviewIframe.style.display = 'block';
+      filePreviewIframe.src = fichierUrl;
+      filePreviewIframe.style.height = '500px';
     } else {
-      // Pour DOCX : pas d'aperçu possible, lien de téléchargement suffit
+      // DOCX — lien de téléchargement
       filePreviewIframe.style.display = 'none';
       filePreviewContent.style.display = 'block';
       filePreviewContent.innerHTML = `
