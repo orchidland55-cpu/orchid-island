@@ -1571,51 +1571,42 @@ async function uploaderCV(userId, input) {
   if (!file) return;
 
   const stagiaire = stagiaires.find(s => s.id === userId);
-  if (!stagiaire) {
-    console.error('[UPLOAD CV] Stagiaire non trouvé avec userId:', userId);
-    return;
-  }
-
-  console.log('[UPLOAD CV] Début upload pour stagiaire:', stagiaire.email);
-  console.log('[UPLOAD CV] Fichier:', file.name, file.size);
+  if (!stagiaire) return;
 
   const formData = new FormData();
   formData.append('email', stagiaire.email);
   formData.append('cv', file);
 
   try {
-    // ✅ Utiliser fetch directement (PAS fetchWithAuth)
-    // pour ne pas écraser le Content-Type multipart
     const token = localStorage.getItem('access_token');
     const response = await fetch(`${BACKEND_URL}/api/stagiaires/cv/upload/`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`
-        // ⚠️ PAS de Content-Type ici — le navigateur le définit
-        // automatiquement avec le boundary correct pour FormData
-      },
+      headers: { 'Authorization': `Bearer ${token}` },
       body: formData
     });
 
     const data = await response.json();
     console.log('[UPLOAD CV] Réponse backend:', data);
 
-    if (data.success) {
-      console.log('[UPLOAD CV] CV uploadé avec succès, rechargement des données...');
-      
-      // Recharger les données depuis l'API pour avoir les données à jour
-      await loadStagiaires();
+    if (data.success && data.cv_url) {
+      // ✅ Mise à jour locale immédiate SANS attendre l'API
+      const idx = stagiaires.findIndex(s => s.id === userId);
+      if (idx !== -1) {
+        stagiaires[idx].cv_url = data.cv_url;
+        stagiaires[idx].cv_name = data.cv_name || file.name;
+      }
+      renderTable(stagiaires);
       showSuccessMessage('CV uploadé avec succès !');
+
+      // Recharge en arrière-plan pour confirmer
+      setTimeout(() => loadStagiaires(), 2000);
     } else {
-      console.error('[UPLOAD CV] Erreur backend:', data.error);
-      alert('Erreur lors de l\'upload du CV: ' + data.error);
+      alert('Erreur upload CV: ' + (data.error || 'Erreur inconnue'));
     }
   } catch (error) {
-    console.error('[UPLOAD CV] Erreur upload:', error);
-    alert('Erreur: ' + error.message);
+    alert('Erreur réseau: ' + error.message);
   }
-  
-  // Réinitialiser l'input
+
   input.value = '';
 }
 
@@ -1624,12 +1615,7 @@ async function supprimerCV(userId) {
   if (!confirm('Êtes-vous sûr de vouloir supprimer ce CV ?')) return;
 
   const stagiaire = stagiaires.find(s => s.id === userId);
-  if (!stagiaire) {
-    console.error('[SUPPRIMER CV] Stagiaire non trouvé avec userId:', userId);
-    return;
-  }
-
-  console.log('[SUPPRIMER CV] Début suppression pour stagiaire:', stagiaire.email);
+  if (!stagiaire) return;
 
   try {
     const token = localStorage.getItem('access_token');
@@ -1637,29 +1623,27 @@ async function supprimerCV(userId) {
       `${BACKEND_URL}/api/auth/cv/delete/?email=${encodeURIComponent(stagiaire.email)}`,
       {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
       }
     );
 
     const data = await response.json();
-    console.log('[SUPPRIMER CV] Réponse backend:', data);
-    
+
     if (data.success) {
-      console.log('[SUPPRIMER CV] CV supprimé avec succès, rechargement des données...');
-      
-      // Recharger les données depuis l'API pour avoir les données à jour
-      await loadStagiaires();
+      // ✅ Mise à jour locale immédiate
+      const idx = stagiaires.findIndex(s => s.id === userId);
+      if (idx !== -1) {
+        stagiaires[idx].cv_url = null;
+        stagiaires[idx].cv_name = null;
+      }
+      renderTable(stagiaires);
       showSuccessMessage('CV supprimé avec succès !');
+      setTimeout(() => loadStagiaires(), 2000);
     } else {
-      console.error('[SUPPRIMER CV] Erreur backend:', data.error);
-      alert('Erreur lors de la suppression du CV: ' + data.error);
+      alert('Erreur suppression CV: ' + data.error);
     }
   } catch (error) {
-    console.error('[SUPPRIMER CV] Erreur suppression:', error);
-    alert('Erreur: ' + error.message);
+    alert('Erreur réseau: ' + error.message);
   }
 }
 
