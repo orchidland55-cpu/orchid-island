@@ -557,8 +557,8 @@ async function viewReport(reportId) {
     <div style="margin-bottom:16px">
       <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Fichier</div>
       ${fichierProxyUrl
-        ? `<a href="${fichierProxyUrl}" 
-              target="_blank"
+        ? `<a href="${fichierProxyUrl}?download=1"
+              download="${fichierNom}"
               style="color:var(--primary-light);text-decoration:underline;
               display:inline-flex;align-items:center;gap:6px;font-size:14px;
               background:rgba(62,120,178,0.1);border:1px solid rgba(62,120,178,0.3);

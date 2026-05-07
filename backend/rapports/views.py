@@ -138,12 +138,19 @@ def proxy_fichier(request, pk):
 
         file = default_storage.open(file_path, 'rb')
         response = HttpResponse(file.read(), content_type='application/octet-stream')
-        response['Content-Disposition'] = f'inline; filename="{r.fichier_nom or "fichier"}"'
+
+        # ✅ Gérer le paramètre download pour forcer le téléchargement
+        download = request.GET.get('download')
+        nom = r.fichier_nom or 'fichier'
+        if download:
+            response['Content-Disposition'] = f'attachment; filename="{nom}"'
+        else:
+            response['Content-Disposition'] = f'inline; filename="{nom}"'
+
         response['Access-Control-Allow-Origin'] = '*'
         response['X-Frame-Options'] = 'ALLOWALL'
 
         # Déterminer le Content-Type basé sur l'extension
-        nom = r.fichier_nom or 'fichier'
         if nom.lower().endswith('.pdf'):
             response['Content-Type'] = 'application/pdf'
         elif nom.lower().endswith('.docx'):
