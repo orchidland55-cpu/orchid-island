@@ -106,7 +106,6 @@ def valider_rapport(request, pk):
 
 # ✅ NOUVEAU — Proxy qui télécharge le fichier Cloudinary et le sert au client
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def proxy_fichier(request, pk):
     # ✅ Accepter token depuis query param (pour iframe)
     token_str = request.GET.get('token')
