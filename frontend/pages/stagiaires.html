@@ -785,7 +785,7 @@ function renderTable(data) {
       `;
     } else {
       cvDisplay = `
-        <label for="cv-${s.id}" style="color:var(--muted);font-size:12px;cursor:pointer;">
+        <label onclick="document.getElementById('cv-${s.id}').click()" style="color:var(--muted);font-size:12px;cursor:pointer;">
           📤 Uploader
           <input type="file" id="cv-${s.id}" accept=".pdf,.doc,.docx" style="display:none;" onchange="uploaderCV(${s.id}, this)">
         </label>
