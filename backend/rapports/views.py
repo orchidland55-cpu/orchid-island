@@ -29,18 +29,18 @@ def creer_rapport(request):
 
     if fichier:
         fichier_nom = fichier.name
-        # ✅ Stocker localement au lieu de Cloudinary
-        from django.core.files.storage import default_storage
-        from django.core.files.base import ContentFile
-        import os
-        import uuid
-
-        # Générer un nom de fichier unique
-        ext = os.path.splitext(fichier.name)[1]
-        unique_filename = f"rapport_{uuid.uuid4().hex}{ext}"
-        path = default_storage.save(f'rapports/{unique_filename}', fichier)
-        fichier_url = f"/media/{path}"
-        fichier_public_id = path  # Stocker le chemin local comme public_id
+        # ✅ Uploader sur Cloudinary
+        resource_type = "raw"  # pour PDF, DOCX, etc.
+        
+        result = cloudinary.uploader.upload(
+            fichier,
+            folder="rapports",
+            resource_type=resource_type,
+            use_filename=True,
+            unique_filename=True,
+        )
+        fichier_url = result.get("secure_url")
+        fichier_public_id = result.get("public_id")
 
     r = Rapport.objects.create(
         auteur=request.user,
@@ -123,40 +123,36 @@ def proxy_fichier(request, pk):
     except Rapport.DoesNotExist:
         return HttpResponse('Not found', status=404)
 
-    if not r.fichier_public_id:
+    if not r.fichier_url:
         return HttpResponse('Pas de fichier', status=404)
 
-    # ✅ Servir le fichier local
-    from django.core.files.storage import default_storage
-    import os
-
+    # Streamer le fichier depuis Cloudinary
     try:
-        # Le fichier_public_id contient maintenant le chemin local
-        file_path = r.fichier_public_id
-        if not default_storage.exists(file_path):
-            return HttpResponse('Fichier non trouvé', status=404)
+        cloudinary_response = requests.get(r.fichier_url, timeout=15)
+        if cloudinary_response.status_code != 200:
+            return HttpResponse('Fichier inaccessible', status=502)
 
-        file = default_storage.open(file_path, 'rb')
-        response = HttpResponse(file.read(), content_type='application/octet-stream')
-
-        # ✅ Gérer le paramètre download pour forcer le téléchargement
-        download = request.GET.get('download')
         nom = r.fichier_nom or 'fichier'
+        download = request.GET.get('download')
+
+        # Déterminer Content-Type
+        if nom.lower().endswith('.pdf'):
+            content_type = 'application/pdf'
+        elif nom.lower().endswith('.docx'):
+            content_type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        else:
+            content_type = 'application/octet-stream'
+
+        response = HttpResponse(cloudinary_response.content, content_type=content_type)
+        
         if download:
             response['Content-Disposition'] = f'attachment; filename="{nom}"'
         else:
             response['Content-Disposition'] = f'inline; filename="{nom}"'
-
+        
         response['Access-Control-Allow-Origin'] = '*'
         response['X-Frame-Options'] = 'ALLOWALL'
-
-        # Déterminer le Content-Type basé sur l'extension
-        if nom.lower().endswith('.pdf'):
-            response['Content-Type'] = 'application/pdf'
-        elif nom.lower().endswith('.docx'):
-            response['Content-Type'] = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-
-        file.close()
         return response
+
     except Exception as e:
         return HttpResponse(f'Erreur lecture fichier: {e}', status=500)
