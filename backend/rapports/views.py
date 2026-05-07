@@ -39,6 +39,7 @@ def creer_rapport(request):
             use_filename=True,
             unique_filename=True,
             access_mode="public",  # ✅ Rendre le fichier public
+            secure=True,  # ✅ Force HTTPS dans l'URL retournée
         )
         fichier_url = result.get("secure_url")
         fichier_public_id = result.get("public_id")
@@ -81,10 +82,14 @@ def detail_rapport(request, pk):
                 r.fichier_public_id,
                 resource_type="raw",
                 sign_url=True,
-                expires_at=int(time.time()) + 3600  # 1 heure
+                expires_at=int(time.time()) + 3600,  # 1 heure
+                secure=True  # ✅ Force HTTPS
             )
         else:
             fichier_url = r.fichier_url or None
+            # ✅ Forcer HTTPS sur l'URL Cloudinary existante
+            if fichier_url and fichier_url.startswith('http://'):
+                fichier_url = fichier_url.replace('http://', 'https://', 1)
             
         return Response({
             'id': r.id,
