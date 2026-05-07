@@ -29,19 +29,18 @@ def creer_rapport(request):
 
     if fichier:
         fichier_nom = fichier.name
-        upload_result = cloudinary.uploader.upload(
-            fichier,
-            resource_type='raw',
-            folder='rapports/',
-            use_filename=True,
-            unique_filename=True,
-            # ✅ Forcer accès public — clé du fix
-            type='upload',
-            access_control=[{"access_type": "anonymous"}],
-        )
-        fichier_public_id = upload_result.get('public_id')
-        # ✅ Construire URL publique directement (pas de signature)
-        fichier_url = upload_result.get('secure_url')
+        # ✅ Stocker localement au lieu de Cloudinary
+        from django.core.files.storage import default_storage
+        from django.core.files.base import ContentFile
+        import os
+        import uuid
+
+        # Générer un nom de fichier unique
+        ext = os.path.splitext(fichier.name)[1]
+        unique_filename = f"rapport_{uuid.uuid4().hex}{ext}"
+        path = default_storage.save(f'rapports/{unique_filename}', fichier)
+        fichier_url = f"/media/{path}"
+        fichier_public_id = path  # Stocker le chemin local comme public_id
 
     r = Rapport.objects.create(
         auteur=request.user,
@@ -104,7 +103,7 @@ def valider_rapport(request, pk):
         return Response({'error': 'Not found'}, status=404)
 
 
-# ✅ NOUVEAU — Proxy qui télécharge le fichier Cloudinary et le sert au client
+# ✅ NOUVEAU — Proxy qui sert le fichier local au client
 @api_view(['GET'])
 def proxy_fichier(request, pk):
     # ✅ Accepter token depuis query param (pour iframe)
@@ -124,36 +123,33 @@ def proxy_fichier(request, pk):
     except Rapport.DoesNotExist:
         return HttpResponse('Not found', status=404)
 
-    if not r.fichier_url:
+    if not r.fichier_public_id:
         return HttpResponse('Pas de fichier', status=404)
 
-    # ✅ Utiliser l'URL directe publique (pas de signature)
-    # L'upload force l'accès public avec access_control anonymous
-    fetch_url = r.fichier_url
+    # ✅ Servir le fichier local
+    from django.core.files.storage import default_storage
+    import os
 
-    # Télécharger le fichier depuis Cloudinary côté serveur
     try:
-        resp = requests.get(fetch_url, timeout=30, stream=True)
-        resp.raise_for_status()
+        # Le fichier_public_id contient maintenant le chemin local
+        file_path = r.fichier_public_id
+        if not default_storage.exists(file_path):
+            return HttpResponse('Fichier non trouvé', status=404)
+
+        file = default_storage.open(file_path, 'rb')
+        response = HttpResponse(file.read(), content_type='application/octet-stream')
+        response['Content-Disposition'] = f'inline; filename="{r.fichier_nom or "fichier"}"'
+        response['Access-Control-Allow-Origin'] = '*'
+        response['X-Frame-Options'] = 'ALLOWALL'
+
+        # Déterminer le Content-Type basé sur l'extension
+        nom = r.fichier_nom or 'fichier'
+        if nom.lower().endswith('.pdf'):
+            response['Content-Type'] = 'application/pdf'
+        elif nom.lower().endswith('.docx'):
+            response['Content-Type'] = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+
+        file.close()
+        return response
     except Exception as e:
-        return HttpResponse(f'Erreur Cloudinary: {e}', status=502)
-
-    # Déterminer le Content-Type
-    nom = r.fichier_nom or 'fichier'
-    if nom.lower().endswith('.pdf'):
-        content_type = 'application/pdf'
-    elif nom.lower().endswith('.docx'):
-        content_type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    else:
-        content_type = resp.headers.get('Content-Type', 'application/octet-stream')
-
-    # Streamer le fichier au client avec les bons headers CORS
-    response = StreamingHttpResponse(
-        resp.iter_content(chunk_size=8192),
-        content_type=content_type,
-        status=200,
-    )
-    response['Content-Disposition'] = f'inline; filename="{nom}"'
-    response['Access-Control-Allow-Origin'] = '*'
-    response['X-Frame-Options'] = 'ALLOWALL'
-    return response
+        return HttpResponse(f'Erreur lecture fichier: {e}', status=500)

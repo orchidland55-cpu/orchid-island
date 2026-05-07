@@ -36,27 +36,29 @@ def upload_cv(request):
     except CustomUser.DoesNotExist:
         return Response({'success': False, 'error': 'Utilisateur non trouvé'}, status=404)
 
-    # ✅ Supprimer l'ancien CV Cloudinary si existant
+    # ✅ Supprimer l'ancien CV local si existant
     if user.cv_public_id:
         try:
-            cloudinary.uploader.destroy(user.cv_public_id, resource_type='raw')
+            from django.core.files.storage import default_storage
+            if default_storage.exists(user.cv_public_id):
+                default_storage.delete(user.cv_public_id)
         except Exception as e:
             print(f'[CV UPLOAD] Erreur suppression ancien CV: {e}')
 
-    # ✅ Upload vers Cloudinary en raw (pas image) + accès public
-    upload_result = cloudinary.uploader.upload(
-        fichier,
-        resource_type='raw',
-        folder='cv/',
-        use_filename=True,
-        unique_filename=True,
-        access_control=[{"access_type": "anonymous"}],  # ← public
-    )
+    # ✅ Stocker localement au lieu de Cloudinary
+    from django.core.files.storage import default_storage
+    import os
+    import uuid
 
-    # ✅ Stocker l'URL Cloudinary dans le modèle
-    user.cv_url = upload_result.get('secure_url')
+    # Générer un nom de fichier unique
+    ext = os.path.splitext(fichier.name)[1]
+    unique_filename = f"cv_{uuid.uuid4().hex}{ext}"
+    path = default_storage.save(f'cv/{unique_filename}', fichier)
+    cv_url = f"/media/{path}"
+
+    user.cv_url = cv_url
     user.cv_name = fichier.name
-    user.cv_public_id = upload_result.get('public_id')
+    user.cv_public_id = path  # Stocker le chemin local comme public_id
     user.save()
 
     return Response({
@@ -111,27 +113,32 @@ def proxy_cv(request, user_id):
     except CustomUser.DoesNotExist:
         return HttpResponse('Not found', status=404)
 
-    if not user.cv_url:
+    if not user.cv_public_id:
         return HttpResponse('Pas de CV', status=404)
 
-    # ✅ Utiliser l'URL directe publique (pas de signature)
-    # L'upload force l'accès public avec access_control anonymous
-    fetch_url = user.cv_url
+    # ✅ Servir le fichier local
+    from django.core.files.storage import default_storage
 
     try:
-        resp = requests.get(fetch_url, timeout=30, stream=True)
-        resp.raise_for_status()
+        # Le cv_public_id contient maintenant le chemin local
+        file_path = user.cv_public_id
+        if not default_storage.exists(file_path):
+            return HttpResponse('Fichier non trouvé', status=404)
+
+        file = default_storage.open(file_path, 'rb')
+        response = HttpResponse(file.read(), content_type='application/octet-stream')
+        response['Content-Disposition'] = f'inline; filename="{user.cv_name or "cv.pdf"}"'
+        response['Access-Control-Allow-Origin'] = '*'
+        response['X-Frame-Options'] = 'ALLOWALL'
+
+        # Déterminer le Content-Type basé sur l'extension
+        nom = user.cv_name or 'cv.pdf'
+        if nom.lower().endswith('.pdf'):
+            response['Content-Type'] = 'application/pdf'
+        elif nom.lower().endswith('.docx'):
+            response['Content-Type'] = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+
+        file.close()
+        return response
     except Exception as e:
-        return HttpResponse(f'Erreur: {e}', status=502)
-
-    nom = user.cv_name or 'cv.pdf'
-    content_type = 'application/pdf' if nom.lower().endswith('.pdf') else 'application/octet-stream'
-
-    response = StreamingHttpResponse(
-        resp.iter_content(chunk_size=8192),
-        content_type=content_type,
-    )
-    response['Content-Disposition'] = f'inline; filename="{nom}"'
-    response['Access-Control-Allow-Origin'] = '*'
-    response['X-Frame-Options'] = 'ALLOWALL'
-    return response
+        return HttpResponse(f'Erreur lecture fichier: {e}', status=500)
