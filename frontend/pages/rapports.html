@@ -535,9 +535,10 @@ async function viewReport(reportId) {
   const BACKEND = window.BACKEND_URL || 'https://orchid-island-production.up.railway.app';
   const token = localStorage.getItem('access_token');
 
-  // ✅ Si le rapport a un id, utiliser le proxy backend
-  if (report.id) {
-    fichierProxyUrl = `${BACKEND}/api/rapports/${report.id}/fichier/`;
+  // ✅ Utiliser _apiId (ID backend) pas id (ID local)
+  const apiId = report._apiId || report.id;
+  if (apiId) {
+    fichierProxyUrl = `${BACKEND}/api/rapports/${apiId}/fichier/`;
     fichierNom = report.fichier || fichierNom;
   }
 
@@ -1634,54 +1635,71 @@ async function submitReport() {
       }
     };
     
-    reader.onload = function(e) {
-      const report = {
-        id: Date.now(),
-        stagiaire: prenom + ' ' + nom,
-        nom: nom,
-        prenom: prenom,
-        projet: projet || 'Non spécifié',
-        fichier: file.name,
-        fichierSize: (file.size / 1024).toFixed(0) + ' KB',
-        fichierContenu: null,
-        date: new Date().toLocaleDateString('fr-FR'),
-        heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-        statut: 'Déposé',
-        commentaire: commentaire
-      };
+    reader.onload = async function(e) {
+      try {
+        // Appel API DIRECT avec FormData
+        const formData = new FormData();
+        formData.append('date', new Date().toISOString().split('T')[0]);
+        formData.append('contenu', commentaire || '');
+        formData.append('fichier', file);
 
-      journaliers.unshift(report);
-      saveRapports();
-      renderJournaliers();
+        const BACKEND = window.BACKEND_URL || 'https://orchid-island-production.up.railway.app';
+        const token = localStorage.getItem('access_token');
 
-      document.getElementById('reportNom').value = '';
-      document.getElementById('reportPrenom').value = '';
-      document.getElementById('reportProjet').value = '';
-      fileInput.value = '';
-      document.getElementById('selectedJournalierFileName').textContent = '';
-      document.getElementById('commentaire').value = '';
-
-      if (submitBtn) {
-        submitBtn.disabled = false;
-        submitBtn.textContent = '💾 Soumettre le rapport';
-      }
-      if (loadingIndicator) loadingIndicator.style.display = 'none';
-
-      if (window.alertManager) {
-        window.alertManager.addSystemAlert({
-          type: 'info',
-          category: 'rapport_depose',
-          alertKey: `rapport_${prenom}_${nom}_${Date.now()}`,
-          nom: prenom + ' ' + nom,
-          message: `📄 Rapport déposé — ${prenom} ${nom}`,
-          details: `Fichier : ${file.name} · Projet : ${projet || 'Non spécifié'}`,
-          date: new Date().toISOString(),
-          read: false,
-          requiresJustification: false
+        const res = await fetch(`${BACKEND}/api/rapports/creer/`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
         });
-      }
 
-      alert('✅ Rapport journalier déposé avec succès !');
+        const d = await res.json();
+
+        const report = {
+          id: Date.now(),
+          _apiId: d.id,  // ✅ ID backend stocké immédiatement
+          stagiaire: prenom + ' ' + nom,
+          nom: nom,
+          prenom: prenom,
+          projet: projet || 'Non spécifié',
+          fichier: file.name,
+          fichierSize: (file.size / 1024).toFixed(0) + ' KB',
+          fichierContenu: d.fichier_url || null,
+          date: new Date().toLocaleDateString('fr-FR'),
+          heure: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+          statut: 'Déposé',
+          commentaire: commentaire
+        };
+
+        journaliers.unshift(report);
+        localStorage.setItem('rapports', JSON.stringify({ list: journaliers, finaux: finaux }));
+        renderJournaliers();
+
+        document.getElementById('reportNom').value = '';
+        document.getElementById('reportPrenom').value = '';
+        document.getElementById('reportProjet').value = '';
+        fileInput.value = '';
+        document.getElementById('selectedJournalierFileName').textContent = '';
+        document.getElementById('commentaire').value = '';
+
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = '💾 Soumettre le rapport';
+        }
+        if (loadingIndicator) loadingIndicator.style.display = 'none';
+        if (progressBar) progressBar.style.width = '100%';
+        if (progressText) progressText.textContent = '100%';
+
+        alert('✅ Rapport déposé avec succès !');
+      } catch (error) {
+        console.error('[RAPPORTS] Erreur upload:', error);
+        alert('❌ Erreur lors du dépôt du rapport. Veuillez réessayer.');
+        
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = '💾 Soumettre le rapport';
+        }
+        if (loadingIndicator) loadingIndicator.style.display = 'none';
+      }
     };
     
     reader.onerror = function() {
