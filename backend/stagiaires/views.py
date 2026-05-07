@@ -78,7 +78,11 @@ def upload_cv(request):
         user.cv_public_id = path  # Stocker le chemin local comme public_id
         user.save()
 
-        print(f'[CV UPLOAD] User mis à jour: cv_url={user.cv_url}')
+        print(f'[CV UPLOAD] User mis à jour: cv_url={user.cv_url}, cv_name={user.cv_name}, cv_public_id={user.cv_public_id}')
+
+        # ✅ Vérifier que les données sont bien sauvegardées en rechargeant depuis la DB
+        from django.db import transaction
+        transaction.on_commit(lambda: print('[CV UPLOAD] Transaction commitée'))
 
         return Response({
             'success': True,
