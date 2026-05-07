@@ -124,20 +124,16 @@ def proxy_fichier(request, pk):
     except Rapport.DoesNotExist:
         return HttpResponse('Not found', status=404)
 
-    if not r.fichier_public_id:
+    if not r.fichier_url:
         return HttpResponse('Pas de fichier', status=404)
 
-    # Générer une URL signée côté serveur (valide 1h)
-    signed_url, _ = cloudinary_url(
-        r.fichier_public_id,
-        resource_type='raw',
-        sign_url=True,
-        expires_at=int(time.time()) + 3600,
-    )
+    # ✅ Utiliser l'URL directe publique (pas de signature)
+    # L'upload force l'accès public avec access_control anonymous
+    fetch_url = r.fichier_url
 
     # Télécharger le fichier depuis Cloudinary côté serveur
     try:
-        resp = requests.get(signed_url, timeout=30, stream=True)
+        resp = requests.get(fetch_url, timeout=30, stream=True)
         resp.raise_for_status()
     except Exception as e:
         return HttpResponse(f'Erreur Cloudinary: {e}', status=502)

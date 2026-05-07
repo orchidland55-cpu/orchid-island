@@ -111,22 +111,12 @@ def proxy_cv(request, user_id):
     except CustomUser.DoesNotExist:
         return HttpResponse('Not found', status=404)
 
-    if not user.cv_public_id and not user.cv_url:
+    if not user.cv_url:
         return HttpResponse('Pas de CV', status=404)
 
-    # Si on a un public_id Cloudinary, générer URL signée
-    if user.cv_public_id:
-        import time
-        from cloudinary.utils import cloudinary_url
-        signed_url, _ = cloudinary_url(
-            user.cv_public_id,
-            resource_type='raw',
-            sign_url=True,
-            expires_at=int(time.time()) + 3600,
-        )
-        fetch_url = signed_url
-    else:
-        fetch_url = user.cv_url
+    # ✅ Utiliser l'URL directe publique (pas de signature)
+    # L'upload force l'accès public avec access_control anonymous
+    fetch_url = user.cv_url
 
     try:
         resp = requests.get(fetch_url, timeout=30, stream=True)
