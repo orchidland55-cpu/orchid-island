@@ -3,9 +3,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from users.models import CustomUser
 import cloudinary.uploader
+import cloudinary
 import requests
-from django.http import HttpResponse, StreamingHttpResponse
+from django.http import HttpResponse
 from rest_framework_simplejwt.tokens import AccessToken
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -14,9 +16,9 @@ def lister_stagiaires(request):
         'id', 'email', 'first_name', 'last_name', 'is_active',
         'absences_non_justifiees', 'ecole', 'formation', 'departement',
         'date_debut_stage', 'date_fin_stage',
-        'cv_url',      # ✅ URL du fichier
-        'cv_name',     # ✅ Nom du fichier original
-        'cv_public_id',  # ✅ Chemin local (nécessaire pour proxy_cv)
+        'cv_url',
+        'cv_name',
+        'cv_public_id',
         'mot_de_passe_clair',
         'statut',
     )
@@ -37,65 +39,50 @@ def upload_cv(request):
     except CustomUser.DoesNotExist:
         return Response({'success': False, 'error': 'Utilisateur non trouvé'}, status=404)
 
-    # ✅ Supprimer l'ancien CV local si existant
+    # ✅ Supprimer l'ancien CV sur Cloudinary si existant
     if user.cv_public_id:
         try:
-            from django.core.files.storage import default_storage
-            if default_storage.exists(user.cv_public_id):
-                default_storage.delete(user.cv_public_id)
+            cloudinary.uploader.destroy(user.cv_public_id, resource_type='raw')
+            print(f'[CV UPLOAD] Ancien CV supprimé de Cloudinary: {user.cv_public_id}')
         except Exception as e:
-            print(f'[CV UPLOAD] Erreur suppression ancien CV: {e}')
+            print(f'[CV UPLOAD] Erreur suppression ancien CV Cloudinary: {e}')
 
-    # ✅ Stocker localement au lieu de Cloudinary
-    from django.core.files.storage import default_storage
-    from django.conf import settings
-    import os
-    import uuid
-
+    # ✅ Upload vers Cloudinary (resource_type='raw' pour PDF/DOCX)
     try:
-        # ✅ Créer le dossier media s'il n'existe pas
-        media_root = settings.MEDIA_ROOT
-        if not os.path.exists(media_root):
-            os.makedirs(media_root, exist_ok=True)
-            print(f'[CV UPLOAD] Créé dossier media: {media_root}')
+        upload_result = cloudinary.uploader.upload(
+            fichier,
+            resource_type='raw',
+            folder='orchid_cv',
+            public_id=f'cv_{user.id}_{fichier.name}',
+            overwrite=True,
+            use_filename=True,
+        )
 
-        cv_dir = os.path.join(media_root, 'cv')
-        if not os.path.exists(cv_dir):
-            os.makedirs(cv_dir, exist_ok=True)
-            print(f'[CV UPLOAD] Créé dossier cv: {cv_dir}')
+        cv_url = upload_result.get('secure_url')
+        cv_public_id = upload_result.get('public_id')
 
-        # Générer un nom de fichier unique
-        ext = os.path.splitext(fichier.name)[1]
-        unique_filename = f"cv_{uuid.uuid4().hex}{ext}"
-        path = default_storage.save(f'cv/{unique_filename}', fichier)
-        cv_url = f"/media/{path}"
-
-        print(f'[CV UPLOAD] Fichier sauvegardé: {path}')
-        print(f'[CV UPLOAD] URL: {cv_url}')
+        print(f'[CV UPLOAD] Cloudinary OK: {cv_url}')
 
         user.cv_url = cv_url
         user.cv_name = fichier.name
-        user.cv_public_id = path  # Stocker le chemin local comme public_id
+        user.cv_public_id = cv_public_id
         user.save()
 
-        print(f'[CV UPLOAD] User mis à jour: cv_url={user.cv_url}, cv_name={user.cv_name}, cv_public_id={user.cv_public_id}')
-
-        # ✅ Vérifier que les données sont bien sauvegardées en rechargeant depuis la DB
-        from django.db import transaction
-        transaction.on_commit(lambda: print('[CV UPLOAD] Transaction commitée'))
+        print(f'[CV UPLOAD] User mis à jour: cv_url={user.cv_url}, cv_name={user.cv_name}')
 
         return Response({
             'success': True,
             'cv_url': user.cv_url,
             'cv_name': user.cv_name,
         })
+
     except Exception as e:
-        print(f'[CV UPLOAD] Erreur lors de l\'upload: {e}')
+        print(f'[CV UPLOAD] Erreur Cloudinary: {e}')
         import traceback
         traceback.print_exc()
         return Response({
             'success': False,
-            'error': f'Erreur lors de l\'upload: {str(e)}'
+            'error': f'Erreur upload Cloudinary: {str(e)}'
         }, status=500)
 
 
@@ -111,10 +98,11 @@ def delete_cv(request):
     except CustomUser.DoesNotExist:
         return Response({'success': False, 'error': 'Utilisateur non trouvé'}, status=404)
 
-    # ✅ Supprimer de Cloudinary si public_id disponible
+    # ✅ Supprimer de Cloudinary
     if user.cv_public_id:
         try:
             cloudinary.uploader.destroy(user.cv_public_id, resource_type='raw')
+            print(f'[CV DELETE] Supprimé de Cloudinary: {user.cv_public_id}')
         except Exception as e:
             print(f'[CV DELETE] Erreur Cloudinary: {e}')
 
@@ -128,12 +116,16 @@ def delete_cv(request):
 
 @api_view(['GET'])
 def proxy_cv(request, user_id):
-    # ✅ Accepter token depuis query param (pour iframe)
+    """
+    Proxy pour servir les CVs depuis Cloudinary avec authentification JWT.
+    Accepte le token via query param pour les iframes/liens directs.
+    """
+    # ✅ Authentification via token dans query param
     token_str = request.GET.get('token')
     if token_str:
         try:
             token = AccessToken(token_str)
-            user = CustomUser.objects.get(id=token['user_id'])
+            # Token valide, on continue
         except Exception:
             return HttpResponse('Token invalide', status=401)
     elif not request.user.is_authenticated:
@@ -142,49 +134,34 @@ def proxy_cv(request, user_id):
     try:
         user = CustomUser.objects.get(id=user_id)
     except CustomUser.DoesNotExist:
-        return HttpResponse('Not found', status=404)
+        return HttpResponse('Utilisateur non trouvé', status=404)
 
-    print(f'[PROXY CV] User trouvé: {user.email}, cv_public_id: {user.cv_public_id}, cv_url: {user.cv_url}')
+    print(f'[PROXY CV] User: {user.email}, cv_url: {user.cv_url}')
 
-    if not user.cv_public_id:
+    if not user.cv_url:
         return HttpResponse('Pas de CV', status=404)
 
-    # ✅ Servir le fichier local
-    from django.core.files.storage import default_storage
-    from django.conf import settings
-
+    # ✅ Rediriger directement vers l'URL Cloudinary (secure_url)
+    # Cloudinary gère l'hébergement — pas besoin de proxy les bytes
     try:
-        # Le cv_public_id contient maintenant le chemin local
-        file_path = user.cv_public_id
-        print(f'[PROXY CV] Chemin fichier: {file_path}')
-        print(f'[PROXY CV] MEDIA_ROOT: {settings.MEDIA_ROOT}')
-        print(f'[PROXY CV] Fichier existe: {default_storage.exists(file_path)}')
+        cv_response = requests.get(user.cv_url, timeout=15)
+        cv_response.raise_for_status()
 
-        if not default_storage.exists(file_path):
-            print(f'[PROXY CV] Fichier non trouvé: {file_path}')
-            return HttpResponse('Fichier non trouvé', status=404)
-
-        file = default_storage.open(file_path, 'rb')
-        file_content = file.read()
-        print(f'[PROXY CV] Fichier lu, taille: {len(file_content)} bytes')
-
-        response = HttpResponse(file_content, content_type='application/octet-stream')
-        response['Content-Disposition'] = f'inline; filename="{user.cv_name or "cv.pdf"}"'
-        response['Access-Control-Allow-Origin'] = '*'
-        response['X-Frame-Options'] = 'ALLOWALL'
-
-        # Déterminer le Content-Type basé sur l'extension
+        # Détecter le content-type
         nom = user.cv_name or 'cv.pdf'
         if nom.lower().endswith('.pdf'):
-            response['Content-Type'] = 'application/pdf'
+            content_type = 'application/pdf'
         elif nom.lower().endswith('.docx'):
-            response['Content-Type'] = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            content_type = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        else:
+            content_type = 'application/octet-stream'
 
-        file.close()
-        print(f'[PROXY CV] Réponse envoyée')
+        response = HttpResponse(cv_response.content, content_type=content_type)
+        response['Content-Disposition'] = f'inline; filename="{nom}"'
+        response['Access-Control-Allow-Origin'] = '*'
+        response['X-Frame-Options'] = 'ALLOWALL'
         return response
+
     except Exception as e:
-        print(f'[PROXY CV] Erreur: {e}')
-        import traceback
-        traceback.print_exc()
-        return HttpResponse(f'Erreur lecture fichier: {e}', status=500)
+        print(f'[PROXY CV] Erreur fetch Cloudinary: {e}')
+        return HttpResponse(f'Erreur accès fichier: {e}', status=500)
