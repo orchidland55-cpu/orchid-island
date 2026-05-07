@@ -87,7 +87,6 @@ def delete_cv(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
 def proxy_cv(request, user_id):
     # ✅ Accepter token depuis query param (pour iframe)
     token_str = request.GET.get('token')
