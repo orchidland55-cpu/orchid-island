@@ -647,8 +647,15 @@ function cleanStagiaireData(stagiaire) {
 // URL du backend - utilise config.js
 const BACKEND_URL = window.BACKEND_URL || 'http://192.168.11.147:8000';
 
+// Flag pour bloquer le rechargement pendant l'upload CV
+let cvUploadInProgress = false;
+
 // Charger les données depuis l'API backend
 async function loadStagiaires() {
+  if (cvUploadInProgress) {
+    console.log('[LOAD] Upload en cours, chargement ignoré');
+    return;
+  }
   try {
     const response = await fetchWithAuth('/api/auth/stagiaires/');
     if (!response) return;
@@ -1573,6 +1580,8 @@ async function uploaderCV(userId, input) {
   const stagiaire = stagiaires.find(s => s.id === userId);
   if (!stagiaire) return;
 
+  cvUploadInProgress = true;
+
   const formData = new FormData();
   formData.append('email', stagiaire.email);
   formData.append('cv', file);
@@ -1589,7 +1598,7 @@ async function uploaderCV(userId, input) {
     console.log('[UPLOAD CV] Réponse backend:', data);
 
     if (data.success && data.cv_url) {
-      // ✅ Mise à jour locale immédiate SANS attendre l'API
+      // ✅ Mise à jour locale immédiate
       const idx = stagiaires.findIndex(s => s.id === userId);
       if (idx !== -1) {
         stagiaires[idx].cv_url = data.cv_url;
@@ -1598,12 +1607,18 @@ async function uploaderCV(userId, input) {
       renderTable(stagiaires);
       showSuccessMessage('CV uploadé avec succès !');
 
-      // Recharge en arrière-plan pour confirmer
-      setTimeout(() => loadStagiaires(), 2000);
+      // ✅ Attendre 5s avant de recharger (Railway a besoin de temps)
+      setTimeout(() => {
+        cvUploadInProgress = false;
+        loadStagiaires();
+      }, 5000);
+
     } else {
+      cvUploadInProgress = false;
       alert('Erreur upload CV: ' + (data.error || 'Erreur inconnue'));
     }
   } catch (error) {
+    cvUploadInProgress = false;
     alert('Erreur réseau: ' + error.message);
   }
 
@@ -2172,7 +2187,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // addSyncButton(); // Supprimé - synchronisation automatique
   
   // Synchronisation automatique au chargement
-  syncStagiairesToBackend();
+  // syncStagiairesToBackend(); // ← SUPPRIMER, c'est lui qui écrase les cv_url
   
   // Modal event listeners
   document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
