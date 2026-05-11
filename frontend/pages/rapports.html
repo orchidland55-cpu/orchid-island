@@ -6,6 +6,10 @@
 <title>Orchid Island — Rapports</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
+  /* Corriger les événements scroll non-passifs */
+  * { touch-action: pan-y; }
+</style>
+<style>
   :root {
     --bg: #07070A; --sidebar: #24272B; --card: #24272B; --border: #4A525A;
     --text: #F0F4F8; --muted: #B8C5D6; --primary: #004BA8; --primary-light: #3E78B2;
@@ -33,7 +37,16 @@
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; font-size: 14px; }
-  .sidebar { width: 240px; background: linear-gradient(135deg, #24272B 0%, #07070A 50%, #1A1F2E 100%); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; bottom: 0; }
+  .sidebar { 
+    width: 240px; 
+    background: linear-gradient(135deg, #24272B 0%, #07070A 50%, #1A1F2E 100%); 
+    border-right: 1px solid var(--border); 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    bottom: 0; 
+    z-index: 100; /* ← s'assurer que la sidebar est au-dessus */
+  }
   .sidebar-logo { padding: 24px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
   .logo-icon { width: 38px; height: 38px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 8px 32px rgba(0,75,168,0.3); animation: pulse 2s ease-in-out infinite; }
   @keyframes pulse {
@@ -57,7 +70,14 @@
   .nav-item:hover { background: rgba(0,75,168,0.08); color: var(--text); transform: translateX(5px); }
   .nav-item.active { background: linear-gradient(135deg, rgba(0,75,168,0.15), rgba(62,120,178,0.1)); color: var(--primary-light); font-weight: 600; border: 1px solid rgba(0,75,168,0.2); box-shadow: 0 4px 20px rgba(0,75,168,0.2); }
   .nav-badge { margin-left: auto; background: var(--red); color: white; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 20px; }
-  .main { margin-left: 240px; flex: 1; }
+  .main { 
+    margin-left: 240px; 
+    flex: 1; 
+    position: relative; /* ← ajouter */
+    z-index: 1;         /* ← ajouter */
+    min-height: 100vh;  /* ← ajouter */
+    overflow-x: hidden; /* ← ajouter */
+  }
   .topbar { height: 60px; background: linear-gradient(135deg, #24272B 0%, #1A1F2E 100%); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; position: sticky; top: 0; z-index: 50; backdrop-filter: blur(10px); }
   .topbar-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; }
   .topbar-right { display: flex; gap: 10px; }
@@ -666,8 +686,11 @@ function sendWhatsAppAlert(phoneNumber, message) {
 
 // Démarrer le timer pour vérifier les alertes toutes les minutes
 function startWhatsAppAlertTimer() {
-  // Ne pas vérifier immédiatement au chargement
-  setInterval(checkAndSendWhatsAppAlerts, 60000); // 60000ms = 1 minute
+  // Utiliser setTimeout récursif plutôt que setInterval
+  setTimeout(function tick() {
+    checkAndSendWhatsAppAlerts();
+    setTimeout(tick, 60000);
+  }, 60000);
 }
 
 // Envoyer une alerte WhatsApp à l'admin manuellement
