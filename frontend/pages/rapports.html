@@ -633,7 +633,7 @@ function checkAndSendWhatsAppAlerts() {
     console.log('[RAPPORTS] Vérification des alertes WhatsApp après 17h');
     
     // Numéro de l'admin
-    const adminNumber = '+212681314877';
+    const adminNumber = '+212618688888';
     
     // Récupérer les rapports d'aujourd'hui
     const today = new Date().toLocaleDateString('fr-FR');
@@ -695,7 +695,7 @@ function startWhatsAppAlertTimer() {
 
 // Envoyer une alerte WhatsApp à l'admin manuellement
 function sendAlertToAdmin() {
-  const adminNumber = '+212681314877';
+  const adminNumber = '+212618688888';
   
   // Récupérer les rapports d'aujourd'hui
   const today = new Date().toLocaleDateString('fr-FR');
@@ -994,7 +994,7 @@ function envoyerWARapportFinal(reportId) {
   const report = finaux.find(r => r.id === reportId);
   if (!report) { alert('❌ Rapport non trouvé'); return; }
 
-  const WA_ADMIN = '212681314877';
+  const WA_ADMIN = '212618688888';
   const statutLabel = report.statut === 'valide' ? '✅ Validé' : report.statut === 'attente' ? '⏳ En attente de validation' : '❌ Refusé';
 
   const message =
@@ -1374,7 +1374,7 @@ function handleJournalierFileSelect(input) {
 
 // Fonction pour notifier l'admin RH par WhatsApp du dépôt d'un rapport final
 function notifyAdminRapportFinal(nom, prenom, projet) {
-  const WA_ADMIN = '212681314877';
+  const WA_ADMIN = '212618688888';
   const now = new Date();
   const heure = now.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
   const dateStr = now.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
