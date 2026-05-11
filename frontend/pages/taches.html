@@ -470,54 +470,75 @@ function renderTasks() {
 
 // Cocher/décocher une tâche ou sous-tâche
 function toggleTask(taskId) {
-  const task = allTasks.find(t => t.id === taskId);
-  if (task) {
-    task.done = !task.done;
-    
-    // Si c'est une sous-tâche, vérifier si toutes les sous-tâches de la tâche parente sont cochées
-    if (task.type === 'subtask' && task.parentTaskId) {
-      const parentTask = allTasks.find(t => t.id === task.parentTaskId && t.type === 'task');
-      if (parentTask) {
-        const allSubs = allTasks.filter(t => t.parentTaskId === task.parentTaskId && t.type === 'subtask');
-        if (allSubs.length > 0 && allSubs.every(s => s.done)) {
-          parentTask.done = true;
-        } else if (allSubs.length > 0 && !allSubs.every(s => s.done)) {
-          parentTask.done = false;
-        }
-      }
-    }
-    
-    // Si c'est une tâche principale, cocher/décocher toutes ses sous-tâches
-    if (task.type === 'task') {
-      const subs = allTasks.filter(t => t.parentTaskId === taskId && t.type === 'subtask');
-      subs.forEach(sub => {
-        sub.done = task.done;
-      });
-    }
-    
-    saveTasksToProjects();
-    renderTasks();
-    updateStats();
+  // Convertir en String pour comparaison fiable
+  const taskIdStr = String(taskId);
+  
+  const task = allTasks.find(t => String(t.id) === taskIdStr);
+  if (!task) {
+    console.error('[TOGGLE] Tâche non trouvée:', taskId);
+    return;
   }
+  
+  // Inverser l'état
+  task.done = !task.done;
+  console.log('[TOGGLE]', task.name, '→', task.done ? 'Terminée' : 'À faire');
+  
+  // Si sous-tâche → mettre à jour la tâche parente
+  if (task.type === 'subtask' && task.parentTaskId) {
+    const parentIdStr = String(task.parentTaskId);
+    const parentTask = allTasks.find(t => String(t.id) === parentIdStr && t.type === 'task');
+    if (parentTask) {
+      const allSubs = allTasks.filter(t => 
+        String(t.parentTaskId) === parentIdStr && t.type === 'subtask'
+      );
+      // Parent = terminé seulement si TOUTES les sous-tâches sont faites
+      parentTask.done = allSubs.length > 0 && allSubs.every(s => s.done);
+    }
+  }
+  
+  // Si tâche principale → cocher/décocher toutes ses sous-tâches
+  if (task.type === 'task') {
+    allTasks.forEach(t => {
+      if (t.type === 'subtask' && String(t.parentTaskId) === taskIdStr) {
+        t.done = task.done;
+      }
+    });
+  }
+  
+  // ✅ Sauvegarder IMMÉDIATEMENT dans localStorage
+  saveTasksToProjects();
+  
+  // ✅ Re-render sans recharger depuis l'API
+  updateStats();
+  renderTasks();
 }
+
+// Sauvegarder les tâches et sous-tâches dans les projets
 
 // Sauvegarder les tâches et sous-tâches dans les projets
 function saveTasksToProjects() {
   try {
-    // Lire les données actuelles
     const data = JSON.parse(localStorage.getItem('orchidData') || '{"projets":{"list":[]}}');
-    const projects_local = data.projets?.list || [];
+    const projectsList = data.projets?.list || [];
     
-    // Mettre à jour SEULEMENT les tâches modifiées
-    projects_local.forEach(project => {
+    if (projectsList.length === 0) {
+      console.warn('[SAVE] Aucun projet dans localStorage');
+      return;
+    }
+    
+    let saved = false;
+    
+    projectsList.forEach(project => {
       if (!project.tasks || !Array.isArray(project.tasks)) return;
       
       project.tasks.forEach(task => {
+        // Comparaison robuste avec String()
         const updatedTask = allTasks.find(t => 
           String(t.id) === String(task.id) && t.type === 'task'
         );
         if (updatedTask) {
           task.done = updatedTask.done;
+          saved = true;
         }
         
         if (task.subs && Array.isArray(task.subs)) {
@@ -527,20 +548,30 @@ function saveTasksToProjects() {
             );
             if (updatedSub) {
               sub.done = updatedSub.done;
+              saved = true;
             }
           });
         }
       });
     });
     
-    // Sauvegarder
-    data.projets.list = projects_local;
-    localStorage.setItem('orchidData', JSON.stringify(data));
-    console.log('[TACHES] Sauvegarde réussie');
+    if (saved) {
+      data.projets.list = projectsList;
+      localStorage.setItem('orchidData', JSON.stringify(data));
+      console.log('[SAVE] ✅ Tâches sauvegardées dans localStorage');
+    } else {
+      console.warn('[SAVE] ⚠️ Aucune tâche trouvée à sauvegarder — vérifier les IDs');
+      // Debug : afficher les IDs disponibles
+      console.log('[SAVE] IDs dans allTasks:', allTasks.map(t => t.id));
+      console.log('[SAVE] IDs dans localStorage:', 
+        projectsList.flatMap(p => (p.tasks||[]).map(t => t.id))
+      );
+    }
     
     if (window.sharedData) window.sharedData.syncProjetsData();
+    
   } catch(e) {
-    console.error('[TACHES] Erreur sauvegarde:', e);
+    console.error('[SAVE] Erreur:', e);
   }
 }
 
@@ -551,7 +582,15 @@ function refreshTasks() {
 
 // Initialisation
 document.addEventListener('DOMContentLoaded', function() {
+  // Vérifier auth et rôle
+  if (typeof checkRoleAccess === 'function') checkRoleAccess();
+  if (typeof filterNavByRole === 'function') filterNavByRole();
+  
+  // Charger UNE SEULE FOIS
   loadTasksFromProjects();
+  
+  // ✅ PAS de setInterval, PAS de window.addEventListener storage ici
+  // Les tâches sont sauvegardées localement immédiatement au clic
 });
 </script>
 </body>
