@@ -1119,6 +1119,50 @@ document.addEventListener('DOMContentLoaded', function() {
     year: 'numeric'
   });
   
+  // ✅ NOUVEAU — Pré-remplir le formulaire avec l'utilisateur connecté
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  if (user.first_name || user.last_name) {
+    const nomInput = document.getElementById('reportNom');
+    const prenomInput = document.getElementById('reportPrenom');
+    if (nomInput) nomInput.value = user.last_name || '';
+    if (prenomInput) prenomInput.value = user.first_name || '';
+    
+    // Si stagiaire → champs en lecture seule
+    if (user.role === 'stagiaire') {
+      if (nomInput) {
+        nomInput.readOnly = true;
+        nomInput.style.opacity = '0.7';
+        nomInput.style.cursor = 'not-allowed';
+      }
+      if (prenomInput) {
+        prenomInput.readOnly = true;
+        prenomInput.style.opacity = '0.7';
+        prenomInput.style.cursor = 'not-allowed';
+      }
+    }
+  }
+  
+  // ✅ Pré-remplir le projet assigné pour les stagiaires
+  if (user.role === 'stagiaire') {
+    const orchidData = JSON.parse(localStorage.getItem('orchidData') || '{}');
+    const projets = orchidData.projets?.list || [];
+    const fullName = `${user.first_name} ${user.last_name}`.toLowerCase();
+    
+    const monProjet = projets.find(p => 
+      p.resp && p.resp.toLowerCase() === fullName
+    );
+    
+    if (monProjet) {
+      const projetInput = document.getElementById('reportProjet');
+      if (projetInput) {
+        projetInput.value = monProjet.nom;
+        projetInput.readOnly = true;
+        projetInput.style.opacity = '0.7';
+        projetInput.style.cursor = 'not-allowed';
+      }
+    }
+  }
+  
   loadRapports();
   
   // Écouter les mises à jour de données
@@ -1517,44 +1561,58 @@ async function submitReport() {
     
     console.log('[RAPPORTS] Champs - Nom:', nom, 'Prénom:', prenom, 'Projet:', projet);
   
-    // Vérifier que le stagiaire existe dans la liste par nom et prénom
-    let stagiaires = [];
-    try {
-      if (window.sharedData && window.sharedData.getData) {
-        const data = window.sharedData.getData();
-        stagiaires = data.stagiaires ? data.stagiaires.list || [] : [];
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+    // ✅ Si stagiaire connecté → utiliser directement ses données
+    let stagiaireTrouve = null;
+
+    if (user.role === 'stagiaire') {
+      // Le stagiaire connecté peut toujours déposer son propre rapport
+      // Vérifier juste que le nom correspond à son compte
+      const nomConnecte = (user.last_name || '').toLowerCase().trim();
+      const prenomConnecte = (user.first_name || '').toLowerCase().trim();
+      const nomSaisi = nom.toLowerCase().trim();
+      const prenomSaisi = prenom.toLowerCase().trim();
+      
+      if (nomSaisi === nomConnecte && prenomSaisi === prenomConnecte) {
+        stagiaireTrouve = user; // ✅ C'est lui-même
       } else {
-        // Fallback vers localStorage
+        alert(`❌ En tant que stagiaire, vous ne pouvez déposer que votre propre rapport.\nVotre nom: ${user.first_name} ${user.last_name}`);
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '💾 Soumettre le rapport'; }
+        if (loadingIndicator) loadingIndicator.style.display = 'none';
+        return;
+      }
+    } else {
+      // Admin/RH/Manager → chercher dans la liste des stagiaires
+      let stagiaires = [];
+      try {
+        const BACKEND = window.BACKEND_URL || 'https://orchid-island-production.up.railway.app';
+        const token = localStorage.getItem('access_token');
+        const res = await fetch(`${BACKEND}/api/auth/stagiaires/`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success) stagiaires = data.stagiaires;
+      } catch(e) {
         stagiaires = JSON.parse(localStorage.getItem('stagiaires') || '[]');
       }
-    } catch (e) {
-      console.error('[RAPPORTS] Erreur lors du chargement des stagiaires:', e);
-      stagiaires = [];
+      
+      stagiaireTrouve = stagiaires.find(s => {
+        const stagNom = (s.last_name || s.nom || '').toLowerCase().trim();
+        const stagPrenom = (s.first_name || s.prenom || '').toLowerCase().trim();
+        return stagNom === nom.toLowerCase().trim() && 
+               stagPrenom === prenom.toLowerCase().trim();
+      });
+      
+      if (!stagiaireTrouve) {
+        alert(`❌ Stagiaire "${prenom} ${nom}" non trouvé dans la liste.`);
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '💾 Soumettre le rapport'; }
+        if (loadingIndicator) loadingIndicator.style.display = 'none';
+        return;
+      }
     }
-    
-    console.log('[RAPPORTS] Liste des stagiaires:', stagiaires);
-    console.log('[RAPPORTS] Nombre de stagiaires:', stagiaires.length);
-    if (stagiaires.length > 0) {
-      console.log('[RAPPORTS] Premier stagiaire (structure):', stagiaires[0]);
-    }
-    console.log('[RAPPORTS] Recherche - Nom:', nom, 'Prénom:', prenom);
-    
-    const stagiaireTrouve = stagiaires.find(s => {
-      // Essayer différentes structures de données
-      const stagiaireNom = s.last_name || s.nom || s.lastName || '';
-      const stagiairePrenom = s.first_name || s.prenom || s.firstName || '';
-      console.log('[RAPPORTS] Vérification - Stagiaire:', stagiaireNom, stagiairePrenom, 'vs', nom, prenom);
-      return stagiaireNom.toLowerCase() === nom.toLowerCase() && 
-             stagiairePrenom.toLowerCase() === prenom.toLowerCase();
-    });
-    console.log('[RAPPORTS] Stagiaire trouvé:', stagiaireTrouve);
-    
-    if (!stagiaireTrouve) {
-      alert('❌ Ce stagiaire n\'existe pas dans la liste. Veuillez vérifier le nom et le prénom.');
-      console.log('[RAPPORTS] Stagiaire non trouvé - Nom:', nom, 'Prénom:', prenom);
-      return;
-    }
-    console.log('[RAPPORTS] Stagiaire vérifié:', stagiaireTrouve.email);
+
+    console.log('[RAPPORTS] Stagiaire vérifié:', stagiaireTrouve.email || stagiaireTrouve.id);
     
     // Vérifier que les champs obligatoires sont remplis
     if (!nom || !prenom) {
