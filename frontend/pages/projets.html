@@ -920,25 +920,28 @@ async function loadProjects() {
     });
     if (res.ok) {
       const apiProjets = await res.json();
-      // Convertir format API vers format local
-      projects = apiProjets.map(p => ({
-        id: p.id,
-        _apiId: p.id,
-        nom: p.titre,
-        desc: p.description || '',
-        etat: p.statut === 'termine' ? 'done' : p.statut === 'en_retard' ? 'retard' : 'encours',
-        resp: p.responsable_nom || '',
-        debut: p.date_debut || '',
-        fin: p.date_fin || '',
-        tasks: [],
-        color: 'var(--blue)'
-      }));
-      // Aussi sauvegarder en localStorage pour les tâches
-      const data = JSON.parse(localStorage.getItem('orchidData') || '{"projets":{"list":[]}}');
-      // Merger avec localStorage pour garder les tâches
-      projects = projects.map(p => {
-        const local = (data.projets?.list || []).find(l => l._apiId === p.id || l.id === p.id);
-        return local ? {...p, tasks: local.tasks || [], resp: local.resp || p.resp} : p;
+      // Lire les données locales AVANT de convertir
+      const localList = JSON.parse(localStorage.getItem('orchidData') || '{"projets":{"list":[]}}').projets?.list || [];
+      
+      // Convertir format API vers format local en merger avec les données locales
+      projects = apiProjets.map(apiProjet => {
+        const local = localList.find(l => 
+          String(l._apiId) === String(apiProjet.id) || 
+          String(l.id) === String(apiProjet.id)
+        );
+        // TOUJOURS garder les tâches locales si elles existent
+        return {
+          id: apiProjet.id,
+          _apiId: apiProjet.id,
+          nom: apiProjet.titre,
+          desc: local?.desc || apiProjet.description || '',
+          etat: apiProjet.statut === 'termine' ? 'done' : apiProjet.statut === 'en_retard' ? 'retard' : 'encours',
+          resp: local?.resp || apiProjet.responsable_nom || '',
+          debut: apiProjet.date_debut || '',
+          fin: apiProjet.date_fin || '',
+          tasks: (local?.tasks && local.tasks.length > 0) ? local.tasks : (apiProjet.tasks_json || []),
+          color: local?.color || 'var(--blue)'
+        };
       });
     } else {
       // Fallback localStorage
@@ -1169,22 +1172,35 @@ function modifierProjet(id) {
 }
 
 async function supprimerProjet(id) {
-  if (confirm('Êtes-vous sûr de vouloir supprimer ce projet ?')) {
-    const p = projects.find(x => x.id === id);
-    const apiId = p?._apiId || id;
-    // Supprimer via API si possible
-    try {
-      const token = localStorage.getItem('access_token');
-      const BACKEND = window.BACKEND_URL || 'https://orchid-island-production.up.railway.app';
-      await fetch(`${BACKEND}/api/projets/${apiId}/supprimer/`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-    } catch(e) { console.error('Erreur API delete:', e); }
-    projects = projects.filter(p => p.id !== id);
-    sauvegarderProjets();
-    alert('Projet supprimé avec succès !');
+  // Vérifier que c'est admin/manager
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  if (!['admin', 'rh', 'manager'].includes(user.role)) {
+    alert('⛔ Seuls Admin, RH et Manager peuvent supprimer un projet.');
+    return;
   }
+  
+  if (!confirm('Êtes-vous sûr de vouloir supprimer ce projet et toutes ses tâches ?')) return;
+  
+  const p = projects.find(x => x.id === id);
+  const apiId = p?._apiId || id;
+  
+  try {
+    const token = localStorage.getItem('access_token');
+    const BACKEND = window.BACKEND_URL || 'https://orchid-island-production.up.railway.app';
+    const res = await fetch(`${BACKEND}/api/projets/${apiId}/supprimer/`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) {
+      console.error('Erreur API suppression');
+    }
+  } catch(e) { 
+    console.error('Erreur API delete:', e); 
+  }
+  
+  projects = projects.filter(p => p.id !== id);
+  sauvegarderProjets();
+  alert('✅ Projet supprimé avec succès !');
 }
 
 function setView(view, btn) {
@@ -1373,13 +1389,33 @@ async function creerProjet(event) {
 }
 
 async function sauvegarderProjets() {
-  // 1. Sauvegarder en localStorage (comportement actuel conservé)
+  // 1. Toujours sauvegarder en localStorage EN PREMIER
   try {
-    const data = JSON.parse(localStorage.getItem('orchidData') || '{"projets":{"list":[]}}');
-    data.projets.list = projects;
-    localStorage.setItem('orchidData', JSON.stringify(data));
+    const existingData = JSON.parse(localStorage.getItem('orchidData') || '{"projets":{"list":[]}}');
+    
+    // Merger intelligemment — NE PAS effacer les tâches existantes
+    const existingList = existingData.projets?.list || [];
+    
+    const mergedList = projects.map(p => {
+      const existing = existingList.find(e => 
+        String(e._apiId) === String(p._apiId || p.id) || 
+        String(e.id) === String(p.id)
+      );
+      return {
+        ...p,
+        // Garder les tâches existantes si le nouveau projet n'en a pas
+        tasks: (p.tasks && p.tasks.length > 0) ? p.tasks : (existing?.tasks || [])
+      };
+    });
+    
+    existingData.projets = existingData.projets || {};
+    existingData.projets.list = mergedList;
+    localStorage.setItem('orchidData', JSON.stringify(existingData));
+    
     if (window.sharedData) window.sharedData.syncProjetsData();
-  } catch(e) { console.error('Erreur localStorage:', e); }
+  } catch(e) { 
+    console.error('Erreur localStorage:', e); 
+  }
 
   // 2. Synchroniser avec l'API Railway
   const token = localStorage.getItem('access_token');

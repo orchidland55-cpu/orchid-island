@@ -504,40 +504,43 @@ function toggleTask(taskId) {
 // Sauvegarder les tâches et sous-tâches dans les projets
 function saveTasksToProjects() {
   try {
+    // Lire les données actuelles
     const data = JSON.parse(localStorage.getItem('orchidData') || '{"projets":{"list":[]}}');
-    const projects = data.projets.list || [];
+    const projects_local = data.projets?.list || [];
     
-    projects.forEach(project => {
-      if (project.tasks && Array.isArray(project.tasks)) {
-        project.tasks.forEach(task => {
-          // Mettre à jour la tâche principale
-          const updatedTask = allTasks.find(t => t.id === task.id && t.type === 'task');
-          if (updatedTask) {
-            task.done = updatedTask.done;
-          }
-          
-          // Mettre à jour les sous-tâches
-          if (task.subs && Array.isArray(task.subs)) {
-            task.subs.forEach(sub => {
-              const updatedSub = allTasks.find(t => t.id === sub.id && t.type === 'subtask');
-              if (updatedSub) {
-                sub.done = updatedSub.done;
-              }
-            });
-          }
-        });
-      }
+    // Mettre à jour SEULEMENT les tâches modifiées
+    projects_local.forEach(project => {
+      if (!project.tasks || !Array.isArray(project.tasks)) return;
+      
+      project.tasks.forEach(task => {
+        const updatedTask = allTasks.find(t => 
+          String(t.id) === String(task.id) && t.type === 'task'
+        );
+        if (updatedTask) {
+          task.done = updatedTask.done;
+        }
+        
+        if (task.subs && Array.isArray(task.subs)) {
+          task.subs.forEach(sub => {
+            const updatedSub = allTasks.find(t => 
+              String(t.id) === String(sub.id) && t.type === 'subtask'
+            );
+            if (updatedSub) {
+              sub.done = updatedSub.done;
+            }
+          });
+        }
+      });
     });
     
+    // Sauvegarder
+    data.projets.list = projects_local;
     localStorage.setItem('orchidData', JSON.stringify(data));
-    console.log('Tâches et sous-tâches sauvegardées');
+    console.log('[TACHES] Sauvegarde réussie');
     
-    // Sync to shared data system
-    if (window.sharedData) {
-      window.sharedData.syncProjetsData();
-    }
+    if (window.sharedData) window.sharedData.syncProjetsData();
   } catch(e) {
-    console.error('Erreur sauvegarde tâches:', e);
+    console.error('[TACHES] Erreur sauvegarde:', e);
   }
 }
 
