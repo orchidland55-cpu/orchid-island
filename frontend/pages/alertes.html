@@ -1586,13 +1586,13 @@ _Orchid Island — Système RH_`;
       <div style="background:rgba(255,255,255,0.03);border:1px solid #4A525A;border-radius:8px;padding:12px;margin-bottom:16px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
           <span style="font-size:11px;color:#B8C5D6;font-weight:600;">Message WhatsApp</span>
-          <button onclick="navigator.clipboard.writeText(${JSON.stringify(waMsg)}).then(()=>showCopyToast('Message copié'))"
+          <button onclick="navigator.clipboard.writeText(window._lastWaMsg).then(()=>showCopyToast('Message copié'))"
             style="background:rgba(37,211,102,0.15);border:1px solid rgba(37,211,102,0.3);
             border-radius:6px;color:#25D366;font-size:11px;padding:3px 10px;cursor:pointer;">
             📋 Copier
           </button>
         </div>
-        <div style="font-size:11px;color:#B8C5D6;white-space:pre-wrap;line-height:1.5;max-height:100px;overflow-y:auto;">${waMsg}</div>
+        <div id="waMsgPreview" style="font-size:11px;color:#B8C5D6;white-space:pre-wrap;line-height:1.5;max-height:100px;overflow-y:auto;"></div>
       </div>
 
       <button onclick="closeNotifModal()"
@@ -1605,8 +1605,15 @@ _Orchid Island — Système RH_`;
     </div>
   `;
 
+  // ✅ Stocker le message dans une variable globale avant d'ajouter le modal
+  window._lastWaMsg = waMsg;
+  
   document.body.appendChild(modal);
   modal.addEventListener('click', e => { if (e.target === modal) closeNotifModal(); });
+  
+  // ✅ Injecter le texte proprement via textContent (pas innerHTML)
+  const waMsgEl = document.getElementById('waMsgPreview');
+  if (waMsgEl) waMsgEl.textContent = waMsg;
 }
 
 function showCopyToast(msg) {
