@@ -1097,6 +1097,10 @@ function startDailyAlertCheck() {
 
 // Initialisation commune
 document.addEventListener('DOMContentLoaded', function() {
+  // Ne pas vérifier l'auth sur la page de login pour éviter la boucle
+  const isAuthPage = window.location.pathname.includes('authentification');
+  if (isAuthPage) return; // ← ajouter cette protection
+  
   const user = checkAuth();
   if (user) {
     displayUserInfo(user);
