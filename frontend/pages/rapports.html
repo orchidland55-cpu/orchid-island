@@ -1106,29 +1106,70 @@ function updateNavBadges() {
 const statutLabels = { valide: { cls: 'badge-valide', icon: '✅', txt: 'Validé' }, attente: { cls: 'badge-attente', icon: '⏳', txt: 'En attente' }, refuse: { cls: 'badge-refuse', icon: '❌', txt: 'Refusé' } };
 
 // Initialisation
-document.addEventListener('DOMContentLoaded', function() {
-  // Vérifier les droits d'accès et filtrer la navigation
+document.addEventListener('DOMContentLoaded', async function() {
   const currentUser = checkRoleAccess();
   filterNavByRole();
   
-  // Mettre à jour la date d'aujourd'hui
   const today = new Date();
   document.getElementById('todayDate').textContent = today.toLocaleDateString('fr-FR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
+    day: '2-digit', month: '2-digit', year: 'numeric'
   });
   
-  // ✅ NOUVEAU — Pré-remplir le formulaire avec l'utilisateur connecté
   const user = JSON.parse(localStorage.getItem('user') || '{}');
+  
   if (user.first_name || user.last_name) {
     const nomInput = document.getElementById('reportNom');
     const prenomInput = document.getElementById('reportPrenom');
+    const projetInput = document.getElementById('reportProjet');
+    
+    // Pré-remplir nom et prénom
     if (nomInput) nomInput.value = user.last_name || '';
     if (prenomInput) prenomInput.value = user.first_name || '';
     
-    // Si stagiaire → champs en lecture seule
-    if (user.role === 'stagiaire') {
+    // ✅ Chercher le projet depuis API Railway
+    if (user.role === 'stagiaire' && projetInput) {
+      const fullName = `${user.first_name} ${user.last_name}`.trim().toLowerCase();
+      
+      // Essai 1 : depuis localStorage orchidData
+      const orchidData = JSON.parse(localStorage.getItem('orchidData') || '{}');
+      const projetsLocal = orchidData.projets?.list || [];
+      const projetLocal = projetsLocal.find(p => 
+        p.resp && p.resp.trim().toLowerCase() === fullName
+      );
+      
+      if (projetLocal) {
+        projetInput.value = projetLocal.nom;
+      } else {
+        // Essai 2 : depuis l'API Railway
+        try {
+          const BACKEND = window.BACKEND_URL || 'https://orchid-island-production.up.railway.app';
+          const token = localStorage.getItem('access_token');
+          const res = await fetch(`${BACKEND}/api/projets/`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const apiProjets = await res.json();
+            const monProjet = apiProjets.find(p =>
+              p.responsable_nom && 
+              p.responsable_nom.trim().toLowerCase() === fullName
+            );
+            if (monProjet) {
+              projetInput.value = monProjet.titre;
+            }
+          }
+        } catch(e) {
+          console.warn('[RAPPORTS] Projet non trouvé depuis API:', e);
+        }
+      }
+      
+      // Rendre le champ projet en lecture seule si trouvé
+      if (projetInput.value) {
+        projetInput.readOnly = true;
+        projetInput.style.opacity = '0.7';
+        projetInput.style.cursor = 'not-allowed';
+      }
+      
+      // Rendre nom/prénom en lecture seule
       if (nomInput) {
         nomInput.readOnly = true;
         nomInput.style.opacity = '0.7';
@@ -1142,30 +1183,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  // ✅ Pré-remplir le projet assigné pour les stagiaires
-  if (user.role === 'stagiaire') {
-    const orchidData = JSON.parse(localStorage.getItem('orchidData') || '{}');
-    const projets = orchidData.projets?.list || [];
-    const fullName = `${user.first_name} ${user.last_name}`.toLowerCase();
-    
-    const monProjet = projets.find(p => 
-      p.resp && p.resp.toLowerCase() === fullName
-    );
-    
-    if (monProjet) {
-      const projetInput = document.getElementById('reportProjet');
-      if (projetInput) {
-        projetInput.value = monProjet.nom;
-        projetInput.readOnly = true;
-        projetInput.style.opacity = '0.7';
-        projetInput.style.cursor = 'not-allowed';
-      }
-    }
-  }
-  
   loadRapports();
-  
-  // Écouter les mises à jour de données
 });
 
 const finalCardsEl = document.getElementById('finalCards');
