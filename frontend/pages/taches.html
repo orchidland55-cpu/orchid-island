@@ -231,6 +231,12 @@ async function loadTasksFromProjects() {
 
       // Récupérer tasks depuis tasks_json (API) ou tasks (localStorage)
       const tasks = project.tasks_json || project.tasks || [];
+      
+      console.log(`[DEBUG] Projet ${nomProjet} (${projId}):`, {
+        tasks_json: project.tasks_json,
+        tasks: tasks,
+        tasks_length: tasks.length
+      });
 
       projectsSet.add({ id: projId, nom: nomProjet });
       assigneesSet.add(respProjet);
