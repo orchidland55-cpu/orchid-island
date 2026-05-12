@@ -190,113 +190,96 @@ async function loadTasksFromProjects() {
   try {
     const token = localStorage.getItem('access_token');
     const BACKEND = window.BACKEND_URL || 'https://orchid-island-production.up.railway.app';
-    
-    // ✅ Lire D'ABORD le localStorage (source des tâches)
-    const localData = JSON.parse(localStorage.getItem('orchidData') || '{"projets":{"list":[]}}');
-    let localList = localData.projets?.list || [];
-    
-    let projects = [];
-    
-    try {
-      const res = await fetch(`${BACKEND}/api/projets/`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const apiProjets = await res.json();
-        projects = apiProjets.map(p => {
-          // ✅ Chercher les tâches dans localStorage par _apiId OU id
-          const local = localList.find(l =>
-            String(l._apiId) === String(p.id) ||
-            String(l.id) === String(p.id)
-          );
-          return {
-            id: p.id,
-            nom: p.titre,
-            resp: local?.resp || p.responsable_nom || '',
-            fin: p.date_fin || '-',
-            tasks: local?.tasks || []  // ✅ tâches depuis localStorage
-          };
-        });
-      } else {
-        projects = localList;
-      }
-    } catch(e) {
-      projects = localList;
-    }
-    
-    // ✅ Récupérer l'utilisateur connecté
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const isAdmin = ['admin', 'rh', 'manager'].includes(user.role);
     const fullName = `${user.first_name} ${user.last_name}`.trim();
-    
-    // ✅ Si stagiaire → filtrer uniquement ses projets
+
+    // SOURCE UNIQUE : l'API Railway
+    const res = await fetch(`${BACKEND}/api/projets/`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    let projects = [];
+
+    if (res.ok) {
+      const apiProjets = await res.json();
+      projects = apiProjets;
+    } else {
+      // Fallback localStorage seulement si API échoue
+      const localData = JSON.parse(localStorage.getItem('orchidData') || '{"projets":{"list":[]}}');
+      projects = localData.projets?.list || [];
+    }
+
+    // Filtrer par stagiaire si pas admin
     if (!isAdmin) {
-      projects = projects.filter(p => 
-        p.resp && p.resp.toLowerCase() === fullName.toLowerCase()
+      projects = projects.filter(p =>
+        p.responsable_nom && p.responsable_nom.toLowerCase() === fullName.toLowerCase()
       );
-      
-      // Masquer les filtres inutiles pour le stagiaire
       document.getElementById('assigneeFilter').style.display = 'none';
     }
-    
+
     allTasks = [];
     const projectsSet = new Set();
     const assigneesSet = new Set();
-    
+
     projects.forEach(project => {
-      projectsSet.add({id: project.id, nom: project.nom});
-      assigneesSet.add(project.resp || 'Non assigné');
-      
-      if (project.tasks && Array.isArray(project.tasks)) {
-        project.tasks.forEach(task => {
-          // Ajouter la tâche principale
-          const subs = task.subs || [];
-          const subsDone = subs.filter(s => s.done).length;
-          const progress = subs.length > 0 ? Math.round((subsDone / subs.length) * 100) : (task.done ? 100 : 0);
-          
-          allTasks.push({
-            id: task.id,
-            name: task.name,
-            project: project.nom,
-            projectId: project.id,
-            assignee: project.resp || 'Non assigné',
-            prio: task.prio || 'm',
-            done: task.done || false,
-            subs: subs,
-            subsDone: subsDone,
-            progress: progress,
-            deadline: project.fin || '-',
-            type: 'task',
-            taskId: task.id
-          });
-          
-          // Ajouter chaque sous-tâche comme élément individuel
-          if (subs && Array.isArray(subs)) {
-            subs.forEach(sub => {
-              allTasks.push({
-                id: sub.id,
-                name: sub.name,
-                project: project.nom,
-                projectId: project.id,
-                assignee: project.resp || 'Non assigné',
-                prio: sub.prio || 'm', // Utiliser la priorité individuelle de la sous-tâche
-                done: sub.done || false,
-                parentTask: task.name,
-                parentTaskId: task.id,
-                deadline: project.fin || '-',
-                type: 'subtask'
-              });
-            });
-          }
+      // Compatibilité : l'API retourne 'titre' et 'responsable_nom'
+      const nomProjet = project.titre || project.nom || '';
+      const respProjet = project.responsable_nom || project.resp || 'Non assigné';
+      const finProjet = project.date_fin || project.fin || '-';
+      const projId = project.id;
+
+      // Récupérer tasks depuis tasks_json (API) ou tasks (localStorage)
+      const tasks = project.tasks_json || project.tasks || [];
+
+      projectsSet.add({ id: projId, nom: nomProjet });
+      assigneesSet.add(respProjet);
+
+      tasks.forEach(task => {
+        const subs = task.subs || [];
+        const subsDone = subs.filter(s => s.done).length;
+        const progress = subs.length > 0
+          ? Math.round((subsDone / subs.length) * 100)
+          : (task.done ? 100 : 0);
+
+        allTasks.push({
+          id: task.id,
+          name: task.name,
+          project: nomProjet,
+          projectId: projId,
+          assignee: respProjet,
+          prio: task.prio || 'm',
+          done: task.done || false,
+          subs: subs,
+          subsDone: subsDone,
+          progress: progress,
+          deadline: finProjet,
+          type: 'task',
+          taskId: task.id
         });
-      }
+
+        subs.forEach(sub => {
+          allTasks.push({
+            id: sub.id,
+            name: sub.name,
+            project: nomProjet,
+            projectId: projId,
+            assignee: respProjet,
+            prio: sub.prio || 'm',
+            done: sub.done || false,
+            parentTask: task.name,
+            parentTaskId: task.id,
+            deadline: finProjet,
+            type: 'subtask'
+          });
+        });
+      });
     });
-    
-    // Mettre à jour les filtres
+
     updateFilters(projectsSet, assigneesSet);
     updateStats();
     renderTasks();
-    
+
   } catch(e) {
     console.error('Erreur chargement tâches:', e);
   }
@@ -531,60 +514,61 @@ function toggleTask(taskId) {
 // Sauvegarder les tâches et sous-tâches dans les projets
 
 // Sauvegarder les tâches et sous-tâches dans les projets
-function saveTasksToProjects() {
+async function saveTasksToProjects() {
   try {
-    const data = JSON.parse(localStorage.getItem('orchidData') || '{"projets":{"list":[]}}');
-    const projectsList = data.projets?.list || [];
-    
-    if (projectsList.length === 0) {
-      console.warn('[SAVE] Aucun projet dans localStorage');
-      return;
-    }
-    
-    let saved = false;
-    
-    projectsList.forEach(project => {
-      if (!project.tasks || !Array.isArray(project.tasks)) return;
-      
-      project.tasks.forEach(task => {
-        // Comparaison robuste avec String()
-        const updatedTask = allTasks.find(t => 
-          String(t.id) === String(task.id) && t.type === 'task'
-        );
-        if (updatedTask) {
-          task.done = updatedTask.done;
-          saved = true;
-        }
-        
-        if (task.subs && Array.isArray(task.subs)) {
-          task.subs.forEach(sub => {
-            const updatedSub = allTasks.find(t => 
-              String(t.id) === String(sub.id) && t.type === 'subtask'
-            );
-            if (updatedSub) {
-              sub.done = updatedSub.done;
-              saved = true;
-            }
-          });
-        }
+    const token = localStorage.getItem('access_token');
+    const BACKEND = window.BACKEND_URL || 'https://orchid-island-production.up.railway.app';
+
+    // Grouper les tâches modifiées par projet
+    const projectsToUpdate = {};
+
+    allTasks.filter(t => t.type === 'task').forEach(task => {
+      if (!projectsToUpdate[task.projectId]) {
+        projectsToUpdate[task.projectId] = { tasks: [] };
+      }
+    });
+
+    // Reconstruire tasks_json pour chaque projet
+    allTasks.filter(t => t.type === 'task').forEach(task => {
+      const subs = allTasks
+        .filter(s => s.type === 'subtask' && String(s.parentTaskId) === String(task.id))
+        .map(s => ({ id: s.id, name: s.name, prio: s.prio, done: s.done }));
+
+      projectsToUpdate[task.projectId].tasks.push({
+        id: task.id,
+        name: task.name,
+        prio: task.prio,
+        done: task.done,
+        subs: subs
       });
     });
-    
-    if (saved) {
-      data.projets.list = projectsList;
-      localStorage.setItem('orchidData', JSON.stringify(data));
-      console.log('[SAVE] ✅ Tâches sauvegardées dans localStorage');
-    } else {
-      console.warn('[SAVE] ⚠️ Aucune tâche trouvée à sauvegarder — vérifier les IDs');
-      // Debug : afficher les IDs disponibles
-      console.log('[SAVE] IDs dans allTasks:', allTasks.map(t => t.id));
-      console.log('[SAVE] IDs dans localStorage:', 
-        projectsList.flatMap(p => (p.tasks||[]).map(t => t.id))
-      );
+
+    // Envoyer à l'API pour chaque projet
+    for (const [projId, data] of Object.entries(projectsToUpdate)) {
+      await fetch(`${BACKEND}/api/projets/${projId}/modifier/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
+        body: JSON.stringify({ tasks_json: data.tasks })
+      });
     }
-    
+
+    // Aussi sauvegarder dans localStorage comme cache
+    const localData = JSON.parse(localStorage.getItem('orchidData') || '{"projets":{"list":[]}}');
+    const localList = localData.projets?.list || [];
+
+    for (const [projId, data] of Object.entries(projectsToUpdate)) {
+      const local = localList.find(p => String(p.id) === String(projId) || String(p._apiId) === String(projId));
+      if (local) local.tasks = data.tasks;
+    }
+
+    localData.projets.list = localList;
+    localStorage.setItem('orchidData', JSON.stringify(localData));
+
     if (window.sharedData) window.sharedData.syncProjetsData();
-    
+
   } catch(e) {
     console.error('[SAVE] Erreur:', e);
   }
