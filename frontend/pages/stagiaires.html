@@ -402,6 +402,63 @@
   }
   .user-name { font-size: 13px; font-weight: 500; }
   .user-role { font-size: 11px; color: var(--muted); }
+
+  /* Responsive sidebar */
+  .hamburger-btn {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+  }
+  .hamburger-btn span {
+    width: 24px;
+    height: 2px;
+    background: var(--text);
+    transition: all 0.3s;
+  }
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99;
+  }
+  @media (max-width: 768px) {
+    .sidebar {
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      z-index: 100;
+    }
+    .sidebar.open {
+      transform: translateX(0);
+    }
+    .main {
+      margin-left: 0;
+    }
+    .topbar {
+      padding: 0 16px;
+      left: 0;
+    }
+    .hamburger-btn {
+      display: flex;
+    }
+    .sidebar-overlay.open {
+      display: block;
+    }
+    .filters-bar {
+      flex-direction: column;
+    }
+    .search-box {
+      min-width: 100%;
+    }
+    .content {
+      padding: 16px;
+      padding-top: 88px;
+    }
+  }
 </style>
 <script src="/auth_roles.js"></script>
 </head>
@@ -411,6 +468,7 @@
   <div class="orb orb-2"></div>
   <div class="orb orb-3"></div>
 </div>
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
 <div class="sidebar">
   <div class="sidebar-logo">
@@ -446,6 +504,11 @@
 
 <div class="main">
   <div class="topbar">
+    <button class="hamburger-btn" onclick="toggleSidebar()">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
     <div class="topbar-title">👥 Gestion des Stagiaires</div>
     <button class="btn-add" onclick="openModal()">+ Nouveau Stagiaire</button>
   </div>
@@ -610,6 +673,15 @@
 <script src="/assets/common.js"></script>
 <script>
 // Fonctions spécifiques à la gestion des stagiaires
+
+// Toggle sidebar on mobile
+function toggleSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.querySelector('.sidebar-overlay');
+  sidebar.classList.toggle('open');
+  overlay.classList.toggle('open');
+}
+
 let stagiaires = [];
 
 // Nettoyer les données corrompues où le nom contient le prénom en double

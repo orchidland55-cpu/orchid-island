@@ -402,6 +402,58 @@
     border-color: var(--blue);
     color: var(--blue);
   }
+
+  /* Responsive sidebar */
+  .hamburger-btn {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+  }
+  .hamburger-btn span {
+    width: 24px;
+    height: 2px;
+    background: var(--text);
+    transition: all 0.3s;
+  }
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99;
+  }
+  @media (max-width: 768px) {
+    .sidebar {
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      z-index: 100;
+    }
+    .sidebar.open {
+      transform: translateX(0);
+    }
+    .main {
+      margin-left: 0;
+    }
+    .topbar {
+      padding: 0 16px;
+    }
+    .hamburger-btn {
+      display: flex;
+    }
+    .sidebar-overlay.open {
+      display: block;
+    }
+    .stats-row {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .projects-grid {
+      grid-template-columns: 1fr;
+    }
+  }
 </style>
 </head>
 <body>
@@ -410,6 +462,7 @@
   <div class="orb orb-2"></div>
   <div class="orb orb-3"></div>
 </div>
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
 <div class="sidebar">
   <div class="sidebar-logo">
@@ -445,6 +498,11 @@
 
 <div class="main">
   <div class="topbar">
+    <button class="hamburger-btn" onclick="toggleSidebar()">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
     <div class="topbar-title">📊 Gestion des Projets</div>
     <div class="topbar-actions">
       <button class="btn-view active" onclick="setView('cards', this)">📇 Cartes</button>
@@ -539,6 +597,15 @@
 <script src="/assets/common.js"></script>
 <script>
 // Fonctions spécifiques à la gestion des projets
+
+// Toggle sidebar on mobile
+function toggleSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.querySelector('.sidebar-overlay');
+  sidebar.classList.toggle('open');
+  overlay.classList.toggle('open');
+}
+
 let projects = [
   {
     id:1, nom:'Site Web Agence', desc:'Refonte du site vitrine avec recherche immobilière.',
